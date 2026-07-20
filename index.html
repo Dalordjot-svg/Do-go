@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TastyPoint — Отзывы</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-base: #0a0a0e;
+            --surface-color: rgba(255, 255, 255, 0.04);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --accent-gradient: linear-gradient(135deg, #f23c50, #ff7b00);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-base); color: var(--text-main);
+            overflow-x: hidden; -webkit-font-smoothing: antialiased;
+            background-image: radial-gradient(circle at 15% 50%, rgba(242, 60, 80, 0.1), transparent 25%),
+                              radial-gradient(circle at 85% 30%, rgba(255, 123, 0, 0.1), transparent 25%);
+            background-attachment: fixed;
+        }
+
+        .glass {
+            background: var(--surface-color); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--surface-border); border-radius: 20px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 5%; background: rgba(10, 10, 14, 0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--surface-border);
+        }
+        .logo { font-weight: 800; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        
+        .nav-tabs { display: flex; gap: 10px; }
+        .nav-btn {
+            background: transparent; color: var(--text-muted); border: 1px solid transparent; 
+            padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; font-family: inherit;
+        }
+        .nav-btn.active { background: rgba(255,255,255,0.05); color: white; border-color: var(--surface-border); }
+        .nav-btn:hover { color: white; }
+
+        .btn-primary { background: var(--accent-gradient); color: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 20px rgba(242, 60, 80, 0.3); font-family: inherit; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(242, 60, 80, 0.5); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .header-spacer { height: 90px; }
+
+        .page-view { display: none; animation: fadeIn 0.4s ease; }
+        .page-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- ГЛАВНАЯ СТРАНИЦА --- */
+        .stories-section { padding: 10px 5%; }
+        .stories-section h3 { margin: 0 0 15px 0; font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+        .stories-container { display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; }
+        .stories-container::-webkit-scrollbar { display: none; }
+        .story {
+            min-width: 110px; height: 150px; border-radius: 18px; position: relative; overflow: hidden;
+            flex-shrink: 0; background: #2a2a35; display: flex; align-items: flex-end; padding: 15px; transition: 0.3s;
+        }
+        .story::after {
+            content: ''; position: absolute; inset: 0; border-radius: 18px; border: 2px solid transparent;
+            background: var(--accent-gradient) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out; mask-composite: exclude;
+        }
+        .story p { margin: 0; font-size: 0.85rem; font-weight: 600; z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.9); }
+
+        .hero {
+            margin: 20px 5%; padding: 70px 40px; text-align: center;
+            background: url('https://images.unsplash.com/photo-1550547660-d9450f859349?w=1200&auto=format&fit=crop') center/cover;
+            position: relative; overflow: hidden; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10,10,14,0.4), rgba(10,10,14,0.95)); }
+        .hero-content { position: relative; z-index: 2; }
+        .hero h1 { font-size: 3.5rem; margin: 0 0 15px 0; font-weight: 800; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        .hero p { font-size: 1.1rem; color: #e5e7eb; max-width: 600px; margin: 0 auto 30px auto; line-height: 1.6; }
+
+        .reviews-section { padding: 40px 5%; }
+        .reviews-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .reviews-header h2 { font-size: 2rem; margin: 0; font-weight: 800; }
+        .reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        
+        .review-card { padding: 25px; display: flex; flex-direction: column; gap: 15px; position: relative; }
+        .review-author { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 50px; height: 50px; border-radius: 16px; background: #333; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1.5rem; }
+        .review-name { font-weight: 600; font-size: 1.1rem; }
+        .review-date { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;}
+        .stars { color: #FFD700; font-size: 1.1rem; letter-spacing: 3px; }
+        .review-text { color: #d1d1d6; font-size: 0.95rem; line-height: 1.7; }
+        
+        .admin-reply {
+            margin-top: 10px; padding: 15px; border-radius: 12px;
+            background: rgba(242, 60, 80, 0.05); border-left: 3px solid #f23c50;
+        }
+        .admin-reply-header { font-size: 0.85rem; font-weight: 800; color: #f23c50; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+        .admin-reply-text { font-size: 0.9rem; color: #e5e7eb; margin: 0; line-height: 1.5; }
+
+        /* --- ЛИЧНЫЙ КАБИНЕТ --- */
+        .cabinet-section { padding: 20px 5%; max-width: 800px; margin: 0 auto; }
+        
+        .auth-box { max-width: 400px; margin: 50px auto; padding: 40px; text-align: center; }
+        .auth-box h2 { margin-top: 0; }
+        
+        .profile-card { padding: 30px; display: flex; align-items: center; gap: 25px; margin-bottom: 30px; flex-wrap: wrap; }
+        .profile-avatar-wrapper { position: relative; cursor: pointer; }
+        .profile-avatar { width: 90px; height: 90px; border-radius: 25px; font-size: 2.5rem; display: flex; justify-content: center; align-items: center; background: var(--surface-border); transition: 0.3s; }
+        .profile-avatar:hover { transform: scale(1.05); }
+        .edit-badge { position: absolute; bottom: -5px; right: -5px; background: var(--accent-gradient); width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        .profile-info { flex: 1; }
+        .profile-info input { font-size: 1.5rem; font-weight: 800; background: transparent; border: none; padding: 0; margin-bottom: 5px; color: white; border-bottom: 1px dashed var(--text-muted); border-radius: 0; }
+        .profile-info input:focus { border-bottom-color: #f23c50; }
+        .profile-phone { color: var(--text-muted); font-size: 1rem; }
+
+        .avatar-selector { display: none; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .avatar-selector.active { display: flex; }
+        .avatar-option { width: 45px; height: 45px; border-radius: 12px; background: var(--surface-border); display: flex; justify-content: center; align-items: center; font-size: 1.5rem; cursor: pointer; transition: 0.2s; }
+        .avatar-option:hover { background: rgba(255,255,255,0.1); transform: scale(1.1); }
+
+        .status-badge { position: absolute; top: 20px; right: 20px; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+        .status-pending { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
+        .status-published { background: rgba(76, 175, 80, 0.15); color: #4caf50; border: 1px solid rgba(76,175,80,0.3); }
+
+        /* Формы и Модалки */
+        input, textarea {
+            width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--surface-border);
+            padding: 16px; border-radius: 14px; color: white; font-family: inherit; font-size: 1rem;
+            box-sizing: border-box; margin-bottom: 15px; transition: 0.3s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: #f23c50; background: rgba(0, 0, 0, 0.6); }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { width: 100%; max-width: 450px; padding: 40px; transform: translateY(30px) scale(0.95); transition: 0.3s; }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
+        
+        .rating-select { display: flex; justify-content: center; gap: 10px; font-size: 2.8rem; color: rgba(255,255,255,0.2); margin-bottom: 10px; cursor: pointer; }
+        .rating-select span { transition: 0.2s; }
+        .rating-select span:hover { transform: scale(1.1); color: #FFD700; }
+        
+        .form-step-2 { max-height: 0; opacity: 0; overflow: hidden; transition: 0.5s; }
+        .form-step-2.active { max-height: 500px; opacity: 1; margin-top: 25px; }
+
+        .btn-secondary { background: transparent; color: white; border: 1px solid var(--surface-border); padding: 12px; border-radius: 30px; width: 100%; cursor: pointer; font-weight: 600; transition: 0.3s;}
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+
+        .empty-state { width: 100%; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 16px; color: var(--text-muted); gap: 10px; }
+
+        .toast {
+            position: fixed; top: 30px; left: 50%; transform: translate(-50%, -100px);
+            background: var(--surface-color); backdrop-filter: blur(10px); border: 1px solid var(--surface-border);
+            color: white; padding: 15px 30px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: 0.4s; z-index: 9999;
+        }
+        .toast.show { transform: translate(-50%, 0); }
+
+        /* --- АНИМАЦИЯ КАРТОТЕКИ (ЗАГРУЗКИ) --- */
+        .login-loader-overlay {
+            position: fixed; inset: 0; background: rgba(10, 10, 14, 0.95); backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s ease;
+        }
+        .login-loader-overlay.active { opacity: 1; visibility: visible; }
+        
+        .shuffler-box {
+            position: relative; width: 120px; height: 120px;
+            display: flex; justify-content: center; align-items: flex-end; font-size: 5rem;
+        }
+        .shuffler-folder { position: relative; z-index: 10; animation: slightShake 1.5s infinite ease-in-out; }
+        .shuffler-file {
+            position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+            font-size: 3.5rem; z-index: 5; opacity: 0;
+            animation: pullFile 1.2s infinite ease-in-out;
+        }
+        .shuffler-file:nth-child(2) { animation-delay: 0.4s; }
+        .shuffler-file:nth-child(3) { animation-delay: 0.8s; }
+
+        @keyframes slightShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+        @keyframes pullFile {
+            0% { transform: translate(-50%, 0) scale(0.8); opacity: 0; z-index: 5; }
+            50% { transform: translate(-50%, -70px) scale(1.1); opacity: 1; z-index: 5; }
+            100% { transform: translate(-50%, 10px) scale(0.9); opacity: 0; z-index: 15; }
+        }
+        .loader-text {
+            margin-top: 30px; font-weight: 600; color: #fff; font-size: 1.2rem;
+            background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: pulseText 1.5s infinite alternate;
+        }
+        @keyframes pulseText { from { opacity: 0.6; } to { opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            .hero { padding: 50px 20px; }
+            header { padding: 15px 20px; flex-wrap: wrap; gap: 15px; }
+            .nav-tabs { width: 100%; justify-content: center; }
+            .profile-card { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация -->
+    <header>
+        <div class="logo" onclick="switchView('feed-view')"><span style="font-size: 1.5rem;">🍔</span> TastyPoint</div>
+        <div class="nav-tabs">
+            <button class="nav-btn active" id="tab-feed" onclick="switchView('feed-view')">Лента</button>
+            <button class="nav-btn" id="tab-cabinet" onclick="switchView('cabinet-view')">👤 Кабинет</button>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <!-- ВИД 1: ЛЕНТА И ГЛАВНАЯ -->
+    <div id="feed-view" class="page-view active">
+        <section class="stories-section">
+            <h3>Свежие новости</h3>
+            <div class="stories-container" id="news-container"><p style="color: var(--text-muted);">Загружаем...</p></div>
+        </section>
+
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Мы меняем рецептуры!</h1>
+                <p>Ваши отзывы — наш главный ингредиент. Оставьте отзыв и помогите нам стать лучше.</p>
+                <button class="btn-primary" onclick="openModal()" style="font-size: 1.1rem; padding: 16px 40px;">Оценить блюдо</button>
+            </div>
+        </section>
+
+        <section class="reviews-section">
+            <div class="reviews-header"><h2>Лента отзывов</h2></div>
+            <div class="reviews-grid" id="reviews-container"><p style="color: var(--text-muted);">Загружаем свежие отзывы...</p></div>
+        </section>
+    </div>
+
+    <!-- ВИД 2: ЛИЧНЫЙ КАБИНЕТ -->
+    <div id="cabinet-view" class="page-view">
+        <div class="cabinet-section">
+            
+            <!-- Блок если не авторизован -->
+            <div class="auth-box glass" id="cabinet-login">
+                <h2>Вход в кабинет</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Введите номер телефона и ваше имя для авторизации и сохранения профиля.</p>
+                <input type="text" id="auth-name" placeholder="Ваше имя" autocomplete="off">
+                <input type="tel" id="auth-phone" placeholder="Номер телефона (только цифры)" autocomplete="off">
+                <button class="btn-primary" style="width: 100%;" onclick="startLoginProcess()">Войти / Создать профиль</button>
+            </div>
+
+            <!-- Блок если авторизован -->
+            <div id="cabinet-dashboard" style="display: none;">
+                
+                <h2 style="margin-top: 0;">Мой профиль</h2>
+                <div class="profile-card glass">
+                    <div class="profile-avatar-wrapper" onclick="toggleAvatarSelector()">
+                        <div class="profile-avatar" id="profile-avatar-display">👤</div>
+                        <div class="edit-badge">✏️</div>
+                    </div>
+                    <div class="profile-info">
+                        <input type="text" id="profile-name-edit" onchange="saveProfileName()" placeholder="Ваше имя">
+                        <div class="profile-phone" id="profile-phone-display">Номер телефона</div>
+                        <button class="btn-secondary" style="margin-top: 15px; padding: 8px 15px; width: auto; font-size: 0.8rem;" onclick="logoutCabinet()">Выйти из аккаунта</button>
+                    </div>
+                </div>
+
+                <div class="avatar-selector glass" id="avatar-selector"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">История отзывов</h2>
+                    <button class="btn-primary" style="padding: 10px 20px;" onclick="openModal()">Новый отзыв</button>
+                </div>
+                
+                <div id="cabinet-reviews-list" style="display: flex; flex-direction: column; gap: 20px;"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- АНИМАЦИЯ ЗАГРУЗКИ (КАРТОТЕКА) -->
+    <div class="login-loader-overlay" id="login-loader">
+        <div class="shuffler-box">
+            <div class="shuffler-file">📄</div>
+            <div class="shuffler-file">📑</div>
+            <div class="shuffler-file">📝</div>
+            <div class="shuffler-folder">🗂️</div>
+        </div>
+        <div class="loader-text">Ищем вашу историю...</div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО: Оставить отзыв -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal-content glass">
+            <div id="form-view">
+                <h2 id="modal-title" style="margin-top: 0; text-align: center;">Оцените нашу еду</h2>
+                
+                <div class="rating-select" id="star-rating">
+                    <span data-value="1">★</span><span data-value="2">★</span><span data-value="3">★</span><span data-value="4">★</span><span data-value="5">★</span>
+                </div>
+
+                <div class="form-step-2" id="step-2-container">
+                    <div id="guest-fields">
+                        <input type="text" id="reviewer-name" placeholder="Ваше имя" autocomplete="off">
+                        <input type="tel" id="reviewer-phone" placeholder="Ваш телефон (для сохранения в кабинете)" autocomplete="off">
+                    </div>
+                    <textarea id="reviewer-text" rows="4" placeholder="Что понравилось? Что мы можем улучшить?"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 15px;">
+                    <button class="btn-secondary" onclick="closeModal()">Отмена</button>
+                    <button class="btn-primary" id="btn-submit-review" style="display: none; width: 100%;">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast-message">Успешно!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8CBeK8m25rox6BYO8ep6JeBJ7ipmYViQ",
+            authDomain: "moon-60c5a.firebaseapp.com",
+            databaseURL: "https://moon-60c5a-default-rtdb.firebaseio.com",
+            projectId: "moon-60c5a",
+            storageBucket: "moon-60c5a.firebasestorage.app",
+            messagingSenderId: "1010513396599",
+            appId: "1:1010513396599:web:86cbb8164de80b1dcc9772"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let allReviewsData = []; 
+        let currentUser = JSON.parse(localStorage.getItem('tastyUser')) || null;
+        
+        const AVAILABLE_AVATARS = ['😎','👻','😺','🐶','🦊','🐻','🐼','🦄','🦖','🍔','🍟','🍕'];
+
+        function showToast(message, color = 'var(--accent-gradient)') {
+            const toast = document.getElementById('toast-message');
+            toast.textContent = message; toast.style.background = color;
+            toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        function cleanPhone(phoneString) { return phoneString.replace(/\D/g, ''); }
+
+        window.switchView = (viewId) => {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            if(viewId === 'feed-view') document.getElementById('tab-feed').classList.add('active');
+            if(viewId === 'cabinet-view') {
+                document.getElementById('tab-cabinet').classList.add('active');
+                checkAuth();
+            }
+        };
+
+        function checkAuth() {
+            if (currentUser) {
+                document.getElementById('cabinet-login').style.display = 'none';
+                document.getElementById('cabinet-dashboard').style.display = 'block';
+                document.getElementById('profile-name-edit').value = currentUser.name;
+                document.getElementById('profile-phone-display').textContent = '+' + currentUser.phone;
+                document.getElementById('profile-avatar-display').textContent = currentUser.avatar || '👤';
+                renderCabinetReviews();
+            } else {
+                document.getElementById('cabinet-login').style.display = 'block';
+                document.getElementById('cabinet-dashboard').style.display = 'none';
+            }
+        }
+
+        // Запуск процесса входа с АНИМАЦИЕЙ
+        window.startLoginProcess = () => {
+            const name = document.getElementById('auth-name').value.trim();
+            const rawPhone = document.getElementById('auth-phone').value.trim();
+            const clean = cleanPhone(rawPhone);
+
+            if (!name || !clean) { showToast('Введите имя и корректный телефон', '#ff453a'); return; }
+            
+            // Включаем лоадер-картотеку
+            const loader = document.getElementById('login-loader');
+            loader.classList.add('active');
+
+            // Имитируем поиск 1.8 секунды
+            setTimeout(() => {
+                currentUser = { phone: clean, name: name, avatar: AVAILABLE_AVATARS[0] };
+                localStorage.setItem('tastyUser', JSON.stringify(currentUser));
+                loader.classList.remove('active');
+                showToast('Вход выполнен успешно!');
+                checkAuth();
+            }, 1800);
+        };
+
+        window.logoutCabinet = () => {
+            currentUser = null;
+            localStorage.removeItem('tastyUser');
+            checkAuth();
+            showToast('Вы вышли из аккаунта');
+        };
+
+        window.saveProfileName = () => {
+            const newName = document.getElementById('profile-name-edit').value.trim();
+            if(newName) {
+                currentUser.name = newName;
+                localStorage.setItem('tastyUser', JSON.stringify(currentUser));
+                showToast('Имя сохранено');
+            }
+        };
+
+        const avatarContainer = document.getElementById('avatar-selector');
+        AVAILABLE_AVATARS.forEach(emoji => {
+            const btn = document.createElement('div');
+            btn.className = 'avatar-option'; btn.textContent = emoji;
+            btn.onclick = () => {
+                currentUser.avatar = emoji;
+                localStorage.setItem('tastyUser', JSON.stringify(currentUser));
+                document.getElementById('profile-avatar-display').textContent = emoji;
+                avatarContainer.classList.remove('active');
+                showToast('Аватар обновлен');
+            };
+            avatarContainer.appendChild(btn);
+        });
+
+        window.toggleAvatarSelector = () => { avatarContainer.classList.toggle('active'); };
+
+        let currentRating = 0;
+        let isStep2Open = false;
+
+        window.openModal = () => { resetModal(); document.getElementById('review-modal').classList.add('active'); };
+        window.closeModal = () => { document.getElementById('review-modal').classList.remove('active'); setTimeout(resetModal, 400); };
+
+        function resetModal() {
+            currentRating = 0; isStep2Open = false; updateStars(0);
+            document.getElementById('reviewer-text').value = '';
+            document.getElementById('step-2-container').classList.remove('active');
+            document.getElementById('btn-submit-review').style.display = 'none';
+            document.getElementById('modal-title').textContent = 'Оцените нашу еду';
+            
+            if (currentUser) {
+                document.getElementById('guest-fields').style.display = 'none';
+            } else {
+                document.getElementById('guest-fields').style.display = 'block';
+                document.getElementById('reviewer-name').value = '';
+                document.getElementById('reviewer-phone').value = '';
+            }
+            document.getElementById('btn-submit-review').disabled = false;
+        }
+
+        const stars = document.querySelectorAll('#star-rating span');
+        function updateStars(rating) {
+            stars.forEach(star => {
+                if(star.dataset.value <= rating && rating > 0) {
+                    star.style.color = '#FFD700'; star.style.textShadow = '0 0 15px rgba(255, 215, 0, 0.4)';
+                } else {
+                    star.style.color = 'rgba(255,255,255,0.2)'; star.style.textShadow = 'none';
+                }
+            });
+        }
+
+        stars.forEach(star => star.addEventListener('click', (e) => {
+            currentRating = e.target.dataset.value; updateStars(currentRating);
+            if (!isStep2Open) {
+                isStep2Open = true;
+                document.getElementById('modal-title').textContent = 'Расскажите подробнее';
+                document.getElementById('step-2-container').classList.add('active');
+                document.getElementById('btn-submit-review').style.display = 'block';
+            }
+        }));
+
+        document.getElementById('btn-submit-review').addEventListener('click', () => {
+            const text = document.getElementById('reviewer-text').value.trim();
+            let finalName, finalPhone, finalAvatar;
+
+            if (currentUser) {
+                finalName = currentUser.name;
+                finalPhone = currentUser.phone;
+                finalAvatar = currentUser.avatar;
+            } else {
+                finalName = document.getElementById('reviewer-name').value.trim();
+                const rawPhone = document.getElementById('reviewer-phone').value.trim();
+                finalPhone = cleanPhone(rawPhone);
+                finalAvatar = '👤'; 
+                
+                if(!finalName || !finalPhone) { showToast('Введите имя и телефон', '#ff453a'); return; }
+                
+                currentUser = { phone: finalPhone, name: finalName, avatar: finalAvatar };
+                localStorage.setItem('tastyUser', JSON.stringify(currentUser));
+            }
+
+            if(!text) { showToast('Напишите текст отзыва', '#ff453a'); return; }
+
+            document.getElementById('btn-submit-review').disabled = true;
+
+            push(ref(db, 'reviews'), {
+                name: finalName,
+                phone: finalPhone,
+                avatar: finalAvatar,
+                text: text,
+                rating: currentRating,
+                date: new Date().toLocaleDateString('ru-RU'),
+                timestamp: Date.now(),
+                status: 'pending' 
+            }).then(() => {
+                closeModal();
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#f23c50', '#ff7b00', '#FFD700', '#ffffff'] });
+                showToast('Спасибо! Отзыв отправлен на модерацию.');
+                if(document.getElementById('cabinet-view').classList.contains('active')) checkAuth();
+            }).catch(() => {
+                showToast('Ошибка сети', '#ff453a');
+                document.getElementById('btn-submit-review').disabled = false;
+            });
+        });
+
+        const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+        function getRealStatus(review) {
+            if (review.status === 'published') return 'published';
+            if (review.status === 'pending' && review.timestamp && (Date.now() - review.timestamp > TWENTY_FOUR_HOURS)) return 'published';
+            return 'pending';
+        }
+
+        onValue(ref(db, 'reviews'), (snapshot) => {
+            allReviewsData = snapshot.exists() ? Object.values(snapshot.val()).reverse() : [];
+            renderPublicFeed();
+            if (currentUser && document.getElementById('cabinet-view').classList.contains('active')) {
+                renderCabinetReviews();
+            }
+        });
+
+        function getAdminReplyHTML(review) {
+            if (!review.adminReply) return '';
+            return `
+                <div class="admin-reply">
+                    <div class="admin-reply-header"><span>👑</span> Ответ TastyPoint:</div>
+                    <p class="admin-reply-text">${review.adminReply}</p>
+                </div>
+            `;
+        }
+
+        function renderPublicFeed() {
+            const container = document.getElementById('reviews-container');
+            container.innerHTML = ''; 
+            const publicReviews = allReviewsData.filter(r => getRealStatus(r) === 'published');
+
+            if (publicReviews.length > 0) {
+                container.style.display = 'grid'; 
+                publicReviews.forEach(review => {
+                    const starsHTML = '★'.repeat(review.rating || 5) + '☆'.repeat(5 - (review.rating || 5));
+                    const avatar = review.avatar || (review.name ? review.name.charAt(0).toUpperCase() : '👤');
+
+                    const card = document.createElement('div');
+                    card.className = 'review-card glass';
+                    card.innerHTML = `
+                        <div class="review-author">
+                            <div class="avatar" style="background: ${review.avatar && review.avatar !== '👤' ? 'transparent' : 'var(--accent-gradient)'}">${avatar}</div>
+                            <div>
+                                <div class="review-name">${review.name}</div>
+                                <div class="review-date">${review.date}</div>
+                            </div>
+                        </div>
+                        <div class="stars">${starsHTML}</div>
+                        <div class="review-text">${review.text}</div>
+                        ${getAdminReplyHTML(review)}
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.style.display = 'block'; 
+                container.innerHTML = `<div class="empty-state" style="padding: 60px 20px;"><div class="icon" style="font-size: 3rem;">🌟</div><div style="font-size: 1.2rem; font-weight: 600; color: white;">Будьте первым!</div></div>`;
+            }
+        }
+
+        function renderCabinetReviews() {
+            const container = document.getElementById('cabinet-reviews-list');
+            container.innerHTML = '';
+            const userReviews = allReviewsData.filter(r => r.phone === currentUser.phone);
+
+            if (userReviews.length > 0) {
+                userReviews.forEach(review => {
+                    const isPending = getRealStatus(review) === 'pending';
+
+                    const card = document.createElement('div');
+                    card.className = 'review-card glass';
+                    card.innerHTML = `
+                        <div class="status-badge ${isPending ? 'status-pending' : 'status-published'}">${isPending ? '⏳ На модерации' : '✅ Опубликован'}</div>
+                        <div class="review-date" style="margin-bottom: 10px;">${review.date}</div>
+                        <div class="stars" style="margin-bottom: 10px;">${'★'.repeat(review.rating || 5)}${'☆'.repeat(5 - (review.rating || 5))}</div>
+                        <div class="review-text">${review.text}</div>
+                        ${getAdminReplyHTML(review)}
+                        ${isPending ? '<div style="font-size: 0.75rem; color: #ffc107; margin-top: 10px;">*Отзыв появится в общей ленте автоматически в течение 24 часов.</div>' : ''}
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = `<div class="empty-state"><div class="icon">🤷</div><div>У вас пока нет отзывов.</div></div>`;
+            }
+        }
+
+        onValue(ref(db, 'news'), (snapshot) => {
+            const container = document.getElementById('news-container');
+            container.innerHTML = ''; 
+            if (snapshot.exists()) {
+                Object.values(snapshot.val()).reverse().forEach(item => {
+                    const story = document.createElement('div'); story.className = 'story';
+                    story.style.background = `linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 80%), url('${item.imgUrl}') center/cover`;
+                    story.innerHTML = `<p>${item.title}</p>`; container.appendChild(story);
+                });
+            } else {
+                container.innerHTML = `<div class="empty-state"><div class="icon">📭</div><div style="font-weight: 600;">Пока нет активных новостей</div></div>`;
+            }
+        });
+
+        checkAuth();
+    </script>
+</body>
+</html>
