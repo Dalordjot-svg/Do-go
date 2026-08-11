@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Экран Оплаты</title>
-  <!-- Библиотека генерации QR-кода -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    
     body {
       background-color: #0b0f19;
       color: #ffffff;
@@ -19,75 +19,121 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      position: relative;
     }
 
+    /* Анимация Зеленой Волны Успеха */
+    .wave-bg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, #10b981 0%, #059669 100%);
+      top: 0; left: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transform: scale(0);
+      border-radius: 50%;
+      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .wave-bg.active {
+      opacity: 1;
+      transform: scale(2);
+      border-radius: 0;
+    }
+
+    .success-text {
+      position: relative;
+      z-index: 11;
+      font-size: 48px;
+      font-weight: 900;
+      text-align: center;
+      color: #ffffff;
+      text-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-15px); }
+    }
+
+    /* Главный контейнер */
     .container {
       display: flex;
-      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 60px;
+      gap: 50px;
       width: 90%;
-      max-width: 1000px;
+      max-width: 950px;
       background: #151c2c;
-      padding: 50px;
+      padding: 40px;
       border-radius: 28px;
       border: 1px solid #232d42;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      z-index: 1;
     }
 
-    /* ЛЕВАЯ ЧАСТЬ: QR-код и статус */
     .left-side {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-width: 280px;
     }
 
+    /* Карточка QR с эффектом свечения */
     .qr-card {
       background: #ffffff;
       padding: 20px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border-radius: 24px;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
       opacity: 0;
-      transform: scale(0.9);
-      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: scale(0.7) rotate(-5deg);
+      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .qr-card.visible {
       opacity: 1;
-      transform: scale(1);
+      transform: scale(1) rotate(0deg);
+      animation: pulseGlow 2s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      from { box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); }
+      to { box-shadow: 0 0 50px rgba(16, 185, 129, 0.8); }
     }
 
     .amount-badge {
-      font-size: 36px;
-      font-weight: 800;
+      font-size: 42px;
+      font-weight: 900;
       color: #10b981;
-      margin-top: 20px;
+      margin-top: 15px;
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
     }
 
     .loader-box {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       margin-top: 15px;
       color: #94a3b8;
-      font-size: 16px;
+      font-size: 18px;
     }
 
     .spinner {
-      border: 3px solid #232d42;
-      border-top: 3px solid #10b981;
+      border: 4px solid #232d42;
+      border-top: 4px solid #10b981;
       border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      animation: spin 1s linear infinite;
+      width: 28px;
+      height: 28px;
+      animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* ПРАВАЯ ЧАСТЬ: Надпись и Глаза */
     .right-side {
       display: flex;
       flex-direction: column;
@@ -96,7 +142,7 @@
     }
 
     .title-text {
-      font-size: 42px;
+      font-size: 38px;
       font-weight: 900;
       line-height: 1.2;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
@@ -105,25 +151,38 @@
       margin-bottom: 20px;
     }
 
-    /* Анимация глаз 👀 */
+    /* Глаза 👀 */
     .eyes {
-      font-size: 80px;
+      font-size: 85px;
       display: inline-block;
-      animation: eyeMove 3s infinite ease-in-out;
+      animation: eyeWiggle 2.5s infinite ease-in-out;
       user-select: none;
     }
 
-    @keyframes eyeMove {
-      0%, 100% { transform: translateX(0) scale(1); }
-      25% { transform: translateX(-15px) scale(1.05); }
-      75% { transform: translateX(15px) scale(1.05); }
+    @keyframes eyeWiggle {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      20% { transform: translateX(-18px) rotate(-10deg); }
+      40% { transform: translateX(18px) rotate(10deg); }
+      60% { transform: translateY(-10px); }
     }
 
-    /* ЭКРАН ОЖИДАНИЯ СУММЫ */
-    .idle-message {
-      font-size: 28px;
-      color: #64748b;
+    /* Экран Покоя (Комплименты) */
+    .idle-box {
       text-align: center;
+      z-index: 1;
+    }
+
+    .compliment-text {
+      font-size: 36px;
+      font-weight: 800;
+      color: #f1f5f9;
+      margin-top: 20px;
+      animation: fadeInText 1s ease-in-out;
+    }
+
+    @keyframes fadeInText {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .hidden { display: none !important; }
@@ -131,42 +190,43 @@
 </head>
 <body>
 
-  <!-- Экран Покоя (Когда сумму еще не отправили с телефона) -->
-  <div id="idle-screen" class="idle-message">
-    <div class="eyes" style="margin-bottom: 20px;">👀</div>
-    <div>Готов к работе.<br>Ожидание суммы с терминала...</div>
+  <!-- Зеленая Волна Оплаты -->
+  <div id="wave-screen" class="wave-bg">
+    <div class="success-text">
+      <div style="font-size: 90px; margin-bottom: 10px;">🎉</div>
+      Спасибо большое<br>за покупку! 💚
+    </div>
   </div>
 
-  <!-- Главный Контейнер Оплаты -->
+  <!-- Экран Покоя (Комплименты) -->
+  <div id="idle-screen" class="idle-box">
+    <div class="eyes">👀</div>
+    <div id="compliment-text" class="compliment-text">Вы прекрасно выглядите!</div>
+  </div>
+
+  <!-- Контейнер Оплаты -->
   <div id="payment-container" class="container hidden">
-    
-    <!-- СЛЕВА: QR-код -->
     <div class="left-side">
       <div id="qr-box" class="qr-card">
         <div id="qrcode"></div>
       </div>
       <div id="amount-display" class="amount-badge">0 ₽</div>
-      
       <div id="status-box" class="loader-box">
         <div class="spinner"></div>
         <span>Ожидание оплаты...</span>
       </div>
     </div>
 
-    <!-- СПРАВА: Текст и Анимация Глаз -->
     <div class="right-side">
       <div class="title-text">Отсканируй меня<br>и оплати</div>
       <div class="eyes">👀</div>
     </div>
-
   </div>
 
-<!-- Firebase & Логика -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // Твой конфиг Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyB8CBeK8m25rox6BYO8ep6JeBJ7ipmYViQ",
     authDomain: "moon-60c5a.firebaseapp.com",
@@ -183,44 +243,64 @@
 
   let pollInterval = null;
   let currentTimestamp = null;
+  let complimentTimer = null;
 
-  // Слушаем появление суммы в Firebase
+  // Список приятных комплиментов
+  const compliments = [
+    "Вы прекрасно выглядите! ✨",
+    "Отличного вам дня и настроения! 😊",
+    "Спасибо, что вы с нами! 💚",
+    "Улыбнитесь, вам очень идет! 🌟",
+    "Желаем замечательных покупок! 🛍️",
+    "Вы самый лучший покупатель! 👍"
+  ];
+
+  // Ротация комплиментов каждые 7 секунд
+  function startCompliments() {
+    let index = 0;
+    complimentTimer = setInterval(() => {
+      index = (index + 1) % compliments.length;
+      const el = document.getElementById('compliment-text');
+      if (el) el.innerText = compliments[index];
+    }, 7000);
+  }
+  startCompliments();
+
+  // Слушаем Firebase
   onValue(ref(db, 'current_checkout/'), async (snapshot) => {
     const data = snapshot.val();
     
-    // Проверяем, появилась ли новая сумма
-    if (data && data.amount && data.timestamp !== currentTimestamp) {
+    // Если нажали «ОТМЕНИТЬ» с телефона
+    if (data && data.status === 'canceled') {
+      resetToIdle();
+      return;
+    }
+
+    // Появилась НОВАЯ сумма
+    if (data && data.amount && data.status === 'new' && data.timestamp !== currentTimestamp) {
       currentTimestamp = data.timestamp;
       
-      // Показываем интерфейс оплаты
       document.getElementById('idle-screen').classList.add('hidden');
       document.getElementById('payment-container').classList.remove('hidden');
       document.getElementById('amount-display').innerText = `${data.amount} ₽`;
 
-      // Сбрасываем старый QR
       const qrBox = document.getElementById('qr-box');
       qrBox.classList.remove('visible');
       document.getElementById('qrcode').innerHTML = "";
 
-      // Загружаем настройки ЮKassa
       const settingsSnap = await get(ref(db, 'settings/'));
       const settings = settingsSnap.val();
 
       if (settings && settings.shopId && settings.secretKey) {
-        // Определяем способ оплаты (СБП или SberPay)
         let paymentType = "sbp";
         if (settings.methods && !settings.methods.sbp && settings.methods.sber) {
           paymentType = "sberbank";
         }
-
         createYooKassaPayment(data.amount, settings.shopId, settings.secretKey, paymentType);
-      } else {
-        alert("Внимание: Ключи ЮKassa не настроены в админке!");
       }
     }
   });
 
-  // Запрос в ЮKassa через CORS-прокси
   async function createYooKassaPayment(amount, shopId, secretKey, paymentType) {
     const proxyUrl = "https://corsproxy.io/?";
     const targetUrl = "https://api.yookassa.ru/v3/payments";
@@ -246,36 +326,22 @@
       const resData = await response.json();
 
       if (resData.confirmation && resData.confirmation.confirmation_data) {
-        const qrUrl = resData.confirmation.confirmation_data;
-        const paymentId = resData.id;
-
-        // Генерируем QR-код
         new QRCode(document.getElementById("qrcode"), {
-          text: qrUrl,
+          text: resData.confirmation.confirmation_data,
           width: 220,
           height: 220
         });
 
-        // Плавное появление QR
-        setTimeout(() => {
-          document.getElementById('qr-box').classList.add('visible');
-        }, 100);
+        setTimeout(() => document.getElementById('qr-box').classList.add('visible'), 100);
 
-        // Начинаем каждые 3 сек проверять статус
         if (pollInterval) clearInterval(pollInterval);
-        pollInterval = setInterval(() => checkStatus(paymentId, authHeader), 3000);
-
-      } else {
-        alert("Ошибка ЮKassa: " + (resData.description || "Не удалось получить QR-код"));
+        pollInterval = setInterval(() => checkStatus(resData.id, authHeader), 3000);
       }
-
     } catch (err) {
       console.error(err);
-      alert("Ошибка подключения к серверу оплаты!");
     }
   }
 
-  // Проверка статуса оплаты
   async function checkStatus(paymentId, authHeader) {
     const proxyUrl = "https://corsproxy.io/?";
     const targetUrl = `https://api.yookassa.ru/v3/payments/${paymentId}`;
@@ -289,24 +355,24 @@
       if (data.status === 'succeeded') {
         clearInterval(pollInterval);
         
-        // Показываем успех
-        document.getElementById('status-box').innerHTML = `
-          <h2 style="color: #10b981; margin: 0;">🎉 Успешно оплачено!</h2>
-        `;
+        // Показываем ВОЛНУ УСПЕХА
+        document.getElementById('wave-screen').classList.add('active');
         
-        // Через 5 секунд возвращаем экран ожидания
+        // Через 6 секунд возвращаем экран комплиментов
         setTimeout(() => {
-          document.getElementById('payment-container').classList.add('hidden');
-          document.getElementById('idle-screen').classList.remove('hidden');
-          document.getElementById('status-box').innerHTML = `
-            <div class="spinner"></div>
-            <span>Ожидание оплаты...</span>
-          `;
-        }, 5000);
+          document.getElementById('wave-screen').classList.remove('active');
+          resetToIdle();
+        }, 6000);
       }
     } catch (e) {
-      console.error("Ошибка проверки статуса:", e);
+      console.error(e);
     }
+  }
+
+  function resetToIdle() {
+    if (pollInterval) clearInterval(pollInterval);
+    document.getElementById('payment-container').classList.add('hidden');
+    document.getElementById('idle-screen').classList.remove('hidden');
   }
 </script>
 
