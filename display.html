@@ -49,7 +49,7 @@
       justify-content: center;
       align-items: center;
       opacity: 0;
-      transform: translateX(-100%); /* Заезд справа налево / Листание вправо */
+      transform: translateX(-100%);
       transition: all 0.8s ease-in-out;
     }
 
@@ -118,7 +118,6 @@
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       z-index: 5;
       
-      /* Анимация появления сверху */
       transform: translateY(-120vh);
       opacity: 0;
       transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -268,14 +267,19 @@
     <div class="success-text">Спасибо за покупку! 💚</div>
   </div>
 
-  <!-- Карусель Баннеров (Листание вправо) -->
+  <!-- Карусель Баннеров -->
   <div id="slider" class="slider-container">
-    <!-- Слайд 1: Картинка -->
+    <!-- Слайд 1: Картинка 1 -->
     <div class="slide active">
-      <img src="IMG_2845.png" class="ad-image" alt="Реклама">
+      <img src="IMG_2845.png" class="ad-image" alt="Реклама 1">
+    </div>
+
+    <!-- Слайд 2: Картинка 2 -->
+    <div class="slide">
+      <img src="IMG_2851.png" class="ad-image" alt="Реклама 2">
     </div>
     
-    <!-- Слайд 2: Поиск сотрудников -->
+    <!-- Слайд 3: Поиск сотрудников -->
     <div class="slide">
       <div class="text-banner">
         <h1>Ищем сотрудников! ☕</h1>
@@ -283,7 +287,7 @@
       </div>
     </div>
 
-    <!-- Слайд 3: Приветствие -->
+    <!-- Слайд 4: Приветствие -->
     <div class="slide">
       <div class="text-banner">
         <h1>Добро пожаловать в Moon 🌙</h1>
@@ -333,10 +337,10 @@
   let currentTimestamp = null;
   let panicCountdownInterval = null;
 
-  // 1. БЕСКОНЕЧНАЯ КАРУСЕЛЬ (Перелистывание вправо каждые 5 сек)
+  // 1. КАРУСЕЛЬ (Время показа: 10 секунд)
   const slides = document.querySelectorAll('.slide');
   let currentSlide = 0;
-  let slideInterval = setInterval(nextSlide, 5000);
+  let slideInterval = setInterval(nextSlide, 10000); // 10000 миллисекунд = 10 секунд
 
   function nextSlide() {
     slides[currentSlide].classList.remove('active');
@@ -384,7 +388,7 @@
     document.getElementById('panic-screen').classList.add('hidden');
   }
 
-  // 3. СЛУШАЕМ ОПЛАТУ (Эффект обрушения ВНИЗ)
+  // 3. СЛУШАЕМ ОПЛАТУ
   onValue(ref(db, 'current_checkout/'), async (snapshot) => {
     const data = snapshot.val();
     
@@ -396,12 +400,12 @@
     if (data && data.amount && data.status === 'new' && data.timestamp !== currentTimestamp) {
       currentTimestamp = data.timestamp;
 
-      // ШАГ A: Слайдер «падает» вниз и разрушается
+      // Слайдер падает вниз
       const slider = document.getElementById('slider');
       slider.classList.add('fall-down');
 
       setTimeout(async () => {
-        // ШАГ B: Сверху падающим эффектом прилетает форма оплаты
+        // Форма оплаты падает сверху
         const payBox = document.getElementById('payment-container');
         payBox.classList.remove('fall-down');
         payBox.classList.add('drop-in');
@@ -478,7 +482,6 @@
       if (data.status === 'succeeded') {
         clearInterval(pollInterval);
         
-        // Показываем зеленую волну и галочку
         document.getElementById('wave-screen').classList.add('active');
         
         setTimeout(() => {
@@ -494,12 +497,10 @@
   function resetToIdle() {
     if (pollInterval) clearInterval(pollInterval);
     
-    // Форма оплаты улетает вниз
     const payBox = document.getElementById('payment-container');
     payBox.classList.remove('drop-in');
     payBox.classList.add('fall-down');
 
-    // Карусель возвращается обратно сверху
     setTimeout(() => {
       const slider = document.getElementById('slider');
       slider.classList.remove('fall-down');
