@@ -22,7 +22,7 @@
       position: relative;
     }
 
-    /* 1. БЕСКОНЕЧНАЯ КАРУСЕЛЬ БАННЕРОВ */
+    /* 1. КАРУСЕЛЬ БАННЕРОВ (РЕЖИМ ПОКОЯ) */
     .slider-container {
       position: absolute;
       width: 100vw;
@@ -89,32 +89,73 @@
 
     .text-banner p { font-size: 26px; color: #94a3b8; max-width: 600px; line-height: 1.4; }
 
-    /* ПРЕДВАРИТЕЛЬНЫЙ ЭКРАН СУММЫ */
-    .preview-box {
+    /* 2. ЭКРАН ПРЕДВАРИТЕЛЬНОГО ВВОДА СУММЫ (Слева Сумма, Справа Картинка) */
+    .preview-screen {
       position: absolute;
-      top: 30px;
-      right: 30px;
-      background: rgba(21, 28, 44, 0.85);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 20px 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      width: 90vw;
+      height: 85vh;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
       z-index: 10;
-      transition: all 0.4s ease;
       opacity: 0;
-      transform: translateY(-20px);
+      transform: translateY(-30px);
+      transition: all 0.5s ease;
+      pointer-events: none;
     }
 
-    .preview-box.visible {
+    .preview-screen.visible {
       opacity: 1;
       transform: translateY(0);
+      pointer-events: auto;
     }
 
-    .preview-lbl { font-size: 14px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
-    .preview-val { font-size: 36px; font-weight: 900; color: #38bdf8; }
+    .preview-left {
+      flex: 1;
+      background: #151c2c;
+      border: 2px solid #232d42;
+      border-radius: 32px;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
 
-    /* 2. ФОРМА ОПЛАТЫ */
+    .preview-label {
+      font-size: 24px;
+      color: #94a3b8;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .preview-amount {
+      font-size: 72px;
+      font-weight: 900;
+      color: #38bdf8;
+      text-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+    }
+
+    .preview-right {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .preview-right img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+
+    /* 3. ГЛАВНЫЙ КОНТЕЙНЕР ОПЛАТЫ (Оплата QR или Наличными) */
     .container {
       display: flex;
       align-items: center;
@@ -127,7 +168,7 @@
       border-radius: 28px;
       border: 1px solid #232d42;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      z-index: 5;
+      z-index: 15;
       
       transform: translateY(-120vh);
       opacity: 0;
@@ -137,7 +178,7 @@
     .container.drop-in { transform: translateY(0); opacity: 1; }
     .container.fall-down { transform: translateY(120vh) rotate(-10deg); opacity: 0; }
 
-    .left-side { display: flex; flex-direction: column; align-items: center; }
+    .left-side { display: flex; flex-direction: column; align-items: center; flex: 1; }
 
     .qr-card {
       background: #ffffff;
@@ -150,23 +191,62 @@
     }
 
     .qr-card.visible { opacity: 1; transform: scale(1); }
-    .amount-badge { font-size: 42px; font-weight: 900; color: #10b981; margin-top: 15px; }
+
+    /* Табло расчета Наличными (К оплате / Принято / Сдача) */
+    .cash-details-box {
+      width: 100%;
+      background: rgba(11, 15, 25, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .cash-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 20px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .cash-row-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .cash-row-change {
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+
+    .cash-row-change .cash-row-val {
+      font-size: 36px;
+      font-weight: 900;
+      color: #34d399;
+      text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+    }
 
     .loader-box { display: flex; align-items: center; gap: 12px; margin-top: 15px; color: #94a3b8; font-size: 18px; }
     .spinner { border: 4px solid #232d42; border-top: 4px solid #10b981; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .right-side { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .right-side { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
     .title-text { font-size: 38px; font-weight: 900; line-height: 1.2; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
 
-    /* 3. ЗЕЛЕНАЯ ВОЛНА И ЧАЕВАЯ ЧАСТЬ */
+    /* 4. ЗЕЛЕНАЯ ВОЛНА И МОДАЛЬНОЕ ОКНО ЧАЕВЫХ */
     .wave-bg {
       position: absolute;
       width: 100%;
       height: 100%;
       background: radial-gradient(circle, #10b981 0%, #059669 100%);
       top: 0; left: 0;
-      z-index: 20;
+      z-index: 30;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -181,10 +261,9 @@
     .check-mark { font-size: 90px; }
     .success-text { font-size: 40px; font-weight: 900; color: #ffffff; margin-top: 10px; text-align: center; }
 
-    /* БЛОК ЧАЕВЫХ */
     .tips-modal {
       position: absolute;
-      z-index: 30;
+      z-index: 40;
       background: #151c2c;
       border: 1px solid #334155;
       padding: 30px;
@@ -210,8 +289,6 @@
       cursor: pointer;
     }
 
-    .tip-btn:active { transform: scale(0.95); background: #3b82f6; }
-
     .panic-screen {
       position: absolute; width: 100%; height: 100%; background: #000000;
       top: 0; left: 0; z-index: 50; display: flex; flex-direction: column;
@@ -225,12 +302,6 @@
 </head>
 <body>
 
-  <!-- Предварительное табло суммы -->
-  <div id="preview-box" class="preview-box">
-    <div class="preview-lbl">К оплате будет:</div>
-    <div id="preview-val" class="preview-val">0 ₽</div>
-  </div>
-
   <!-- Экран Паники -->
   <div id="panic-screen" class="panic-screen hidden">
     <div class="panic-title">Перенаправление...</div>
@@ -240,10 +311,10 @@
   <!-- Зеленая Волна Оплаты -->
   <div id="wave-screen" class="wave-bg">
     <div class="check-mark">✅</div>
-    <div class="success-text">Оплата успешно прошла!</div>
+    <div class="success-text">Спасибо за покупку! 💚</div>
   </div>
 
-  <!-- Окно Чаевых -->
+  <!-- Чаевые -->
   <div id="tips-modal" class="tips-modal hidden">
     <h2 style="margin:0; color:#fff;">Не хотите оставить чаевые? ☕</h2>
     <p style="color:#94a3b8; margin:0;">Выберите процент от суммы заказа:</p>
@@ -255,7 +326,7 @@
     <button class="tip-btn" style="background:transparent; border-color:#64748b; color:#94a3b8;" onclick="closeTips()">Нет, спасибо</button>
   </div>
 
-  <!-- Карусель Баннеров -->
+  <!-- Карусель Баннеров (Режим покой) -->
   <div id="slider" class="slider-container">
     <div class="slide active"><img src="IMG_2845.png" class="ad-image" alt="Реклама 1"></div>
     <div class="slide"><img src="IMG_2851.png" class="ad-image" alt="Реклама 2"></div>
@@ -267,13 +338,41 @@
     </div>
   </div>
 
-  <!-- Форма Оплаты -->
+  <!-- ПРЕДВАРИТЕЛЬНЫЙ ЭКРАН (Слева Сумма, Справа Картинка) -->
+  <div id="preview-screen" class="preview-screen">
+    <div class="preview-left">
+      <div class="preview-label">К оплате:</div>
+      <div id="preview-val" class="preview-amount">0 ₽</div>
+    </div>
+    <div class="preview-right">
+      <img src="IMG_2845.png" alt="Декоративное фото">
+    </div>
+  </div>
+
+  <!-- ГЛАВНЫЙ КОНТЕЙНЕР ОПЛАТЫ (QR или Наличные) -->
   <div id="payment-container" class="container">
     <div class="left-side">
+      <!-- QR Код -->
       <div id="qr-box" class="qr-card">
         <div id="qrcode"></div>
       </div>
-      <div id="amount-display" class="amount-badge">0 ₽</div>
+
+      <!-- Табло Оплаты Наличными -->
+      <div id="cash-box" class="cash-details-box hidden">
+        <div class="cash-row">
+          <span>К оплате:</span>
+          <span id="cash-total-val" class="cash-row-val">0 ₽</span>
+        </div>
+        <div class="cash-row">
+          <span>Принято от клиента:</span>
+          <span id="cash-received-val" class="cash-row-val" style="color:#38bdf8;">0 ₽</span>
+        </div>
+        <div class="cash-row cash-row-change">
+          <span>Сдача:</span>
+          <span id="cash-change-val" class="cash-row-val">0 ₽</span>
+        </div>
+      </div>
+
       <div id="status-box" class="loader-box">
         <div class="spinner"></div>
         <span id="status-text">Ожидание оплаты...</span>
@@ -309,7 +408,7 @@
   let panicCountdownInterval = null;
   let currentBaseAmount = 0;
 
-  // 1. КАРУСЕЛЬ (10 сек)
+  // 1. КАРУСЕЛЬ БАННЕРОВ (10 сек)
   const slides = document.querySelectorAll('.slide');
   let currentSlide = 0;
   setInterval(() => {
@@ -322,15 +421,19 @@
     }, 400);
   }, 10000);
 
-  // 2. ПРЕДВАРИТЕЛЬНАЯ СУММА
+  // 2. СЛУШАЕМ ПРЕДВАРИТЕЛЬНУЮ СУММУ (Клавиатура на телефоне)
   onValue(ref(db, 'draft_checkout/'), (snapshot) => {
     const data = snapshot.val();
-    const pBox = document.getElementById('preview-box');
+    const prevScreen = document.getElementById('preview-screen');
+    const slider = document.getElementById('slider');
+
     if (data && data.amount && data.amount > 0) {
-      document.getElementById('preview-val').innerText = `${data.amount} ₽`;
-      pBox.classList.add('visible');
+      document.getElementById('preview-val').innerText = `${data.amount.toLocaleString('ru-RU')} ₽`;
+      prevScreen.classList.add('visible');
+      slider.style.opacity = '0';
     } else {
-      pBox.classList.remove('visible');
+      prevScreen.classList.remove('visible');
+      slider.style.opacity = '1';
     }
   });
 
@@ -363,31 +466,42 @@
     document.getElementById('panic-screen').classList.add('hidden');
   }
 
-  // 4. ОСНОВНАЯ ОПЛАТА
+  // 4. СЛУШАЕМ ОСНОВНУЮ ОПЛАТУ И РАСЧЕТ НАЛИЧНЫХ
   onValue(ref(db, 'current_checkout/'), async (snapshot) => {
     const data = snapshot.val();
+    
     if (data && data.status === 'canceled') { resetToIdle(); return; }
 
     if (data && data.amount && data.status === 'new' && data.timestamp !== currentTimestamp) {
       currentTimestamp = data.timestamp;
       currentBaseAmount = data.amount;
 
-      document.getElementById('preview-box').classList.remove('visible');
+      document.getElementById('preview-screen').classList.remove('visible');
       document.getElementById('slider').classList.add('fall-down');
 
       setTimeout(async () => {
         const payBox = document.getElementById('payment-container');
         payBox.classList.remove('fall-down');
         payBox.classList.add('drop-in');
-        document.getElementById('amount-display').innerText = `${data.amount} ₽`;
 
         if (data.mode === 'cash') {
-          // НАЛИЧНЫЕ
+          // ОПЛАТА НАЛИЧНЫМИ
           document.getElementById('qr-box').classList.add('hidden');
+          document.getElementById('cash-box').classList.remove('hidden');
           document.getElementById('pay-title').innerText = "Оплата наличными";
-          document.getElementById('status-text').innerText = "Передайте оплату кассиру";
+          document.getElementById('status-text').innerText = "Расчет с кассиром...";
+
+          // Обновляем табло наличного расчета
+          const received = data.cashReceived || 0;
+          const change = Math.max(0, received - data.amount);
+
+          document.getElementById('cash-total-val').innerText = `${data.amount.toLocaleString('ru-RU')} ₽`;
+          document.getElementById('cash-received-val').innerText = `${received.toLocaleString('ru-RU')} ₽`;
+          document.getElementById('cash-change-val').innerText = `${change.toLocaleString('ru-RU')} ₽`;
+
         } else {
-          // КАРТА / СБП
+          // ОПЛАТА QR / СБП
+          document.getElementById('cash-box').classList.add('hidden');
           document.getElementById('qr-box').classList.remove('hidden');
           document.getElementById('qr-box').classList.remove('visible');
           document.getElementById('pay-title').innerHTML = "Отсканируй меня<br>и оплати";
@@ -404,6 +518,15 @@
       }, 500);
     }
 
+    // Обновление сумм наличных на лету (пока открыт чек)
+    if (data && data.mode === 'cash' && data.status === 'new') {
+      const received = data.cashReceived || 0;
+      const change = Math.max(0, received - data.amount);
+      document.getElementById('cash-received-val').innerText = `${received.toLocaleString('ru-RU')} ₽`;
+      document.getElementById('cash-change-val').innerText = `${change.toLocaleString('ru-RU')} ₽`;
+    }
+
+    // Успех наличного расчета
     if (data && data.status === 'cash_succeeded') {
       showSuccessFlow();
     }
