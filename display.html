@@ -92,7 +92,7 @@
       margin: 20px 0;
     }
 
-    /* Главный контейнер */
+    /* Главный контейнер оплаты */
     .container {
       display: flex;
       align-items: center;
@@ -194,22 +194,28 @@
       60% { transform: translateY(-10px); }
     }
 
+    /* ЭКРАН РЕКЛАМЫ (IDLE) */
     .idle-box {
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
       z-index: 1;
     }
 
-    .compliment-text {
-      font-size: 36px;
-      font-weight: 800;
-      color: #f1f5f9;
-      margin-top: 20px;
-      animation: fadeInText 1s ease-in-out;
+    .ad-image {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain; /* Сохраняет пропорции картинки без обрезки */
+      border-radius: 24px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      animation: fadeInAd 1.5s ease-in-out;
     }
 
-    @keyframes fadeInText {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes fadeInAd {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     .hidden { display: none !important; }
@@ -231,10 +237,10 @@
     </div>
   </div>
 
-  <!-- Экран Покоя (Комплименты) -->
+  <!-- Экран Покоя (Рекламный баннер) -->
   <div id="idle-screen" class="idle-box">
-    <div class="eyes">👀</div>
-    <div id="compliment-text" class="compliment-text">Вы прекрасно выглядите!</div>
+    <!-- Ссылка на файл в твоем репозитории -->
+    <img src="Photoroom_20260811_182210.png" class="ad-image" alt="Рекламный баннер">
   </div>
 
   <!-- Контейнер Оплаты -->
@@ -276,27 +282,7 @@
 
   let pollInterval = null;
   let currentTimestamp = null;
-  let complimentTimer = null;
   let panicCountdownInterval = null;
-
-  const compliments = [
-    "Вы прекрасно выглядите! ✨",
-    "Отличного вам дня и настроения! 😊",
-    "Спасибо, что вы с нами! 💚",
-    "Улыбнитесь, вам очень идет! 🌟",
-    "Желаем замечательных покупок! 🛍️",
-    "Вы самый лучший покупатель! 👍"
-  ];
-
-  function startCompliments() {
-    let index = 0;
-    complimentTimer = setInterval(() => {
-      index = (index + 1) % compliments.length;
-      const el = document.getElementById('compliment-text');
-      if (el) el.innerText = compliments[index];
-    }, 7000);
-  }
-  startCompliments();
 
   // 1. Слушаем Панику
   onValue(ref(db, 'panic_state/'), (snapshot) => {
@@ -343,11 +329,13 @@
   onValue(ref(db, 'current_checkout/'), async (snapshot) => {
     const data = snapshot.val();
     
+    // Сброс или отмена
     if (data && data.status === 'canceled') {
       resetToIdle();
       return;
     }
 
+    // Новая оплата
     if (data && data.amount && data.status === 'new' && data.timestamp !== currentTimestamp) {
       currentTimestamp = data.timestamp;
       
