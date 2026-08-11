@@ -22,7 +22,7 @@
       position: relative;
     }
 
-    /* 1. КАРУСЕЛЬ БАННЕРОВ (РЕЖИМ ПОКОЯ) */
+    /* 1. БЕСКОНЕЧНАЯ КАРУСЕЛЬ БАННЕРОВ (РЕЖИМ ПОКОЯ) */
     .slider-container {
       position: absolute;
       width: 100vw;
@@ -41,137 +41,62 @@
     }
 
     .slide {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transform: translateX(-100%);
-      transition: all 0.8s ease-in-out;
+      position: absolute; width: 100%; height: 100%; display: flex;
+      justify-content: center; align-items: center; opacity: 0;
+      transform: translateX(-100%); transition: all 0.8s ease-in-out;
     }
 
     .slide.active { opacity: 1; transform: translateX(0); }
     .slide.exit { opacity: 0; transform: translateX(100%); }
 
     .ad-image {
-      max-width: 90vw;
-      max-height: 90vh;
-      object-fit: contain;
-      border-radius: 24px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      max-width: 90vw; max-height: 90vh; object-fit: contain;
+      border-radius: 24px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
     }
 
     .text-banner {
-      width: 85vw;
-      height: 80vh;
-      background: #151c2c;
-      border: 2px solid #232d42;
-      border-radius: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 40px;
+      width: 85vw; height: 80vh; background: #151c2c; border: 2px solid #232d42;
+      border-radius: 28px; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center; padding: 40px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
 
     .text-banner h1 {
-      font-size: 48px;
-      font-weight: 900;
+      font-size: 48px; font-weight: 900;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 20px;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px;
     }
 
     .text-banner p { font-size: 26px; color: #94a3b8; max-width: 600px; line-height: 1.4; }
 
-    /* 2. ЭКРАН ПРЕДВАРИТЕЛЬНОГО ВВОДА СУММЫ (Слева Сумма, Справа Картинка) */
+    /* 2. ПРЕДВАРИТЕЛЬНЫЙ ЭКРАН */
     .preview-screen {
-      position: absolute;
-      width: 90vw;
-      height: 85vh;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 40px;
-      z-index: 10;
-      opacity: 0;
-      transform: translateY(-30px);
-      transition: all 0.5s ease;
-      pointer-events: none;
+      position: absolute; width: 90vw; height: 85vh; display: flex;
+      align-items: center; justify-content: space-between; gap: 40px;
+      z-index: 10; opacity: 0; transform: translateY(-30px);
+      transition: all 0.5s ease; pointer-events: none;
     }
 
-    .preview-screen.visible {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
+    .preview-screen.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
     .preview-left {
-      flex: 1;
-      background: #151c2c;
-      border: 2px solid #232d42;
-      border-radius: 32px;
-      padding: 50px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      flex: 1; background: #151c2c; border: 2px solid #232d42; border-radius: 32px;
+      padding: 50px; display: flex; flex-direction: column; justify-content: center;
       box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     }
 
-    .preview-label {
-      font-size: 24px;
-      color: #94a3b8;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-    }
+    .preview-label { font-size: 24px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+    .preview-amount { font-size: 72px; font-weight: 900; color: #38bdf8; text-shadow: 0 0 30px rgba(56, 189, 248, 0.3); }
 
-    .preview-amount {
-      font-size: 72px;
-      font-weight: 900;
-      color: #38bdf8;
-      text-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
-    }
+    .preview-right { flex: 1; height: 100%; display: flex; justify-content: center; align-items: center; }
+    .preview-right img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
 
-    .preview-right {
-      flex: 1;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .preview-right img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      border-radius: 32px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-    }
-
-    /* 3. ГЛАВНЫЙ КОНТЕЙНЕР ОПЛАТЫ (Оплата QR или Наличными) */
+    /* 3. ГЛАВНЫЙ КОНТЕЙНЕР ОСНОВНОЙ ОПЛАТЫ */
     .container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 50px;
-      width: 90%;
-      max-width: 950px;
-      background: #151c2c;
-      padding: 40px;
-      border-radius: 28px;
-      border: 1px solid #232d42;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-      z-index: 15;
-      
-      transform: translateY(-120vh);
-      opacity: 0;
+      display: flex; align-items: center; justify-content: center; gap: 50px;
+      width: 90%; max-width: 950px; background: #151c2c; padding: 40px;
+      border-radius: 28px; border: 1px solid #232d42; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      z-index: 15; transform: translateY(-120vh); opacity: 0;
       transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
@@ -181,56 +106,22 @@
     .left-side { display: flex; flex-direction: column; align-items: center; flex: 1; }
 
     .qr-card {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 24px;
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
-      opacity: 0;
-      transform: scale(0.7);
+      background: #ffffff; padding: 20px; border-radius: 24px;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.3); opacity: 0; transform: scale(0.7);
       transition: all 0.5s ease;
     }
 
     .qr-card.visible { opacity: 1; transform: scale(1); }
 
-    /* Табло расчета Наличными (К оплате / Принято / Сдача) */
     .cash-details-box {
-      width: 100%;
-      background: rgba(11, 15, 25, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      width: 100%; background: rgba(11, 15, 25, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 16px;
     }
 
-    .cash-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 20px;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-
-    .cash-row-val {
-      font-size: 28px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .cash-row-change {
-      border-top: 1px dashed rgba(255, 255, 255, 0.1);
-      padding-top: 12px;
-      margin-top: 4px;
-    }
-
-    .cash-row-change .cash-row-val {
-      font-size: 36px;
-      font-weight: 900;
-      color: #34d399;
-      text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
-    }
+    .cash-row { display: flex; justify-content: space-between; align-items: center; font-size: 20px; color: #94a3b8; font-weight: 600; }
+    .cash-row-val { font-size: 28px; font-weight: 800; color: #ffffff; }
+    .cash-row-change { border-top: 1px dashed rgba(255, 255, 255, 0.1); padding-top: 12px; margin-top: 4px; }
+    .cash-row-change .cash-row-val { font-size: 36px; font-weight: 900; color: #34d399; text-shadow: 0 0 20px rgba(52, 211, 153, 0.3); }
 
     .loader-box { display: flex; align-items: center; gap: 12px; margin-top: 15px; color: #94a3b8; font-size: 18px; }
     .spinner { border: 4px solid #232d42; border-top: 4px solid #10b981; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
@@ -239,54 +130,79 @@
     .right-side { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
     .title-text { font-size: 38px; font-weight: 900; line-height: 1.2; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
 
-    /* 4. ЗЕЛЕНАЯ ВОЛНА И МОДАЛЬНОЕ ОКНО ЧАЕВЫХ */
+    /* 4. ЗЕЛЕНАЯ ВОЛНА УСПЕХА */
     .wave-bg {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle, #10b981 0%, #059669 100%);
-      top: 0; left: 0;
-      z-index: 30;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transform: scale(0);
-      border-radius: 50%;
-      transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: absolute; width: 100%; height: 100%; background: radial-gradient(circle, #10b981 0%, #059669 100%);
+      top: 0; left: 0; z-index: 30; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      opacity: 0; transform: scale(0); border-radius: 50%; transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .wave-bg.active { opacity: 1; transform: scale(2); border-radius: 0; }
     .check-mark { font-size: 90px; }
     .success-text { font-size: 40px; font-weight: 900; color: #ffffff; margin-top: 10px; text-align: center; }
 
-    .tips-modal {
-      position: absolute;
-      z-index: 40;
-      background: #151c2c;
-      border: 1px solid #334155;
-      padding: 30px;
-      border-radius: 28px;
-      text-align: center;
-      max-width: 500px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
+    /* 5. ПОЛНОЭКРАННЫЙ БЛОК ЧАЕВЫХ (НА ВСЮ СТРАНИЦУ) */
+    .tips-fullscreen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #090d16; z-index: 40; display: flex; align-items: center;
+      justify-content: center; padding: 40px; opacity: 0; transform: scale(0.95);
+      transition: all 0.5s ease; pointer-events: none;
     }
 
-    .tips-grid { display: flex; gap: 12px; }
-    .tip-btn {
-      background: #232d42;
-      border: 1px solid #3b82f6;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 14px;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
+    .tips-fullscreen.visible { opacity: 1; transform: scale(1); pointer-events: auto; }
+
+    .tips-container {
+      display: flex; gap: 50px; width: 90%; max-width: 1000px;
+      background: #151c2c; border: 1px solid #232d42; border-radius: 32px;
+      padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+
+    .tips-left {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; border-right: 1px solid rgba(255,255,255,0.08); padding-right: 40px;
+    }
+
+    .tips-right { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+
+    .tips-title { font-size: 32px; font-weight: 900; color: #ffffff; margin-bottom: 6px; }
+    .tips-subtitle { font-size: 18px; color: #94a3b8; margin-bottom: 20px; }
+
+    .tips-amount-badge {
+      font-size: 36px; font-weight: 900; color: #10b981; margin-top: 12px;
+    }
+
+    .tips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+    .tip-option-btn {
+      background: #232d42; border: 2px solid rgba(56, 189, 248, 0.2); color: #ffffff;
+      padding: 18px; border-radius: 18px; font-size: 20px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease; text-align: center;
+    }
+
+    .tip-option-btn.active, .tip-option-btn:active {
+      background: #3b82f6; border-color: #60a5fa; color: #ffffff; transform: scale(0.97);
+    }
+
+    .custom-tip-input {
+      width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+      background: #090d16; color: white; font-size: 18px; outline: none; font-weight: 700;
+    }
+
+    .no-tip-btn {
+      background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444; padding: 16px; border-radius: 18px; font-size: 18px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s ease; width: 100%; margin-top: 10px;
+    }
+
+    .no-tip-btn:active { transform: scale(0.97); background: rgba(239, 68, 68, 0.25); }
+
+    .timer-bar-container {
+      width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px;
+      margin-top: 10px; overflow: hidden;
+    }
+
+    .timer-bar {
+      height: 100%; background: #38bdf8; width: 100%; transition: width 1s linear;
     }
 
     .panic-screen {
@@ -311,19 +227,7 @@
   <!-- Зеленая Волна Оплаты -->
   <div id="wave-screen" class="wave-bg">
     <div class="check-mark">✅</div>
-    <div class="success-text">Спасибо за покупку! 💚</div>
-  </div>
-
-  <!-- Чаевые -->
-  <div id="tips-modal" class="tips-modal hidden">
-    <h2 style="margin:0; color:#fff;">Не хотите оставить чаевые? ☕</h2>
-    <p style="color:#94a3b8; margin:0;">Выберите процент от суммы заказа:</p>
-    <div class="tips-grid">
-      <button class="tip-btn" onclick="selectTip(5)">5%</button>
-      <button class="tip-btn" onclick="selectTip(10)">10%</button>
-      <button class="tip-btn" onclick="selectTip(15)">15%</button>
-    </div>
-    <button class="tip-btn" style="background:transparent; border-color:#64748b; color:#94a3b8;" onclick="closeTips()">Нет, спасибо</button>
+    <div id="wave-text" class="success-text">Спасибо за покупку! 💚</div>
   </div>
 
   <!-- Карусель Баннеров (Режим покой) -->
@@ -338,7 +242,7 @@
     </div>
   </div>
 
-  <!-- ПРЕДВАРИТЕЛЬНЫЙ ЭКРАН (Слева Сумма, Справа Картинка) -->
+  <!-- ПРЕДВАРИТЕЛЬНЫЙ ЭКРАН -->
   <div id="preview-screen" class="preview-screen">
     <div class="preview-left">
       <div class="preview-label">К оплате:</div>
@@ -349,15 +253,13 @@
     </div>
   </div>
 
-  <!-- ГЛАВНЫЙ КОНТЕЙНЕР ОПЛАТЫ (QR или Наличные) -->
+  <!-- ГЛАВНЫЙ КОНТЕЙНЕР ОПЛАТЫ (ОСНОВНОЙ ЧЕК) -->
   <div id="payment-container" class="container">
     <div class="left-side">
-      <!-- QR Код -->
       <div id="qr-box" class="qr-card">
         <div id="qrcode"></div>
       </div>
 
-      <!-- Табло Оплаты Наличными -->
       <div id="cash-box" class="cash-details-box hidden">
         <div class="cash-row">
           <span>К оплате:</span>
@@ -385,6 +287,54 @@
     </div>
   </div>
 
+  <!-- 5. ПОЛНОЭКРАННЫЙ ЭКРАН ЧАЕВЫХ (ОТДЕЛЬНЫЙ БЛОК НА ВСЮ СТРАНИЦУ) -->
+  <div id="tips-screen" class="tips-fullscreen">
+    <div class="tips-container">
+      
+      <!-- СЛЕВА: QR-код и выбранная сумма чаевых -->
+      <div class="tips-left">
+        <div id="tip-qr-box" class="qr-card">
+          <div id="tip-qrcode"></div>
+        </div>
+        
+        <div id="tip-loader-box" class="loader-box hidden">
+          <div class="spinner"></div>
+          <span>Генерация QR...</span>
+        </div>
+
+        <div id="tip-amount-val" class="tips-amount-badge">0 ₽</div>
+        <div style="font-size: 14px; color: #64748b; margin-top: 6px;">Сканируйте для оплаты чаевых</div>
+      </div>
+
+      <!-- СПРАВА: Выбор процента и кнопки -->
+      <div class="tips-right">
+        <div>
+          <div class="tips-title">Оплачено! 🎉</div>
+          <div class="tips-subtitle">Не хотите оставить чаевые бариста?</div>
+        </div>
+
+        <div class="tips-grid">
+          <div class="tip-option-btn" onclick="selectTipPercent(5)">5%</div>
+          <div class="tip-option-btn" onclick="selectTipPercent(10)">10%</div>
+          <div class="tip-option-btn" onclick="selectTipPercent(15)">15%</div>
+          <div class="tip-option-btn" onclick="selectTipPercent(20)">20%</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size: 12px; color:#94a3b8; font-weight:700;">ИЛИ ВВЕДИТЕ СВОЮ СУММУ (₽):</label>
+          <input type="number" id="custom-tip-input" class="custom-tip-input" placeholder="Например: 50" inputmode="numeric" oninput="onCustomTipInput()">
+        </div>
+
+        <button class="no-tip-btn" onclick="closeTipsScreen()">Не хочу оставлять</button>
+
+        <div class="timer-bar-container">
+          <div id="timer-bar" class="timer-bar"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -404,9 +354,13 @@
   const db = getDatabase(app);
 
   let pollInterval = null;
+  let tipPollInterval = null;
   let currentTimestamp = null;
   let panicCountdownInterval = null;
   let currentBaseAmount = 0;
+  let currentTipVal = 0;
+  let autoCloseTimer = null;
+  let timerProgressInterval = null;
 
   // 1. КАРУСЕЛЬ БАННЕРОВ (10 сек)
   const slides = document.querySelectorAll('.slide');
@@ -421,7 +375,7 @@
     }, 400);
   }, 10000);
 
-  // 2. СЛУШАЕМ ПРЕДВАРИТЕЛЬНУЮ СУММУ (Клавиатура на телефоне)
+  // 2. СЛУШАЕМ ПРЕДВАРИТЕЛЬНУЮ СУММУ С ТЕЛЕФОНА
   onValue(ref(db, 'draft_checkout/'), (snapshot) => {
     const data = snapshot.val();
     const prevScreen = document.getElementById('preview-screen');
@@ -449,6 +403,7 @@
 
   function triggerPanic(seconds, redirectUrl) {
     if (pollInterval) clearInterval(pollInterval);
+    if (tipPollInterval) clearInterval(tipPollInterval);
     document.getElementById('panic-screen').classList.remove('hidden');
     let timeLeft = parseInt(seconds);
     document.getElementById('panic-timer').innerText = timeLeft;
@@ -466,7 +421,7 @@
     document.getElementById('panic-screen').classList.add('hidden');
   }
 
-  // 4. СЛУШАЕМ ОСНОВНУЮ ОПЛАТУ И РАСЧЕТ НАЛИЧНЫХ
+  // 4. ОСНОВНАЯ ОПЛАТА
   onValue(ref(db, 'current_checkout/'), async (snapshot) => {
     const data = snapshot.val();
     
@@ -485,13 +440,11 @@
         payBox.classList.add('drop-in');
 
         if (data.mode === 'cash') {
-          // ОПЛАТА НАЛИЧНЫМИ
           document.getElementById('qr-box').classList.add('hidden');
           document.getElementById('cash-box').classList.remove('hidden');
           document.getElementById('pay-title').innerText = "Оплата наличными";
           document.getElementById('status-text').innerText = "Расчет с кассиром...";
 
-          // Обновляем табло наличного расчета
           const received = data.cashReceived || 0;
           const change = Math.max(0, received - data.amount);
 
@@ -500,7 +453,6 @@
           document.getElementById('cash-change-val').innerText = `${change.toLocaleString('ru-RU')} ₽`;
 
         } else {
-          // ОПЛАТА QR / СБП
           document.getElementById('cash-box').classList.add('hidden');
           document.getElementById('qr-box').classList.remove('hidden');
           document.getElementById('qr-box').classList.remove('visible');
@@ -518,7 +470,6 @@
       }, 500);
     }
 
-    // Обновление сумм наличных на лету (пока открыт чек)
     if (data && data.mode === 'cash' && data.status === 'new') {
       const received = data.cashReceived || 0;
       const change = Math.max(0, received - data.amount);
@@ -526,7 +477,6 @@
       document.getElementById('cash-change-val').innerText = `${change.toLocaleString('ru-RU')} ₽`;
     }
 
-    // Успех наличного расчета
     if (data && data.status === 'cash_succeeded') {
       showSuccessFlow();
     }
@@ -582,35 +532,166 @@
     } catch (e) { console.error(e); }
   }
 
+  // 5. УСПЕХ И ПЕРЕХОД К ПОЛНОЭКРАННЫМ ЧАЕВЫМ
   function showSuccessFlow() {
     document.getElementById('wave-screen').classList.add('active');
     setTimeout(() => {
       document.getElementById('wave-screen').classList.remove('active');
-      document.getElementById('tips-modal').classList.remove('hidden');
+      openTipsScreen();
     }, 2500);
   }
 
-  window.selectTip = function(percent) {
-    const tipVal = Math.round((currentBaseAmount * percent) / 100);
-    set(ref(db, 'tips_records/'), {
-      baseAmount: currentBaseAmount,
-      tipPercent: percent,
-      tipVal: tipVal,
-      timestamp: Date.now()
-    });
-    closeTips();
+  // 6. ЛОГИКА ПОЛНОЭКРАННОГО БЛОКА ЧАЕВЫХ
+  function openTipsScreen() {
+    document.getElementById('tips-screen').classList.add('visible');
+    
+    // Выбираем по умолчанию 10%
+    selectTipPercent(10);
+
+    // Запускаем 15-секундный таймер автозакрытия
+    start15SecTimer();
+  }
+
+  window.selectTipPercent = function(percent) {
+    resetActiveTipButtons();
+    event.target.classList.add('active');
+    document.getElementById('custom-tip-input').value = '';
+
+    const calculated = Math.round((currentBaseAmount * percent) / 100);
+    currentTipVal = Math.max(10, calculated); // Минимум 10 руб
+    
+    updateTipAmountAndGenerateQR(currentTipVal);
   };
 
-  window.closeTips = function() {
-    document.getElementById('tips-modal').classList.add('hidden');
+  window.onCustomTipInput = function() {
+    resetActiveTipButtons();
+    const val = parseInt(document.getElementById('custom-tip-input').value) || 0;
+    currentTipVal = val;
+    
+    if (val >= 10) {
+      updateTipAmountAndGenerateQR(val);
+    } else {
+      document.getElementById('tip-amount-val').innerText = `${val} ₽`;
+      document.getElementById('tip-qr-box').classList.remove('visible');
+    }
+  };
+
+  function resetActiveTipButtons() {
+    document.querySelectorAll('.tip-option-btn').forEach(btn => btn.classList.remove('active'));
+  }
+
+  async function updateTipAmountAndGenerateQR(amount) {
+    document.getElementById('tip-amount-val').innerText = `${amount} ₽`;
+    document.getElementById('tip-qr-box').classList.remove('visible');
+    document.getElementById('tip-loader-box').classList.remove('hidden');
+    document.getElementById('tip-qrcode').innerHTML = "";
+
+    const settingsSnap = await get(ref(db, 'settings/'));
+    const settings = settingsSnap.val();
+
+    if (settings && settings.shopId && settings.secretKey) {
+      createTipYooKassaPayment(amount, settings.shopId, settings.secretKey);
+    }
+  }
+
+  async function createTipYooKassaPayment(amount, shopId, secretKey) {
+    const proxyUrl = "https://corsproxy.io/?";
+    const targetUrl = "https://api.yookassa.ru/v3/payments";
+    const authHeader = "Basic " + btoa(`${shopId}:${secretKey}`);
+
+    try {
+      const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+        method: "POST",
+        headers: {
+          "Authorization": authHeader,
+          "Idempotence-Key": Date.now().toString(),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          amount: { value: amount.toFixed(2), currency: "RUB" },
+          payment_method_data: { type: "sbp" },
+          confirmation: { type: "qr" },
+          capture: true,
+          description: "Чаевые бариста"
+        })
+      });
+
+      const resData = await response.json();
+      document.getElementById('tip-loader-box').classList.add('hidden');
+
+      if (resData.confirmation && resData.confirmation.confirmation_data) {
+        new QRCode(document.getElementById("tip-qrcode"), {
+          text: resData.confirmation.confirmation_data,
+          width: 200,
+          height: 200
+        });
+
+        setTimeout(() => document.getElementById('tip-qr-box').classList.add('visible'), 100);
+
+        if (tipPollInterval) clearInterval(tipPollInterval);
+        tipPollInterval = setInterval(() => checkTipStatus(resData.id, authHeader), 3000);
+      }
+    } catch (err) { console.error(err); }
+  }
+
+  async function checkTipStatus(paymentId, authHeader) {
+    const proxyUrl = "https://corsproxy.io/?";
+    const targetUrl = `https://api.yookassa.ru/v3/payments/${paymentId}`;
+    try {
+      const res = await fetch(proxyUrl + encodeURIComponent(targetUrl), { headers: { "Authorization": authHeader } });
+      const data = await res.json();
+      if (data.status === 'succeeded') {
+        clearInterval(tipPollInterval);
+        
+        // Благодарность за чаевые
+        document.getElementById('wave-text').innerText = "Спасибо за чаевые! ☕💚";
+        document.getElementById('wave-screen').classList.add('active');
+        
+        setTimeout(() => {
+          document.getElementById('wave-screen').classList.remove('active');
+          document.getElementById('wave-text').innerText = "Спасибо за покупку! 💚";
+          closeTipsScreen();
+        }, 2000);
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  function start15SecTimer() {
+    let secondsLeft = 15;
+    const bar = document.getElementById('timer-bar');
+    bar.style.width = '100%';
+
+    if (autoCloseTimer) clearTimeout(autoCloseTimer);
+    if (timerProgressInterval) clearInterval(timerProgressInterval);
+
+    timerProgressInterval = setInterval(() => {
+      secondsLeft--;
+      bar.style.width = `${(secondsLeft / 15) * 100}%`;
+      if (secondsLeft <= 0) clearInterval(timerProgressInterval);
+    }, 1000);
+
+    autoCloseTimer = setTimeout(() => {
+      closeTipsScreen();
+    }, 15000);
+  }
+
+  window.closeTipsScreen = function() {
+    if (autoCloseTimer) clearTimeout(autoCloseTimer);
+    if (timerProgressInterval) clearInterval(timerProgressInterval);
+    if (tipPollInterval) clearInterval(tipPollInterval);
+
+    document.getElementById('tips-screen').classList.remove('visible');
     resetToIdle();
   };
 
   function resetToIdle() {
     if (pollInterval) clearInterval(pollInterval);
+    if (tipPollInterval) clearInterval(tipPollInterval);
+
     const payBox = document.getElementById('payment-container');
     payBox.classList.remove('drop-in');
     payBox.classList.add('fall-down');
+    
     setTimeout(() => {
       document.getElementById('slider').classList.remove('fall-down');
     }, 600);
