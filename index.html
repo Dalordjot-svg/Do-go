@@ -5,232 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>POS Терминал</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body { background: #090d16; background-image: radial-gradient(at 10% 10%, rgba(56, 189, 248, 0.1) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.1) 0px, transparent 50%); color: #f8fafc; margin: 0; padding: 16px; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
 
-    body {
-      background: #090d16;
-      background-image: 
-        radial-gradient(at 10% 10%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
-        radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
-      color: #f8fafc;
-      margin: 0;
-      padding: 16px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-    }
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px; }
+    .brand { font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-actions { display: flex; gap: 10px; }
+    .icon-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); color: #94a3b8; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+    .icon-btn:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.15); }
+    .panic-btn-header { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #ef4444; }
 
-    /* ШАПКА */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 8px;
-    }
+    .display-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
+    .display-label { font-size: 13px; color: #64748b; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    .amount-display { font-size: 52px; font-weight: 900; color: #34d399; letter-spacing: -1px; text-shadow: 0 0 25px rgba(52, 211, 153, 0.25); display: flex; align-items: baseline; gap: 6px; }
+    .currency { font-size: 36px; color: #059669; }
 
-    .brand {
-      font-size: 20px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 400px; margin: 0 auto; }
+    .key { background: rgba(21, 28, 44, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: #f1f5f9; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); cursor: pointer; transition: all 0.1s ease; }
+    .key:active { transform: scale(0.93); background: rgba(56, 189, 248, 0.2); border-color: #38bdf8; }
+    .key-action { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
 
-    .header-actions {
-      display: flex;
-      gap: 10px;
-    }
+    .action-buttons { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 400px; margin: 12px auto 0 auto; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { width: 100%; padding: 16px; border-radius: 16px; border: none; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s ease; }
+    .btn:active { transform: scale(0.97); }
+    .btn-pay { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35); }
+    .btn-cash { background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; box-shadow: 0 8px 25px rgba(14, 165, 233, 0.35); }
+    .btn-cancel { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 14px; font-size: 15px; }
+    .btn-panic { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4); }
 
-    .icon-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      cursor: pointer;
-    }
+    .status-toast { text-align: center; font-size: 14px; font-weight: 700; height: 20px; margin-top: 4px; }
 
-    .icon-btn:active {
-      transform: scale(0.92);
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .panic-btn-header {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: rgba(239, 68, 68, 0.4);
-      color: #ef4444;
-    }
-
-    /* ДИСПЛЕЙ ВВОДА */
-    .display-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin: 10px 0;
-    }
-
-    .display-label {
-      font-size: 13px;
-      color: #64748b;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-
-    .amount-display {
-      font-size: 52px;
-      font-weight: 900;
-      color: #34d399;
-      letter-spacing: -1px;
-      text-shadow: 0 0 25px rgba(52, 211, 153, 0.25);
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-
-    .currency {
-      font-size: 36px;
-      color: #059669;
-    }
-
-    /* KEYPAD */
-    .keypad {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto;
-    }
-
-    .key {
-      background: rgba(21, 28, 44, 0.8);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      font-weight: 700;
-      color: #f1f5f9;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      transition: all 0.1s ease;
-    }
-
-    .key:active {
-      transform: scale(0.93);
-      background: rgba(56, 189, 248, 0.2);
-      border-color: #38bdf8;
-    }
-
-    .key-action {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    /* КНОПКИ ДЕЙСТВИЯ */
-    .action-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-      max-width: 400px;
-      margin: 12px auto 0 auto;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 18px;
-      border-radius: 16px;
-      border: none;
-      font-size: 18px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.15s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.97);
-    }
-
-    .btn-pay {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: white;
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
-    }
-
-    .btn-cancel {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #ef4444;
-      padding: 14px;
-      font-size: 15px;
-    }
-
-    .btn-panic {
-      background: linear-gradient(135deg, #ef4444, #b91c1c);
-      color: white;
-      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-    }
-
-    .status-toast {
-      text-align: center;
-      font-size: 14px;
-      font-weight: 700;
-      height: 20px;
-      margin-top: 4px;
-    }
-
-    /* МОДАЛЬНЫЕ ОКНА */
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(9, 13, 22, 0.95);
-      backdrop-filter: blur(20px);
-      z-index: 100;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow-y: auto;
-    }
-
-    .modal-card {
-      background: rgba(21, 28, 44, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(9, 13, 22, 0.95); backdrop-filter: blur(20px); z-index: 100; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+    .modal-card { background: rgba(21, 28, 44, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
 
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
-    input[type="text"], input[type="password"], input[type="number"] {
-      width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #090d16; color: white; font-size: 16px; outline: none;
-    }
+    input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: #090d16; color: white; font-size: 16px; outline: none; }
 
     .toggle-group { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
     .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
@@ -245,7 +56,7 @@
 </head>
 <body>
 
-  <!-- АВТОРИЗАЦИЯ ПРИ ВХОДЕ -->
+  <!-- АВТОРИЗАЦИЯ -->
   <div id="auth-modal" class="modal">
     <div style="margin: auto 0; width: 100%;">
       <div class="modal-card">
@@ -278,7 +89,7 @@
     </div>
   </div>
 
-  <!-- KEYPAD КЛАВИАТУРА -->
+  <!-- KEYPAD -->
   <div class="keypad">
     <div class="key" onclick="pressNum('1')">1</div>
     <div class="key" onclick="pressNum('2')">2</div>
@@ -296,9 +107,19 @@
 
   <!-- КНОПКИ ДЕЙСТВИЯ -->
   <div class="action-buttons">
-    <button class="btn btn-pay" onclick="sendInvoice()">
-      <span>Вывести на экран</span> 🚀
+    <div class="btn-row">
+      <button class="btn btn-pay" onclick="sendInvoice('qr')">
+        <span>QR / СБП</span> 📱
+      </button>
+      <button class="btn btn-cash" onclick="sendInvoice('cash')">
+        <span>Наличные</span> 💵
+      </button>
+    </div>
+
+    <button id="confirm-cash-btn" class="btn btn-pay hidden" style="background:#10b981;" onclick="confirmCashSuccess()">
+      <span>Подтвердить получение денег</span> ✅
     </button>
+
     <button class="btn btn-cancel" onclick="cancelPayment()">
       <span>🛑 Сбросить / Отменить</span>
     </button>
@@ -310,7 +131,6 @@
     <div>
       <h2 style="color: #fff; margin-bottom: 20px;">⚙️ Настройки кассы</h2>
       
-      <!-- СЕКЦИЯ ПАНИКИ -->
       <div class="modal-card" style="border-color: rgba(239, 68, 68, 0.4);">
         <h3 style="color:#ef4444; margin-top:0;">🚨 Помощь при панике</h3>
         <div class="form-group">
@@ -336,24 +156,6 @@
           <input type="password" id="secret-key" placeholder="live_XXXXXXXXXX">
         </div>
       </div>
-
-      <div class="modal-card">
-        <h3 style="color:#38bdf8; margin-top:0;">Способы оплаты</h3>
-        <div class="toggle-group">
-          <span>СБП (Система быстрых платежей)</span>
-          <label class="switch">
-            <input type="checkbox" id="method-sbp" checked onchange="savePaymentMethods()">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="toggle-group">
-          <span>SberPay</span>
-          <label class="switch">
-            <input type="checkbox" id="method-sber" checked onchange="savePaymentMethods()">
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
     </div>
 
     <div>
@@ -362,7 +164,7 @@
     </div>
   </div>
 
-<!-- Firebase & Логика KEYPAD -->
+<!-- Firebase & KEYPAD -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -384,7 +186,6 @@
   const ADMIN_PIN = "1234";
   let currentAmount = "0";
 
-  // ПИН-КОД
   window.checkPin = function() {
     if (document.getElementById('pin-input').value === ADMIN_PIN) {
       document.getElementById('auth-modal').classList.add('hidden');
@@ -394,34 +195,37 @@
     }
   };
 
-  // ЛОГИКА КЛАВИАТУРЫ (KEYPAD)
   window.pressNum = function(num) {
     if (currentAmount === "0") {
       if (num === "00") return;
       currentAmount = num;
     } else {
-      if (currentAmount.length < 7) {
-        currentAmount += num;
-      }
+      if (currentAmount.length < 7) { currentAmount += num; }
     }
     updateDisplay();
+    sendDraftAmount();
   };
 
   window.pressBackspace = function() {
-    if (currentAmount.length > 1) {
-      currentAmount = currentAmount.slice(0, -1);
-    } else {
-      currentAmount = "0";
-    }
+    if (currentAmount.length > 1) { currentAmount = currentAmount.slice(0, -1); }
+    else { currentAmount = "0"; }
     updateDisplay();
+    sendDraftAmount();
   };
 
   function updateDisplay() {
     document.getElementById('amount-val').innerText = parseInt(currentAmount).toLocaleString('ru-RU');
   }
 
-  // ВЫВЕСТИ СЧЕТ
-  window.sendInvoice = function() {
+  // Передача черновой суммы на экран
+  function sendDraftAmount() {
+    set(ref(db, 'draft_checkout/'), {
+      amount: parseInt(currentAmount)
+    });
+  }
+
+  // Выставить счет
+  window.sendInvoice = function(mode) {
     const val = parseInt(currentAmount);
     const toast = document.getElementById('status-toast');
 
@@ -433,64 +237,67 @@
 
     set(ref(db, 'current_checkout/'), {
       amount: val,
+      mode: mode,
       status: 'new',
       timestamp: Date.now()
     }).then(() => {
-      toast.style.color = "#38bdf8";
-      toast.innerText = `✅ Счет на ${val} ₽ выставлен!`;
-      currentAmount = "0";
-      updateDisplay();
-      setTimeout(() => toast.innerText = '', 3000);
+      // Сброс драфта
+      set(ref(db, 'draft_checkout/'), { amount: 0 });
+
+      if (mode === 'cash') {
+        document.getElementById('confirm-cash-btn').classList.remove('hidden');
+        toast.style.color = "#38bdf8";
+        toast.innerText = `Ожидание передачи ${val} ₽ наличными`;
+      } else {
+        toast.style.color = "#38bdf8";
+        toast.innerText = `✅ QR-код на ${val} ₽ на экране!`;
+        currentAmount = "0";
+        updateDisplay();
+        setTimeout(() => toast.innerText = '', 3000);
+      }
     });
   };
 
-  // ОТМЕНА
+  // Подтверждение наличных кассиром
+  window.confirmCashSuccess = function() {
+    set(ref(db, 'current_checkout/status'), 'cash_succeeded');
+    document.getElementById('confirm-cash-btn').classList.add('hidden');
+    const toast = document.getElementById('status-toast');
+    toast.style.color = "#34d399";
+    toast.innerText = "✅ Наличные получены!";
+    currentAmount = "0";
+    updateDisplay();
+    setTimeout(() => toast.innerText = '', 3000);
+  };
+
+  // Сброс
   window.cancelPayment = function() {
     const toast = document.getElementById('status-toast');
+    document.getElementById('confirm-cash-btn').classList.add('hidden');
+    set(ref(db, 'draft_checkout/'), { amount: 0 });
     set(ref(db, 'current_checkout/'), {
       status: 'canceled',
       timestamp: Date.now()
     }).then(() => {
       toast.style.color = "#ef4444";
-      toast.innerText = "🛑 Платеж отменен!";
+      toast.innerText = "🛑 Отменено";
       currentAmount = "0";
       updateDisplay();
       setTimeout(() => toast.innerText = '', 3000);
     });
   };
 
-  // АКТИВАЦИЯ ПАНИКИ
   window.triggerPanicState = function() {
     const delay = parseInt(document.getElementById('panic-delay').value) || 0;
     const url = document.getElementById('panic-url').value.trim() || "https://google.com";
 
-    set(ref(db, 'panic_state/'), {
-      active: true,
-      delaySeconds: delay,
-      redirectUrl: url,
-      timestamp: Date.now()
-    }).then(() => {
-      const toast = document.getElementById('status-toast');
-      toast.style.color = "#ef4444";
-      toast.innerText = "🚨 ПАНИКА АКТИВИРОВАНА!";
-      setTimeout(() => toast.innerText = '', 3000);
-    });
+    set(ref(db, 'panic_state/'), { active: true, delaySeconds: delay, redirectUrl: url, timestamp: Date.now() });
   };
 
-  // СБРОС ПАНИКИ
   window.stopPanicState = function() {
-    set(ref(db, 'panic_state/'), {
-      active: false,
-      timestamp: Date.now()
-    }).then(() => {
-      const toast = document.getElementById('status-toast');
-      toast.style.color = "#34d399";
-      toast.innerText = "✅ Паника сброшена";
-      setTimeout(() => toast.innerText = '', 3000);
-    });
+    set(ref(db, 'panic_state/'), { active: false, timestamp: Date.now() });
   };
 
-  // НАСТРОЙКИ
   window.openSettings = function() { document.getElementById('settings-modal').classList.remove('hidden'); };
   window.closeSettings = function() { document.getElementById('settings-modal').classList.add('hidden'); };
 
@@ -502,10 +309,6 @@
       if (data.secretKey) document.getElementById('secret-key').value = data.secretKey;
       if (data.panicDelay !== undefined) document.getElementById('panic-delay').value = data.panicDelay;
       if (data.panicUrl) document.getElementById('panic-url').value = data.panicUrl;
-      if (data.methods) {
-        document.getElementById('method-sbp').checked = !!data.methods.sbp;
-        document.getElementById('method-sber').checked = !!data.methods.sber;
-      }
     }
   }
 
@@ -515,21 +318,9 @@
     const panicDelay = parseInt(document.getElementById('panic-delay').value) || 0;
     const panicUrl = document.getElementById('panic-url').value.trim() || "https://google.com";
 
-    update(ref(db, 'settings/'), { 
-      shopId, 
-      secretKey, 
-      panicDelay, 
-      panicUrl 
-    }).then(() => {
-      alert("Настройки сохранены!");
+    update(ref(db, 'settings/'), { shopId, secretKey, panicDelay, panicUrl }).then(() => {
+      alert("Сохранено!");
       closeSettings();
-    });
-  };
-
-  window.savePaymentMethods = function() {
-    update(ref(db, 'settings/methods/'), {
-      sbp: document.getElementById('method-sbp').checked,
-      sber: document.getElementById('method-sber').checked
     });
   };
 </script>
