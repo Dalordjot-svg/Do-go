@@ -22,7 +22,7 @@
       position: relative;
     }
 
-    /* 1. БЕСКОНЕЧНАЯ КАРУСЕЛЬ БАННЕРОВ (Перелистывание вправо) */
+    /* 1. БЕСКОНЕЧНАЯ КАРУСЕЛЬ БАННЕРОВ */
     .slider-container {
       position: absolute;
       width: 100vw;
@@ -35,7 +35,6 @@
       transition: transform 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045), opacity 0.6s ease;
     }
 
-    /* Анимация Падения баннера ВНИЗ (развалился) */
     .slider-container.fall-down {
       transform: translateY(120vh) rotate(15deg);
       opacity: 0;
@@ -53,15 +52,8 @@
       transition: all 0.8s ease-in-out;
     }
 
-    .slide.active {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .slide.exit {
-      opacity: 0;
-      transform: translateX(100%);
-    }
+    .slide.active { opacity: 1; transform: translateX(0); }
+    .slide.exit { opacity: 0; transform: translateX(100%); }
 
     .ad-image {
       max-width: 90vw;
@@ -71,7 +63,6 @@
       box-shadow: 0 15px 40px rgba(0,0,0,0.6);
     }
 
-    /* Текстовые баннеры */
     .text-banner {
       width: 85vw;
       height: 80vh;
@@ -96,14 +87,34 @@
       margin-bottom: 20px;
     }
 
-    .text-banner p {
-      font-size: 26px;
-      color: #94a3b8;
-      max-width: 600px;
-      line-height: 1.4;
+    .text-banner p { font-size: 26px; color: #94a3b8; max-width: 600px; line-height: 1.4; }
+
+    /* ПРЕДВАРИТЕЛЬНЫЙ ЭКРАН СУММЫ */
+    .preview-box {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      background: rgba(21, 28, 44, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 20px 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 10;
+      transition: all 0.4s ease;
+      opacity: 0;
+      transform: translateY(-20px);
     }
 
-    /* 2. ФОРМА ОПЛАТЫ (Падает СВЕРХУ) */
+    .preview-box.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .preview-lbl { font-size: 14px; color: #94a3b8; text-transform: uppercase; font-weight: 700; }
+    .preview-val { font-size: 36px; font-weight: 900; color: #38bdf8; }
+
+    /* 2. ФОРМА ОПЛАТЫ */
     .container {
       display: flex;
       align-items: center;
@@ -123,21 +134,10 @@
       transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .container.drop-in {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    .container.drop-in { transform: translateY(0); opacity: 1; }
+    .container.fall-down { transform: translateY(120vh) rotate(-10deg); opacity: 0; }
 
-    .container.fall-down {
-      transform: translateY(120vh) rotate(-10deg);
-      opacity: 0;
-    }
-
-    .left-side {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    .left-side { display: flex; flex-direction: column; align-items: center; }
 
     .qr-card {
       background: #ffffff;
@@ -149,56 +149,17 @@
       transition: all 0.5s ease;
     }
 
-    .qr-card.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
+    .qr-card.visible { opacity: 1; transform: scale(1); }
+    .amount-badge { font-size: 42px; font-weight: 900; color: #10b981; margin-top: 15px; }
 
-    .amount-badge {
-      font-size: 42px;
-      font-weight: 900;
-      color: #10b981;
-      margin-top: 15px;
-    }
-
-    .loader-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 15px;
-      color: #94a3b8;
-      font-size: 18px;
-    }
-
-    .spinner {
-      border: 4px solid #232d42;
-      border-top: 4px solid #10b981;
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      animation: spin 0.8s linear infinite;
-    }
-
+    .loader-box { display: flex; align-items: center; gap: 12px; margin-top: 15px; color: #94a3b8; font-size: 18px; }
+    .spinner { border: 4px solid #232d42; border-top: 4px solid #10b981; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .right-side {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
+    .right-side { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .title-text { font-size: 38px; font-weight: 900; line-height: 1.2; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
 
-    .title-text {
-      font-size: 38px;
-      font-weight: 900;
-      line-height: 1.2;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 20px;
-    }
-
-    /* 3. ЗЕЛЕНАЯ ВОЛНА И ГАЛОЧКА УСПЕХА */
+    /* 3. ЗЕЛЕНАЯ ВОЛНА И ЧАЕВАЯ ЧАСТЬ */
     .wave-bg {
       position: absolute;
       width: 100%;
@@ -216,32 +177,41 @@
       transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .wave-bg.active {
-      opacity: 1;
-      transform: scale(2);
-      border-radius: 0;
+    .wave-bg.active { opacity: 1; transform: scale(2); border-radius: 0; }
+    .check-mark { font-size: 90px; }
+    .success-text { font-size: 40px; font-weight: 900; color: #ffffff; margin-top: 10px; text-align: center; }
+
+    /* БЛОК ЧАЕВЫХ */
+    .tips-modal {
+      position: absolute;
+      z-index: 30;
+      background: #151c2c;
+      border: 1px solid #334155;
+      padding: 30px;
+      border-radius: 28px;
+      text-align: center;
+      max-width: 500px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
     }
 
-    .check-mark {
-      font-size: 100px;
-      animation: popCheck 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .tips-grid { display: flex; gap: 12px; }
+    .tip-btn {
+      background: #232d42;
+      border: 1px solid #3b82f6;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
-    @keyframes popCheck {
-      0% { transform: scale(0); }
-      80% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
+    .tip-btn:active { transform: scale(0.95); background: #3b82f6; }
 
-    .success-text {
-      font-size: 44px;
-      font-weight: 900;
-      color: #ffffff;
-      margin-top: 10px;
-      text-shadow: 0 10px 20px rgba(0,0,0,0.3);
-    }
-
-    /* ЭКРАН ПАНИКИ */
     .panic-screen {
       position: absolute; width: 100%; height: 100%; background: #000000;
       top: 0; left: 0; z-index: 50; display: flex; flex-direction: column;
@@ -255,48 +225,49 @@
 </head>
 <body>
 
+  <!-- Предварительное табло суммы -->
+  <div id="preview-box" class="preview-box">
+    <div class="preview-lbl">К оплате будет:</div>
+    <div id="preview-val" class="preview-val">0 ₽</div>
+  </div>
+
   <!-- Экран Паники -->
   <div id="panic-screen" class="panic-screen hidden">
     <div class="panic-title">Перенаправление...</div>
     <div id="panic-timer" class="panic-timer">3</div>
   </div>
 
-  <!-- Зеленая Волна Оплаты c Галочкой -->
+  <!-- Зеленая Волна Оплаты -->
   <div id="wave-screen" class="wave-bg">
     <div class="check-mark">✅</div>
-    <div class="success-text">Спасибо за покупку! 💚</div>
+    <div class="success-text">Оплата успешно прошла!</div>
+  </div>
+
+  <!-- Окно Чаевых -->
+  <div id="tips-modal" class="tips-modal hidden">
+    <h2 style="margin:0; color:#fff;">Не хотите оставить чаевые? ☕</h2>
+    <p style="color:#94a3b8; margin:0;">Выберите процент от суммы заказа:</p>
+    <div class="tips-grid">
+      <button class="tip-btn" onclick="selectTip(5)">5%</button>
+      <button class="tip-btn" onclick="selectTip(10)">10%</button>
+      <button class="tip-btn" onclick="selectTip(15)">15%</button>
+    </div>
+    <button class="tip-btn" style="background:transparent; border-color:#64748b; color:#94a3b8;" onclick="closeTips()">Нет, спасибо</button>
   </div>
 
   <!-- Карусель Баннеров -->
   <div id="slider" class="slider-container">
-    <!-- Слайд 1: Картинка 1 -->
-    <div class="slide active">
-      <img src="IMG_2845.png" class="ad-image" alt="Реклама 1">
-    </div>
-
-    <!-- Слайд 2: Картинка 2 -->
-    <div class="slide">
-      <img src="IMG_2851.png" class="ad-image" alt="Реклама 2">
-    </div>
-    
-    <!-- Слайд 3: Поиск сотрудников -->
+    <div class="slide active"><img src="IMG_2845.png" class="ad-image" alt="Реклама 1"></div>
+    <div class="slide"><img src="IMG_2851.png" class="ad-image" alt="Реклама 2"></div>
     <div class="slide">
       <div class="text-banner">
         <h1>Ищем сотрудников! ☕</h1>
-        <p>Кафе <b>Moon</b> приглашает в команду бариста и кассиров. Обращайтесь к администрации!</p>
-      </div>
-    </div>
-
-    <!-- Слайд 4: Приветствие -->
-    <div class="slide">
-      <div class="text-banner">
-        <h1>Добро пожаловать в Moon 🌙</h1>
-        <p>Желаем вам хорошего дня и отличного настроения!</p>
+        <p>Кафе <b>Moon</b> приглашает в команду бариста и кассиров!</p>
       </div>
     </div>
   </div>
 
-  <!-- Форма Оплаты (Падает сверху) -->
+  <!-- Форма Оплаты -->
   <div id="payment-container" class="container">
     <div class="left-side">
       <div id="qr-box" class="qr-card">
@@ -305,19 +276,19 @@
       <div id="amount-display" class="amount-badge">0 ₽</div>
       <div id="status-box" class="loader-box">
         <div class="spinner"></div>
-        <span>Ожидание оплаты...</span>
+        <span id="status-text">Ожидание оплаты...</span>
       </div>
     </div>
 
     <div class="right-side">
-      <div class="title-text">Отсканируй меня<br>и оплати</div>
+      <div id="pay-title" class="title-text">Отсканируй меня<br>и оплати</div>
       <div style="font-size: 80px;">👀</div>
     </div>
   </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyB8CBeK8m25rox6BYO8ep6JeBJ7ipmYViQ",
@@ -336,25 +307,34 @@
   let pollInterval = null;
   let currentTimestamp = null;
   let panicCountdownInterval = null;
+  let currentBaseAmount = 0;
 
-  // 1. КАРУСЕЛЬ (Время показа: 10 секунд)
+  // 1. КАРУСЕЛЬ (10 сек)
   const slides = document.querySelectorAll('.slide');
   let currentSlide = 0;
-  let slideInterval = setInterval(nextSlide, 10000); // 10000 миллисекунд = 10 секунд
-
-  function nextSlide() {
+  setInterval(() => {
     slides[currentSlide].classList.remove('active');
     slides[currentSlide].classList.add('exit');
-
     currentSlide = (currentSlide + 1) % slides.length;
-
     setTimeout(() => {
       slides.forEach(s => s.classList.remove('exit'));
       slides[currentSlide].classList.add('active');
     }, 400);
-  }
+  }, 10000);
 
-  // 2. СЛУШАЕМ ПАНИКУ
+  // 2. ПРЕДВАРИТЕЛЬНАЯ СУММА
+  onValue(ref(db, 'draft_checkout/'), (snapshot) => {
+    const data = snapshot.val();
+    const pBox = document.getElementById('preview-box');
+    if (data && data.amount && data.amount > 0) {
+      document.getElementById('preview-val').innerText = `${data.amount} ₽`;
+      pBox.classList.add('visible');
+    } else {
+      pBox.classList.remove('visible');
+    }
+  });
+
+  // 3. ПАНИКА
   onValue(ref(db, 'panic_state/'), (snapshot) => {
     const data = snapshot.val();
     if (data && data.active) {
@@ -369,17 +349,12 @@
     document.getElementById('panic-screen').classList.remove('hidden');
     let timeLeft = parseInt(seconds);
     document.getElementById('panic-timer').innerText = timeLeft;
-
     if (panicCountdownInterval) clearInterval(panicCountdownInterval);
     if (timeLeft <= 0) { window.location.href = redirectUrl; return; }
-
     panicCountdownInterval = setInterval(() => {
       timeLeft--;
       document.getElementById('panic-timer').innerText = timeLeft;
-      if (timeLeft <= 0) {
-        clearInterval(panicCountdownInterval);
-        window.location.href = redirectUrl;
-      }
+      if (timeLeft <= 0) { clearInterval(panicCountdownInterval); window.location.href = redirectUrl; }
     }, 1000);
   }
 
@@ -388,47 +363,53 @@
     document.getElementById('panic-screen').classList.add('hidden');
   }
 
-  // 3. СЛУШАЕМ ОПЛАТУ
+  // 4. ОСНОВНАЯ ОПЛАТА
   onValue(ref(db, 'current_checkout/'), async (snapshot) => {
     const data = snapshot.val();
-    
-    if (data && data.status === 'canceled') {
-      resetToIdle();
-      return;
-    }
+    if (data && data.status === 'canceled') { resetToIdle(); return; }
 
     if (data && data.amount && data.status === 'new' && data.timestamp !== currentTimestamp) {
       currentTimestamp = data.timestamp;
+      currentBaseAmount = data.amount;
 
-      // Слайдер падает вниз
-      const slider = document.getElementById('slider');
-      slider.classList.add('fall-down');
+      document.getElementById('preview-box').classList.remove('visible');
+      document.getElementById('slider').classList.add('fall-down');
 
       setTimeout(async () => {
-        // Форма оплаты падает сверху
         const payBox = document.getElementById('payment-container');
         payBox.classList.remove('fall-down');
         payBox.classList.add('drop-in');
-        
         document.getElementById('amount-display').innerText = `${data.amount} ₽`;
-        document.getElementById('qr-box').classList.remove('visible');
-        document.getElementById('qrcode').innerHTML = "";
 
-        const settingsSnap = await get(ref(db, 'settings/'));
-        const settings = settingsSnap.val();
+        if (data.mode === 'cash') {
+          // НАЛИЧНЫЕ
+          document.getElementById('qr-box').classList.add('hidden');
+          document.getElementById('pay-title').innerText = "Оплата наличными";
+          document.getElementById('status-text').innerText = "Передайте оплату кассиру";
+        } else {
+          // КАРТА / СБП
+          document.getElementById('qr-box').classList.remove('hidden');
+          document.getElementById('qr-box').classList.remove('visible');
+          document.getElementById('pay-title').innerHTML = "Отсканируй меня<br>и оплати";
+          document.getElementById('status-text').innerText = "Ожидание оплаты...";
+          document.getElementById('qrcode').innerHTML = "";
 
-        if (settings && settings.shopId && settings.secretKey) {
-          let paymentType = "sbp";
-          if (settings.methods && !settings.methods.sbp && settings.methods.sber) {
-            paymentType = "sberbank";
+          const settingsSnap = await get(ref(db, 'settings/'));
+          const settings = settingsSnap.val();
+
+          if (settings && settings.shopId && settings.secretKey) {
+            createYooKassaPayment(data.amount, settings.shopId, settings.secretKey);
           }
-          createYooKassaPayment(data.amount, settings.shopId, settings.secretKey, paymentType);
         }
       }, 500);
     }
+
+    if (data && data.status === 'cash_succeeded') {
+      showSuccessFlow();
+    }
   });
 
-  async function createYooKassaPayment(amount, shopId, secretKey, paymentType) {
+  async function createYooKassaPayment(amount, shopId, secretKey) {
     const proxyUrl = "https://corsproxy.io/?";
     const targetUrl = "https://api.yookassa.ru/v3/payments";
     const authHeader = "Basic " + btoa(`${shopId}:${secretKey}`);
@@ -443,7 +424,7 @@
         },
         body: JSON.stringify({
           amount: { value: amount.toFixed(2), currency: "RUB" },
-          payment_method_data: { type: paymentType },
+          payment_method_data: { type: "sbp" },
           confirmation: { type: "qr" },
           capture: true,
           description: "Оплата по QR"
@@ -451,7 +432,6 @@
       });
 
       const resData = await response.json();
-
       if (resData.confirmation && resData.confirmation.confirmation_data) {
         new QRCode(document.getElementById("qrcode"), {
           text: resData.confirmation.confirmation_data,
@@ -460,50 +440,56 @@
         });
 
         setTimeout(() => document.getElementById('qr-box').classList.add('visible'), 100);
-
         if (pollInterval) clearInterval(pollInterval);
         pollInterval = setInterval(() => checkStatus(resData.id, authHeader), 3000);
       }
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   }
 
   async function checkStatus(paymentId, authHeader) {
     const proxyUrl = "https://corsproxy.io/?";
     const targetUrl = `https://api.yookassa.ru/v3/payments/${paymentId}`;
-
     try {
-      const res = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-        headers: { "Authorization": authHeader }
-      });
+      const res = await fetch(proxyUrl + encodeURIComponent(targetUrl), { headers: { "Authorization": authHeader } });
       const data = await res.json();
-
       if (data.status === 'succeeded') {
         clearInterval(pollInterval);
-        
-        document.getElementById('wave-screen').classList.add('active');
-        
-        setTimeout(() => {
-          document.getElementById('wave-screen').classList.remove('active');
-          resetToIdle();
-        }, 5000);
+        showSuccessFlow();
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   }
+
+  function showSuccessFlow() {
+    document.getElementById('wave-screen').classList.add('active');
+    setTimeout(() => {
+      document.getElementById('wave-screen').classList.remove('active');
+      document.getElementById('tips-modal').classList.remove('hidden');
+    }, 2500);
+  }
+
+  window.selectTip = function(percent) {
+    const tipVal = Math.round((currentBaseAmount * percent) / 100);
+    set(ref(db, 'tips_records/'), {
+      baseAmount: currentBaseAmount,
+      tipPercent: percent,
+      tipVal: tipVal,
+      timestamp: Date.now()
+    });
+    closeTips();
+  };
+
+  window.closeTips = function() {
+    document.getElementById('tips-modal').classList.add('hidden');
+    resetToIdle();
+  };
 
   function resetToIdle() {
     if (pollInterval) clearInterval(pollInterval);
-    
     const payBox = document.getElementById('payment-container');
     payBox.classList.remove('drop-in');
     payBox.classList.add('fall-down');
-
     setTimeout(() => {
-      const slider = document.getElementById('slider');
-      slider.classList.remove('fall-down');
+      document.getElementById('slider').classList.remove('fall-down');
     }, 600);
   }
 </script>
