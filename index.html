@@ -36,6 +36,7 @@
 
     .status-toast { text-align: center; font-size: 14px; font-weight: 700; height: 20px; margin-top: 4px; }
 
+    /* МОДАЛЬНЫЕ ОКНА */
     .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(9, 13, 22, 0.95); backdrop-filter: blur(20px); z-index: 100; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
     .modal-card { background: rgba(21, 28, 44, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
 
@@ -43,13 +44,9 @@
     label { display: block; font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
     input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); background: #090d16; color: white; font-size: 16px; outline: none; }
 
-    .toggle-group { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-    .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
-    input:checked + .slider { background-color: #10b981; }
-    input:checked + .slider:before { transform: translateX(20px); }
+    .quick-cash-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+    .quick-cash-btn { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-align: center; }
+    .quick-cash-btn:active { transform: scale(0.95); background: #38bdf8; color: #000; }
 
     .hidden { display: none !important; }
   </style>
@@ -111,19 +108,51 @@
       <button class="btn btn-pay" onclick="sendInvoice('qr')">
         <span>QR / СБП</span> 📱
       </button>
-      <button class="btn btn-cash" onclick="sendInvoice('cash')">
+      <button class="btn btn-cash" onclick="openCashModal()">
         <span>Наличные</span> 💵
       </button>
     </div>
-
-    <button id="confirm-cash-btn" class="btn btn-pay hidden" style="background:#10b981;" onclick="confirmCashSuccess()">
-      <span>Подтвердить получение денег</span> ✅
-    </button>
 
     <button class="btn btn-cancel" onclick="cancelPayment()">
       <span>🛑 Сбросить / Отменить</span>
     </button>
     <div id="status-toast" class="status-toast"></div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО РАСЧЕТА НАЛИЧНЫХ -->
+  <div id="cash-modal" class="modal hidden">
+    <div>
+      <h2 style="color: #fff; margin-bottom: 16px;">💵 Расчет Наличными</h2>
+      
+      <div class="modal-card">
+        <div style="font-size: 14px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">К ОПЛАТЕ</div>
+        <div id="modal-cash-total" style="font-size: 36px; font-weight: 900; color: #38bdf8; margin-bottom: 16px;">0 ₽</div>
+
+        <div class="form-group">
+          <label>ПРИНЯТО ОТ КЛИЕНТА (₽)</label>
+          <input type="number" id="cash-received-input" placeholder="0" inputmode="numeric" oninput="updateCashChange()">
+        </div>
+
+        <!-- Быстрые купюры -->
+        <div class="quick-cash-grid">
+          <div class="quick-cash-btn" onclick="addBill(100)">+100</div>
+          <div class="quick-cash-btn" onclick="addBill(500)">+500</div>
+          <div class="quick-cash-btn" onclick="addBill(1000)">+1000</div>
+          <div class="quick-cash-btn" onclick="addBill(5000)">+5000</div>
+        </div>
+        <button class="quick-cash-btn" style="width: 100%; margin-bottom: 16px; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #34d399;" onclick="setExactCash()">Ровно без сдачи</button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">
+          <span style="font-size: 16px; color: #94a3b8; font-weight: 700;">СДАЧА:</span>
+          <span id="modal-cash-change" style="font-size: 32px; font-weight: 900; color: #34d399;">0 ₽</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <button class="btn btn-pay" onclick="confirmCashSuccess()" style="margin-bottom: 10px;">Подтвердить оплату ✅</button>
+      <button class="btn btn-cancel" onclick="closeCashModal()" style="background: rgba(255,255,255,0.1); color: #fff; border: none;">Отмена</button>
+    </div>
   </div>
 
   <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
@@ -217,14 +246,14 @@
     document.getElementById('amount-val').innerText = parseInt(currentAmount).toLocaleString('ru-RU');
   }
 
-  // Передача черновой суммы на экран
+  // Передача черновой суммы для предпросмотра
   function sendDraftAmount() {
     set(ref(db, 'draft_checkout/'), {
       amount: parseInt(currentAmount)
     });
   }
 
-  // Выставить счет
+  // Оплата по QR
   window.sendInvoice = function(mode) {
     const val = parseInt(currentAmount);
     const toast = document.getElementById('status-toast');
@@ -241,39 +270,85 @@
       status: 'new',
       timestamp: Date.now()
     }).then(() => {
-      // Сброс драфта
       set(ref(db, 'draft_checkout/'), { amount: 0 });
-
-      if (mode === 'cash') {
-        document.getElementById('confirm-cash-btn').classList.remove('hidden');
-        toast.style.color = "#38bdf8";
-        toast.innerText = `Ожидание передачи ${val} ₽ наличными`;
-      } else {
-        toast.style.color = "#38bdf8";
-        toast.innerText = `✅ QR-код на ${val} ₽ на экране!`;
-        currentAmount = "0";
-        updateDisplay();
-        setTimeout(() => toast.innerText = '', 3000);
-      }
+      toast.style.color = "#38bdf8";
+      toast.innerText = `✅ QR-код на ${val} ₽ на экране!`;
+      currentAmount = "0";
+      updateDisplay();
+      setTimeout(() => toast.innerText = '', 3000);
     });
   };
 
-  // Подтверждение наличных кассиром
+  // МОДАЛЬНОЕ ОКНО НАЛИЧНЫХ
+  window.openCashModal = function() {
+    const val = parseInt(currentAmount);
+    if (val <= 0) {
+      alert("Сначала введите сумму заказа!");
+      return;
+    }
+
+    document.getElementById('modal-cash-total').innerText = `${val.toLocaleString('ru-RU')} ₽`;
+    document.getElementById('cash-received-input').value = '';
+    document.getElementById('modal-cash-change').innerText = '0 ₽';
+    document.getElementById('cash-modal').classList.remove('hidden');
+
+    // Переводим экран покупателя в режим наличного расчета
+    set(ref(db, 'current_checkout/'), {
+      amount: val,
+      mode: 'cash',
+      cashReceived: 0,
+      status: 'new',
+      timestamp: Date.now()
+    });
+    set(ref(db, 'draft_checkout/'), { amount: 0 });
+  };
+
+  window.closeCashModal = function() {
+    document.getElementById('cash-modal').classList.add('hidden');
+    cancelPayment();
+  };
+
+  window.addBill = function(bill) {
+    const input = document.getElementById('cash-received-input');
+    const curr = parseInt(input.value) || 0;
+    input.value = curr + bill;
+    updateCashChange();
+  };
+
+  window.setExactCash = function() {
+    const val = parseInt(currentAmount);
+    document.getElementById('cash-received-input').value = val;
+    updateCashChange();
+  };
+
+  window.updateCashChange = function() {
+    const total = parseInt(currentAmount) || 0;
+    const received = parseInt(document.getElementById('cash-received-input').value) || 0;
+    const change = Math.max(0, received - total);
+
+    document.getElementById('modal-cash-change').innerText = `${change.toLocaleString('ru-RU')} ₽`;
+
+    // Синхронизируем сдачу с экраном планшета в реальном времени
+    update(ref(db, 'current_checkout/'), {
+      cashReceived: received
+    });
+  };
+
+  // Подтвердить получение денег
   window.confirmCashSuccess = function() {
     set(ref(db, 'current_checkout/status'), 'cash_succeeded');
-    document.getElementById('confirm-cash-btn').classList.add('hidden');
+    document.getElementById('cash-modal').classList.add('hidden');
     const toast = document.getElementById('status-toast');
     toast.style.color = "#34d399";
-    toast.innerText = "✅ Наличные получены!";
+    toast.innerText = "✅ Наличная оплата проведена!";
     currentAmount = "0";
     updateDisplay();
     setTimeout(() => toast.innerText = '', 3000);
   };
 
-  // Сброс
+  // Сбросить
   window.cancelPayment = function() {
     const toast = document.getElementById('status-toast');
-    document.getElementById('confirm-cash-btn').classList.add('hidden');
     set(ref(db, 'draft_checkout/'), { amount: 0 });
     set(ref(db, 'current_checkout/'), {
       status: 'canceled',
