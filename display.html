@@ -62,6 +62,36 @@
       to { transform: translateY(-15px); }
     }
 
+    /* ЭКРАН ПАНИКИ */
+    .panic-screen {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      top: 0; left: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .panic-title {
+      font-size: 42px;
+      font-weight: 900;
+      color: #ef4444;
+      margin-bottom: 10px;
+    }
+
+    .panic-timer {
+      font-size: 72px;
+      font-weight: 900;
+      color: #ffffff;
+      margin: 20px 0;
+    }
+
     /* Главный контейнер */
     .container {
       display: flex;
@@ -84,7 +114,6 @@
       align-items: center;
     }
 
-    /* Карточка QR с эффектом свечения */
     .qr-card {
       background: #ffffff;
       padding: 20px;
@@ -151,7 +180,6 @@
       margin-bottom: 20px;
     }
 
-    /* Глаза 👀 */
     .eyes {
       font-size: 85px;
       display: inline-block;
@@ -166,7 +194,6 @@
       60% { transform: translateY(-10px); }
     }
 
-    /* Экран Покоя (Комплименты) */
     .idle-box {
       text-align: center;
       z-index: 1;
@@ -189,6 +216,12 @@
   </style>
 </head>
 <body>
+
+  <!-- Экран Паники -->
+  <div id="panic-screen" class="panic-screen hidden">
+    <div class="panic-title">Перенаправление...</div>
+    <div id="panic-timer" class="panic-timer">3</div>
+  </div>
 
   <!-- Зеленая Волна Оплаты -->
   <div id="wave-screen" class="wave-bg">
@@ -244,8 +277,8 @@
   let pollInterval = null;
   let currentTimestamp = null;
   let complimentTimer = null;
+  let panicCountdownInterval = null;
 
-  // Список приятных комплиментов
   const compliments = [
     "Вы прекрасно выглядите! ✨",
     "Отличного вам дня и настроения! 😊",
@@ -255,7 +288,6 @@
     "Вы самый лучший покупатель! 👍"
   ];
 
-  // Ротация комплиментов каждые 7 секунд
   function startCompliments() {
     let index = 0;
     complimentTimer = setInterval(() => {
@@ -266,17 +298,56 @@
   }
   startCompliments();
 
-  // Слушаем Firebase
+  // 1. Слушаем Панику
+  onValue(ref(db, 'panic_state/'), (snapshot) => {
+    const data = snapshot.val();
+    if (data && data.active) {
+      triggerPanic(data.delaySeconds || 0, data.redirectUrl || "https://google.com");
+    } else {
+      cancelPanic();
+    }
+  });
+
+  function triggerPanic(seconds, redirectUrl) {
+    if (pollInterval) clearInterval(pollInterval);
+    
+    document.getElementById('panic-screen').classList.remove('hidden');
+    let timeLeft = parseInt(seconds);
+
+    document.getElementById('panic-timer').innerText = timeLeft;
+
+    if (panicCountdownInterval) clearInterval(panicCountdownInterval);
+
+    if (timeLeft <= 0) {
+      window.location.href = redirectUrl;
+      return;
+    }
+
+    panicCountdownInterval = setInterval(() => {
+      timeLeft--;
+      document.getElementById('panic-timer').innerText = timeLeft;
+
+      if (timeLeft <= 0) {
+        clearInterval(panicCountdownInterval);
+        window.location.href = redirectUrl;
+      }
+    }, 1000);
+  }
+
+  function cancelPanic() {
+    if (panicCountdownInterval) clearInterval(panicCountdownInterval);
+    document.getElementById('panic-screen').classList.add('hidden');
+  }
+
+  // 2. Слушаем Оплату
   onValue(ref(db, 'current_checkout/'), async (snapshot) => {
     const data = snapshot.val();
     
-    // Если нажали «ОТМЕНИТЬ» с телефона
     if (data && data.status === 'canceled') {
       resetToIdle();
       return;
     }
 
-    // Появилась НОВАЯ сумма
     if (data && data.amount && data.status === 'new' && data.timestamp !== currentTimestamp) {
       currentTimestamp = data.timestamp;
       
@@ -355,10 +426,8 @@
       if (data.status === 'succeeded') {
         clearInterval(pollInterval);
         
-        // Показываем ВОЛНУ УСПЕХА
         document.getElementById('wave-screen').classList.add('active');
         
-        // Через 6 секунд возвращаем экран комплиментов
         setTimeout(() => {
           document.getElementById('wave-screen').classList.remove('active');
           resetToIdle();
