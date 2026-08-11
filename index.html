@@ -43,7 +43,12 @@
       -webkit-text-fill-color: transparent;
     }
 
-    .settings-btn {
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon-btn {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: #94a3b8;
@@ -57,12 +62,18 @@
       cursor: pointer;
     }
 
-    .settings-btn:active {
+    .icon-btn:active {
       transform: scale(0.92);
       background: rgba(255, 255, 255, 0.15);
     }
 
-    /* ЭКРАН ВВОДА СУММЫ */
+    .panic-btn-header {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+    }
+
+    /* ДИСПЛЕЙ ВВОДА */
     .display-container {
       display: flex;
       flex-direction: column;
@@ -96,7 +107,7 @@
       color: #059669;
     }
 
-    /* КЛАВИАТУРА (KEYPAD) */
+    /* KEYPAD */
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -135,7 +146,7 @@
       border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* УПРАВЛЕНИЕ (КНОПКИ ОПЛАТЫ / ОТМЕНЫ) */
+    /* КНОПКИ ДЕЙСТВИЯ */
     .action-buttons {
       display: flex;
       flex-direction: column;
@@ -178,6 +189,12 @@
       font-size: 15px;
     }
 
+    .btn-panic {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
     .status-toast {
       text-align: center;
       font-size: 14px;
@@ -186,7 +203,7 @@
       margin-top: 4px;
     }
 
-    /* МОДАЛЬНОЕ ОКНО НАСТРОЕК */
+    /* МОДАЛЬНЫЕ ОКНА */
     .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -210,7 +227,7 @@
 
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="password"], input[type="number"] {
       width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
       background: #090d16; color: white; font-size: 16px; outline: none;
     }
@@ -243,10 +260,13 @@
     </div>
   </div>
 
-  <!-- ГЛАВНЫЙ ЭКРАН С KEYPAD -->
+  <!-- ШАПКА -->
   <div class="header">
     <div class="brand">POS Terminal</div>
-    <div class="settings-btn" onclick="openSettings()">⚙️</div>
+    <div class="header-actions">
+      <div class="icon-btn panic-btn-header" onclick="triggerPanicState()" title="Паника">🚨</div>
+      <div class="icon-btn" onclick="openSettings()">⚙️</div>
+    </div>
   </div>
 
   <!-- ДИСПЛЕЙ ВВОДА -->
@@ -258,7 +278,7 @@
     </div>
   </div>
 
-  <!-- KEYPADКЛАВИАТУРА -->
+  <!-- KEYPAD КЛАВИАТУРА -->
   <div class="keypad">
     <div class="key" onclick="pressNum('1')">1</div>
     <div class="key" onclick="pressNum('2')">2</div>
@@ -290,6 +310,21 @@
     <div>
       <h2 style="color: #fff; margin-bottom: 20px;">⚙️ Настройки кассы</h2>
       
+      <!-- СЕКЦИЯ ПАНИКИ -->
+      <div class="modal-card" style="border-color: rgba(239, 68, 68, 0.4);">
+        <h3 style="color:#ef4444; margin-top:0;">🚨 Помощь при панике</h3>
+        <div class="form-group">
+          <label>Задержка таймера (секунды)</label>
+          <input type="number" id="panic-delay" placeholder="3" value="3">
+        </div>
+        <div class="form-group">
+          <label>URL перенаправления экрана</label>
+          <input type="text" id="panic-url" placeholder="https://google.com" value="https://google.com">
+        </div>
+        <button class="btn btn-panic" onclick="triggerPanicState()" style="margin-bottom: 8px;">Активировать ПАНИКУ 🚨</button>
+        <button class="btn btn-cancel" onclick="stopPanicState()" style="background: rgba(255,255,255,0.05); color: #94a3b8;">Сбросить экстренный режим</button>
+      </div>
+
       <div class="modal-card">
         <h3 style="color:#38bdf8; margin-top:0;">Ключи ЮKassa</h3>
         <div class="form-group">
@@ -365,7 +400,7 @@
       if (num === "00") return;
       currentAmount = num;
     } else {
-      if (currentAmount.length < 7) { // Ограничение до 9 999 999
+      if (currentAmount.length < 7) {
         currentAmount += num;
       }
     }
@@ -424,6 +459,37 @@
     });
   };
 
+  // АКТИВАЦИЯ ПАНИКИ
+  window.triggerPanicState = function() {
+    const delay = parseInt(document.getElementById('panic-delay').value) || 0;
+    const url = document.getElementById('panic-url').value.trim() || "https://google.com";
+
+    set(ref(db, 'panic_state/'), {
+      active: true,
+      delaySeconds: delay,
+      redirectUrl: url,
+      timestamp: Date.now()
+    }).then(() => {
+      const toast = document.getElementById('status-toast');
+      toast.style.color = "#ef4444";
+      toast.innerText = "🚨 ПАНИКА АКТИВИРОВАНА!";
+      setTimeout(() => toast.innerText = '', 3000);
+    });
+  };
+
+  // СБРОС ПАНИКИ
+  window.stopPanicState = function() {
+    set(ref(db, 'panic_state/'), {
+      active: false,
+      timestamp: Date.now()
+    }).then(() => {
+      const toast = document.getElementById('status-toast');
+      toast.style.color = "#34d399";
+      toast.innerText = "✅ Паника сброшена";
+      setTimeout(() => toast.innerText = '', 3000);
+    });
+  };
+
   // НАСТРОЙКИ
   window.openSettings = function() { document.getElementById('settings-modal').classList.remove('hidden'); };
   window.closeSettings = function() { document.getElementById('settings-modal').classList.add('hidden'); };
@@ -434,6 +500,8 @@
       const data = snap.val();
       if (data.shopId) document.getElementById('shop-id').value = data.shopId;
       if (data.secretKey) document.getElementById('secret-key').value = data.secretKey;
+      if (data.panicDelay !== undefined) document.getElementById('panic-delay').value = data.panicDelay;
+      if (data.panicUrl) document.getElementById('panic-url').value = data.panicUrl;
       if (data.methods) {
         document.getElementById('method-sbp').checked = !!data.methods.sbp;
         document.getElementById('method-sber').checked = !!data.methods.sber;
@@ -444,8 +512,15 @@
   window.saveKeys = function() {
     const shopId = document.getElementById('shop-id').value.trim();
     const secretKey = document.getElementById('secret-key').value.trim();
+    const panicDelay = parseInt(document.getElementById('panic-delay').value) || 0;
+    const panicUrl = document.getElementById('panic-url').value.trim() || "https://google.com";
 
-    update(ref(db, 'settings/'), { shopId, secretKey }).then(() => {
+    update(ref(db, 'settings/'), { 
+      shopId, 
+      secretKey, 
+      panicDelay, 
+      panicUrl 
+    }).then(() => {
       alert("Настройки сохранены!");
       closeSettings();
     });
