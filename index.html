@@ -3,357 +3,331 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Касса — Управление</title>
+  <title>POS Терминал</title>
   <style>
     * {
       box-sizing: border-box;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
     body {
       background: #090d16;
       background-image: 
-        radial-gradient(at 10% 10%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
-        radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+        radial-gradient(at 10% 10%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
       color: #f8fafc;
       margin: 0;
-      padding: 16px 16px 40px 16px;
-      min-height: 100vh;
+      padding: 16px;
+      height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
     }
 
-    .container {
-      width: 100%;
-      max-width: 420px;
-    }
-
-    /* Верхняя плашка профиля/кассы */
+    /* ШАПКА */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
-      padding: 8px 4px;
+      padding: 4px 8px;
     }
 
-    .header-title {
-      font-size: 22px;
+    .brand {
+      font-size: 20px;
       font-weight: 800;
-      letter-spacing: -0.5px;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #34d399;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      background: #34d399;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #34d399;
-    }
-
-    /* Карточки */
-    .card {
-      background: rgba(21, 28, 44, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 22px;
-      padding: 22px;
-      margin-bottom: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    }
-
-    h2, h3 {
-      margin: 0 0 16px 0;
-      color: #f1f5f9;
-      font-size: 18px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 8px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Инпуты */
-    input[type="text"], input[type="number"], input[type="password"] {
-      width: 100%;
-      padding: 16px;
-      border-radius: 14px;
+    .settings-btn {
+      background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(11, 15, 25, 0.6);
-      color: #ffffff;
-      font-size: 18px;
-      font-weight: 600;
-      outline: none;
-      transition: all 0.2s ease;
+      color: #94a3b8;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
     }
 
-    input:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-      background: rgba(11, 15, 25, 0.8);
+    .settings-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Иконка рубля в поле суммы */
-    .amount-input-wrapper {
-      position: relative;
+    /* ЭКРАН ВВОДА СУММЫ */
+    .display-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
     }
 
-    .amount-input-wrapper input {
-      padding-right: 45px;
-      font-size: 24px;
-      font-weight: 800;
-      color: #34d399;
-    }
-
-    .currency-symbol {
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 22px;
-      font-weight: 800;
+    .display-label {
+      font-size: 13px;
       color: #64748b;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
     }
 
-    /* Кнопки */
+    .amount-display {
+      font-size: 52px;
+      font-weight: 900;
+      color: #34d399;
+      letter-spacing: -1px;
+      text-shadow: 0 0 25px rgba(52, 211, 153, 0.25);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .currency {
+      font-size: 36px;
+      color: #059669;
+    }
+
+    /* КЛАВИАТУРА (KEYPAD) */
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .key {
+      background: rgba(21, 28, 44, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: #f1f5f9;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    .key:active {
+      transform: scale(0.93);
+      background: rgba(56, 189, 248, 0.2);
+      border-color: #38bdf8;
+    }
+
+    .key-action {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* УПРАВЛЕНИЕ (КНОПКИ ОПЛАТЫ / ОТМЕНЫ) */
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+      margin: 12px auto 0 auto;
+    }
+
     .btn {
       width: 100%;
-      padding: 16px;
-      border-radius: 14px;
+      padding: 18px;
+      border-radius: 16px;
       border: none;
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       transition: all 0.15s ease;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .btn:active {
       transform: scale(0.97);
     }
 
-    .btn-success {
+    .btn-pay {
       background: linear-gradient(135deg, #10b981, #059669);
       color: white;
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
     }
 
-    .btn-danger {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: white;
-      margin-top: 10px;
-      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
-      color: white;
-      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
-    }
-
-    /* Переключатели (Toggles) */
-    .toggle-group {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .toggle-group:last-child {
-      border-bottom: none;
-    }
-
-    .toggle-label {
+    .btn-cancel {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      padding: 14px;
       font-size: 15px;
-      font-weight: 600;
-      color: #e2e8f0;
     }
 
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 28px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #334155;
-      transition: .3s;
-      border-radius: 34px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider {
-      background-color: #10b981;
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(22px);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .status-msg {
+    .status-toast {
       text-align: center;
       font-size: 14px;
-      font-weight: 600;
-      margin-top: 12px;
-      min-height: 20px;
-      transition: all 0.3s ease;
+      font-weight: 700;
+      height: 20px;
+      margin-top: 4px;
     }
+
+    /* МОДАЛЬНОЕ ОКНО НАСТРОЕК */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(9, 13, 22, 0.95);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+    }
+
+    .modal-card {
+      background: rgba(21, 28, 44, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+    input[type="text"], input[type="password"] {
+      width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #090d16; color: white; font-size: 16px; outline: none;
+    }
+
+    .toggle-group { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: #10b981; }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-<div class="container">
+  <!-- АВТОРИЗАЦИЯ ПРИ ВХОДЕ -->
+  <div id="auth-modal" class="modal">
+    <div style="margin: auto 0; width: 100%;">
+      <div class="modal-card">
+        <h2 style="margin-top:0; color:#fff;">🔐 Доступ к терминалу</h2>
+        <div class="form-group">
+          <label>ПИН-КОД</label>
+          <input type="password" id="pin-input" placeholder="****" inputmode="numeric" style="text-align: center; font-size: 24px;">
+        </div>
+        <button class="btn btn-pay" onclick="checkPin()" style="width:100%;">Войти</button>
+        <div id="auth-error" style="color: #ef4444; text-align: center; margin-top: 10px; font-weight: 700;" class="hidden">Неверный PIN!</div>
+      </div>
+    </div>
+  </div>
 
-  <!-- ШАПКА -->
+  <!-- ГЛАВНЫЙ ЭКРАН С KEYPAD -->
   <div class="header">
-    <div class="header-title">Терминал Оплаты</div>
-    <div class="status-badge">
-      <div class="dot"></div>
-      Онлайн
+    <div class="brand">POS Terminal</div>
+    <div class="settings-btn" onclick="openSettings()">⚙️</div>
+  </div>
+
+  <!-- ДИСПЛЕЙ ВВОДА -->
+  <div class="display-container">
+    <div class="display-label">Сумма к оплате</div>
+    <div class="amount-display">
+      <span id="amount-val">0</span>
+      <span class="currency">₽</span>
     </div>
   </div>
 
-  <!-- ЭКРАН 1: АВТОРИЗАЦИЯ -->
-  <div id="auth-screen" class="card">
-    <h2>🔐 Авторизация</h2>
-    <div class="form-group">
-      <label>ПИН-КОД ДОСТУПА</label>
-      <input type="password" id="pin-input" placeholder="****" inputmode="numeric" maxlength="8">
-    </div>
-    <button class="btn btn-primary" onclick="checkPin()">Войти в кассу</button>
-    <div id="auth-error" class="status-msg hidden" style="color: #ef4444;">Неверный PIN-код!</div>
+  <!-- KEYPADКЛАВИАТУРА -->
+  <div class="keypad">
+    <div class="key" onclick="pressNum('1')">1</div>
+    <div class="key" onclick="pressNum('2')">2</div>
+    <div class="key" onclick="pressNum('3')">3</div>
+    <div class="key" onclick="pressNum('4')">4</div>
+    <div class="key" onclick="pressNum('5')">5</div>
+    <div class="key" onclick="pressNum('6')">6</div>
+    <div class="key" onclick="pressNum('7')">7</div>
+    <div class="key" onclick="pressNum('8')">8</div>
+    <div class="key" onclick="pressNum('9')">9</div>
+    <div class="key" onclick="pressNum('00')">00</div>
+    <div class="key" onclick="pressNum('0')">0</div>
+    <div class="key key-action" onclick="pressBackspace()">⌫</div>
   </div>
 
-  <!-- ЭКРАН 2: ГЛАВНОЕ МЕНЮ (СКРЫТО ДО ВВОДА ПИН) -->
-  <div id="main-screen" class="hidden">
-    
-    <!-- Карточка 1: Выставление счета -->
-    <div class="card">
-      <h2>💸 Выставить счет</h2>
-      <div class="form-group">
-        <label>Сумма оплаты</label>
-        <div class="amount-input-wrapper">
-          <input type="number" id="amount-input" placeholder="0" inputmode="decimal">
-          <span class="currency-symbol">₽</span>
+  <!-- КНОПКИ ДЕЙСТВИЯ -->
+  <div class="action-buttons">
+    <button class="btn btn-pay" onclick="sendInvoice()">
+      <span>Вывести на экран</span> 🚀
+    </button>
+    <button class="btn btn-cancel" onclick="cancelPayment()">
+      <span>🛑 Сбросить / Отменить</span>
+    </button>
+    <div id="status-toast" class="status-toast"></div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+  <div id="settings-modal" class="modal hidden">
+    <div>
+      <h2 style="color: #fff; margin-bottom: 20px;">⚙️ Настройки кассы</h2>
+      
+      <div class="modal-card">
+        <h3 style="color:#38bdf8; margin-top:0;">Ключи ЮKassa</h3>
+        <div class="form-group">
+          <label>Shop ID</label>
+          <input type="text" id="shop-id" placeholder="123456">
+        </div>
+        <div class="form-group">
+          <label>Secret Key</label>
+          <input type="password" id="secret-key" placeholder="live_XXXXXXXXXX">
         </div>
       </div>
 
-      <button class="btn btn-success" onclick="sendInvoice()">
-        <span>Вывести на экран</span> 🚀
-      </button>
-
-      <button class="btn btn-danger" onclick="cancelPayment()">
-        <span>❌ Экстренно прервать</span>
-      </button>
-
-      <div id="invoice-status" class="status-msg"></div>
-    </div>
-
-    <!-- Карточка 2: Способы оплаты -->
-    <div class="card">
-      <h3>💳 Способы оплаты</h3>
-      
-      <div class="toggle-group">
-        <span class="toggle-label">СБП (Система быстрых платежей)</span>
-        <label class="switch">
-          <input type="checkbox" id="method-sbp" checked onchange="savePaymentMethods()">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="toggle-group">
-        <span class="toggle-label">SberPay</span>
-        <label class="switch">
-          <input type="checkbox" id="method-sber" checked onchange="savePaymentMethods()">
-          <span class="slider"></span>
-        </label>
+      <div class="modal-card">
+        <h3 style="color:#38bdf8; margin-top:0;">Способы оплаты</h3>
+        <div class="toggle-group">
+          <span>СБП (Система быстрых платежей)</span>
+          <label class="switch">
+            <input type="checkbox" id="method-sbp" checked onchange="savePaymentMethods()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-group">
+          <span>SberPay</span>
+          <label class="switch">
+            <input type="checkbox" id="method-sber" checked onchange="savePaymentMethods()">
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
     </div>
 
-    <!-- Карточка 3: Настройки ЮKassa -->
-    <div class="card">
-      <h3>⚙️ Ключи ЮKassa</h3>
-      
-      <div class="form-group">
-        <label>Shop ID</label>
-        <input type="text" id="shop-id" placeholder="Например: 123456">
-      </div>
-
-      <div class="form-group">
-        <label>Секретный ключ (Secret Key)</label>
-        <input type="password" id="secret-key" placeholder="live_XXXXXXXXXXXXXXXX">
-      </div>
-
-      <button class="btn btn-primary" onclick="saveKeys()">Обновить ключи</button>
-      <div id="keys-status" class="status-msg"></div>
+    <div>
+      <button class="btn btn-pay" onclick="saveKeys()" style="margin-bottom: 10px;">Сохранить настройки</button>
+      <button class="btn btn-cancel" onclick="closeSettings()" style="background: rgba(255,255,255,0.1); color: #fff; border: none;">Закрыть</button>
     </div>
-
   </div>
 
-</div>
-
-<!-- Firebase SDK -->
+<!-- Firebase & Логика KEYPAD -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -372,111 +346,115 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const ADMIN_PIN = "1234"; // Твой пароль для входа
+  const ADMIN_PIN = "1234";
+  let currentAmount = "0";
 
-  // Авторизация
+  // ПИН-КОД
   window.checkPin = function() {
-    const pin = document.getElementById('pin-input').value;
-    if (pin === ADMIN_PIN) {
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('main-screen').classList.remove('hidden');
+    if (document.getElementById('pin-input').value === ADMIN_PIN) {
+      document.getElementById('auth-modal').classList.add('hidden');
       loadSettingsFromDB();
     } else {
       document.getElementById('auth-error').classList.remove('hidden');
     }
   };
 
-  // Загрузка настроек из базы
-  async function loadSettingsFromDB() {
-    try {
-      const snapshot = await get(ref(db, 'settings/'));
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        if (data.shopId) document.getElementById('shop-id').value = data.shopId;
-        if (data.secretKey) document.getElementById('secret-key').value = data.secretKey;
-        if (data.methods) {
-          document.getElementById('method-sbp').checked = !!data.methods.sbp;
-          document.getElementById('method-sber').checked = !!data.methods.sber;
-        }
+  // ЛОГИКА КЛАВИАТУРЫ (KEYPAD)
+  window.pressNum = function(num) {
+    if (currentAmount === "0") {
+      if (num === "00") return;
+      currentAmount = num;
+    } else {
+      if (currentAmount.length < 7) { // Ограничение до 9 999 999
+        currentAmount += num;
       }
-    } catch (e) {
-      console.error("Ошибка загрузки данных:", e);
     }
+    updateDisplay();
+  };
+
+  window.pressBackspace = function() {
+    if (currentAmount.length > 1) {
+      currentAmount = currentAmount.slice(0, -1);
+    } else {
+      currentAmount = "0";
+    }
+    updateDisplay();
+  };
+
+  function updateDisplay() {
+    document.getElementById('amount-val').innerText = parseInt(currentAmount).toLocaleString('ru-RU');
   }
 
-  // Выставить счет
+  // ВЫВЕСТИ СЧЕТ
   window.sendInvoice = function() {
-    const amount = document.getElementById('amount-input').value;
-    const statusDiv = document.getElementById('invoice-status');
+    const val = parseInt(currentAmount);
+    const toast = document.getElementById('status-toast');
 
-    if (!amount || amount <= 0) {
-      statusDiv.style.color = '#ef4444';
-      statusDiv.innerText = "Введите корректную сумму!";
+    if (val <= 0) {
+      toast.style.color = "#ef4444";
+      toast.innerText = "Введите сумму!";
       return;
     }
 
     set(ref(db, 'current_checkout/'), {
-      amount: parseFloat(amount),
+      amount: val,
       status: 'new',
       timestamp: Date.now()
     }).then(() => {
-      statusDiv.style.color = '#38bdf8';
-      statusDiv.innerText = `✅ Счет на ${amount} ₽ отправлен!`;
-      document.getElementById('amount-input').value = '';
-      setTimeout(() => statusDiv.innerText = '', 3000);
-    }).catch(() => {
-      statusDiv.style.color = '#ef4444';
-      statusDiv.innerText = "Ошибка записи в базу!";
+      toast.style.color = "#38bdf8";
+      toast.innerText = `✅ Счет на ${val} ₽ выставлен!`;
+      currentAmount = "0";
+      updateDisplay();
+      setTimeout(() => toast.innerText = '', 3000);
     });
   };
 
-  // Прервать/отменить платеж
+  // ОТМЕНА
   window.cancelPayment = function() {
-    const statusDiv = document.getElementById('invoice-status');
-
+    const toast = document.getElementById('status-toast');
     set(ref(db, 'current_checkout/'), {
       status: 'canceled',
       timestamp: Date.now()
     }).then(() => {
-      statusDiv.style.color = '#ef4444';
-      statusDiv.innerText = "🛑 Платеж прерван!";
-      setTimeout(() => statusDiv.innerText = '', 3000);
+      toast.style.color = "#ef4444";
+      toast.innerText = "🛑 Платеж отменен!";
+      currentAmount = "0";
+      updateDisplay();
+      setTimeout(() => toast.innerText = '', 3000);
     });
   };
 
-  // Сохранить переключатели СБП / SberPay
-  window.savePaymentMethods = function() {
-    const sbp = document.getElementById('method-sbp').checked;
-    const sber = document.getElementById('method-sber').checked;
+  // НАСТРОЙКИ
+  window.openSettings = function() { document.getElementById('settings-modal').classList.remove('hidden'); };
+  window.closeSettings = function() { document.getElementById('settings-modal').classList.add('hidden'); };
 
-    update(ref(db, 'settings/methods/'), {
-      sbp: sbp,
-      sber: sber
-    });
-  };
+  async function loadSettingsFromDB() {
+    const snap = await get(ref(db, 'settings/'));
+    if (snap.exists()) {
+      const data = snap.val();
+      if (data.shopId) document.getElementById('shop-id').value = data.shopId;
+      if (data.secretKey) document.getElementById('secret-key').value = data.secretKey;
+      if (data.methods) {
+        document.getElementById('method-sbp').checked = !!data.methods.sbp;
+        document.getElementById('method-sber').checked = !!data.methods.sber;
+      }
+    }
+  }
 
-  // Сохранить ключи
   window.saveKeys = function() {
     const shopId = document.getElementById('shop-id').value.trim();
     const secretKey = document.getElementById('secret-key').value.trim();
-    const statusDiv = document.getElementById('keys-status');
 
-    if (!shopId || !secretKey) {
-      statusDiv.style.color = '#ef4444';
-      statusDiv.innerText = "Заполните оба поля!";
-      return;
-    }
+    update(ref(db, 'settings/'), { shopId, secretKey }).then(() => {
+      alert("Настройки сохранены!");
+      closeSettings();
+    });
+  };
 
-    update(ref(db, 'settings/'), {
-      shopId: shopId,
-      secretKey: secretKey
-    }).then(() => {
-      statusDiv.style.color = '#34d399';
-      statusDiv.innerText = "Ключи сохранены!";
-      setTimeout(() => statusDiv.innerText = '', 3000);
-    }).catch(() => {
-      statusDiv.style.color = '#ef4444';
-      statusDiv.innerText = "Ошибка сохранения!";
+  window.savePaymentMethods = function() {
+    update(ref(db, 'settings/methods/'), {
+      sbp: document.getElementById('method-sbp').checked,
+      sber: document.getElementById('method-sber').checked
     });
   };
 </script>
