@@ -2,80 +2,328 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Админка Кассы</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Касса — Управление</title>
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: #0f172a; color: #f8fafc; margin: 0; padding: 16px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 450px; }
-    .card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    h2, h3 { margin-top: 0; color: #f1f5f9; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 14px; color: #94a3b8; margin-bottom: 6px; }
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #090d16;
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+      color: #f8fafc;
+      margin: 0;
+      padding: 16px 16px 40px 16px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* Верхняя плашка профиля/кассы */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 8px 4px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: #34d399;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #34d399;
+    }
+
+    /* Карточки */
+    .card {
+      background: rgba(21, 28, 44, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 22px;
+      padding: 22px;
+      margin-bottom: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    h2, h3 {
+      margin: 0 0 16px 0;
+      color: #f1f5f9;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Инпуты */
     input[type="text"], input[type="number"], input[type="password"] {
-      width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 16px; outline: none;
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(11, 15, 25, 0.6);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s ease;
     }
-    input:focus { border-color: #3b82f6; }
+
+    input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+      background: rgba(11, 15, 25, 0.8);
+    }
+
+    /* Иконка рубля в поле суммы */
+    .amount-input-wrapper {
+      position: relative;
+    }
+
+    .amount-input-wrapper input {
+      padding-right: 45px;
+      font-size: 24px;
+      font-weight: 800;
+      color: #34d399;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 22px;
+      font-weight: 800;
+      color: #64748b;
+    }
+
+    /* Кнопки */
     .btn {
-      width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:active { background: #1d4ed8; }
-    .btn-success { background: #10b981; color: white; }
-    .btn-success:active { background: #059669; }
-    .toggle-group { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
-    .toggle-group:last-child { border-bottom: none; }
-    .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: #10b981; }
-    input:checked + .slider:before { transform: translateX(22px); }
-    .hidden { display: none !important; }
-    .status-msg { text-align: center; font-size: 14px; color: #38bdf8; margin-top: 8px; }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      margin-top: 10px;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+    }
+
+    /* Переключатели (Toggles) */
+    .toggle-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .toggle-group:last-child {
+      border-bottom: none;
+    }
+
+    .toggle-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .3s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #10b981;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .status-msg {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 12px;
+      min-height: 20px;
+      transition: all 0.3s ease;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
 
-  <!-- ЭКРАН 1: Авторизация -->
-  <div id="auth-screen" class="card">
-    <h2>🔐 Вход в панель</h2>
-    <div class="form-group">
-      <label>Введите PIN-код</label>
-      <input type="password" id="pin-input" placeholder="****" inputmode="numeric">
+  <!-- ШАПКА -->
+  <div class="header">
+    <div class="header-title">Терминал Оплаты</div>
+    <div class="status-badge">
+      <div class="dot"></div>
+      Онлайн
     </div>
-    <button class="btn btn-primary" onclick="checkPin()">Войти</button>
-    <div id="auth-error" style="color: #ef4444; margin-top: 10px; font-size: 14px;" class="hidden">Неверный PIN-код!</div>
   </div>
 
-  <!-- ЭКРАН 2: Главная Панель -->
+  <!-- ЭКРАН 1: АВТОРИЗАЦИЯ -->
+  <div id="auth-screen" class="card">
+    <h2>🔐 Авторизация</h2>
+    <div class="form-group">
+      <label>ПИН-КОД ДОСТУПА</label>
+      <input type="password" id="pin-input" placeholder="****" inputmode="numeric" maxlength="8">
+    </div>
+    <button class="btn btn-primary" onclick="checkPin()">Войти в кассу</button>
+    <div id="auth-error" class="status-msg hidden" style="color: #ef4444;">Неверный PIN-код!</div>
+  </div>
+
+  <!-- ЭКРАН 2: ГЛАВНОЕ МЕНЮ (СКРЫТО ДО ВВОДА ПИН) -->
   <div id="main-screen" class="hidden">
     
     <!-- Карточка 1: Выставление счета -->
     <div class="card">
       <h2>💸 Выставить счет</h2>
       <div class="form-group">
-        <label>Сумма к оплате (₽)</label>
-        <input type="number" id="amount-input" placeholder="Например: 500" inputmode="decimal">
+        <label>Сумма оплаты</label>
+        <div class="amount-input-wrapper">
+          <input type="number" id="amount-input" placeholder="0" inputmode="decimal">
+          <span class="currency-symbol">₽</span>
+        </div>
       </div>
-      <button class="btn btn-success" onclick="sendInvoice()">Вывести на экран 🚀</button>
+
+      <button class="btn btn-success" onclick="sendInvoice()">
+        <span>Вывести на экран</span> 🚀
+      </button>
+
+      <button class="btn btn-danger" onclick="cancelPayment()">
+        <span>❌ Экстренно прервать</span>
+      </button>
+
       <div id="invoice-status" class="status-msg"></div>
     </div>
 
-    <!-- Карточка 2: Настройки способов оплаты -->
+    <!-- Карточка 2: Способы оплаты -->
     <div class="card">
       <h3>💳 Способы оплаты</h3>
+      
       <div class="toggle-group">
-        <span>Система быстрых платежей (СБП)</span>
+        <span class="toggle-label">СБП (Система быстрых платежей)</span>
         <label class="switch">
           <input type="checkbox" id="method-sbp" checked onchange="savePaymentMethods()">
           <span class="slider"></span>
         </label>
       </div>
+
       <div class="toggle-group">
-        <span>SberPay</span>
+        <span class="toggle-label">SberPay</span>
         <label class="switch">
           <input type="checkbox" id="method-sber" checked onchange="savePaymentMethods()">
           <span class="slider"></span>
@@ -86,15 +334,18 @@
     <!-- Карточка 3: Настройки ЮKassa -->
     <div class="card">
       <h3>⚙️ Ключи ЮKassa</h3>
+      
       <div class="form-group">
         <label>Shop ID</label>
-        <input type="text" id="shop-id" placeholder="123456">
+        <input type="text" id="shop-id" placeholder="Например: 123456">
       </div>
+
       <div class="form-group">
-        <label>Секретный ключ (live_...)</label>
-        <input type="password" id="secret-key" placeholder="live_XXXXXXXXXXXXXX">
+        <label>Секретный ключ (Secret Key)</label>
+        <input type="password" id="secret-key" placeholder="live_XXXXXXXXXXXXXXXX">
       </div>
-      <button class="btn btn-primary" onclick="saveKeys()">Сохранить ключи</button>
+
+      <button class="btn btn-primary" onclick="saveKeys()">Обновить ключи</button>
       <div id="keys-status" class="status-msg"></div>
     </div>
 
@@ -102,12 +353,11 @@
 
 </div>
 
-<!-- Firebase SDK Module -->
+<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // Твой конфиг Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyB8CBeK8m25rox6BYO8ep6JeBJ7ipmYViQ",
     authDomain: "moon-60c5a.firebaseapp.com",
@@ -122,9 +372,9 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const ADMIN_PIN = "1234"; // Пароль для входа (можешь поменять здесь)
+  const ADMIN_PIN = "1234"; // Твой пароль для входа
 
-  // Проверка ПИН-кода
+  // Авторизация
   window.checkPin = function() {
     const pin = document.getElementById('pin-input').value;
     if (pin === ADMIN_PIN) {
@@ -136,7 +386,7 @@
     }
   };
 
-  // Загрузка настроек из базы при входе
+  // Загрузка настроек из базы
   async function loadSettingsFromDB() {
     try {
       const snapshot = await get(ref(db, 'settings/'));
@@ -150,11 +400,11 @@
         }
       }
     } catch (e) {
-      console.error("Ошибка загрузки:", e);
+      console.error("Ошибка загрузки данных:", e);
     }
   }
 
-  // Отправка суммы на экран
+  // Выставить счет
   window.sendInvoice = function() {
     const amount = document.getElementById('amount-input').value;
     const statusDiv = document.getElementById('invoice-status');
@@ -171,16 +421,30 @@
       timestamp: Date.now()
     }).then(() => {
       statusDiv.style.color = '#38bdf8';
-      statusDiv.innerText = `Счет на ${amount} ₽ отправлен!`;
+      statusDiv.innerText = `✅ Счет на ${amount} ₽ отправлен!`;
       document.getElementById('amount-input').value = '';
       setTimeout(() => statusDiv.innerText = '', 3000);
-    }).catch((err) => {
+    }).catch(() => {
       statusDiv.style.color = '#ef4444';
       statusDiv.innerText = "Ошибка записи в базу!";
     });
   };
 
-  // Сохранение способов оплаты
+  // Прервать/отменить платеж
+  window.cancelPayment = function() {
+    const statusDiv = document.getElementById('invoice-status');
+
+    set(ref(db, 'current_checkout/'), {
+      status: 'canceled',
+      timestamp: Date.now()
+    }).then(() => {
+      statusDiv.style.color = '#ef4444';
+      statusDiv.innerText = "🛑 Платеж прерван!";
+      setTimeout(() => statusDiv.innerText = '', 3000);
+    });
+  };
+
+  // Сохранить переключатели СБП / SberPay
   window.savePaymentMethods = function() {
     const sbp = document.getElementById('method-sbp').checked;
     const sber = document.getElementById('method-sber').checked;
@@ -191,7 +455,7 @@
     });
   };
 
-  // Сохранение ключей ЮKassa
+  // Сохранить ключи
   window.saveKeys = function() {
     const shopId = document.getElementById('shop-id').value.trim();
     const secretKey = document.getElementById('secret-key').value.trim();
@@ -207,10 +471,10 @@
       shopId: shopId,
       secretKey: secretKey
     }).then(() => {
-      statusDiv.style.color = '#10b981';
-      statusDiv.innerText = "Ключи успешно обновлены!";
+      statusDiv.style.color = '#34d399';
+      statusDiv.innerText = "Ключи сохранены!";
       setTimeout(() => statusDiv.innerText = '', 3000);
-    }).catch((err) => {
+    }).catch(() => {
       statusDiv.style.color = '#ef4444';
       statusDiv.innerText = "Ошибка сохранения!";
     });
