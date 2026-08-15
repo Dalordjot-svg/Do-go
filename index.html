@@ -152,7 +152,7 @@
     </section>
 
     <!-- 2. РЕЖИМ ОПЛАТЫ ЗАКАЗА (PAYMENT MODE) -->
-    <section id="payment-screen" class="w-full hidden opacity-0 transition-all duration-700">
+    <section id="payment-screen" class="w-full hidden opacity-0 transition-all duration-500">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
         <div class="lg:col-span-7 flex flex-col gap-5 text-left">
@@ -196,7 +196,7 @@
           </div>
         </div>
 
-        <!-- Правая колонка: Чёткая карточка с QR-кодом -->
+        <!-- Правая колонка: Карточка с QR-кодом -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
           <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
             <div class="absolute -top-9 -right-5 text-sticker hidden sm:block">
@@ -370,7 +370,7 @@
       <span>дизайн-код</span>
       <span class="font-display font-bold text-neutral-200 uppercase tracking-wider">ahhu.media</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Moon Customer Display v2.7 • Crisp QR</div>
+    <div class="text-[11px] text-neutral-400">Moon Customer Display v2.8 • Ultra Crisp QR</div>
   </footer>
 
   <!-- ================= FIREBASE & UI SCRIPT ================= -->
@@ -680,24 +680,26 @@
       rebuildSlidesPool();
     });
 
-    // Генерация четкого и контрастного QR-кода
+    // Отрисовка QR-кода с гарантированной задержкой
     function renderQRCode(url, containerId = 'qr-container') {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      container.innerHTML = '';
-      
       const targetUrl = url ? url.trim() : "https://moon-coffee.ru/pay";
 
-      if (window.QRCode) {
-        new QRCode(container, {
-          text: targetUrl,
-          width: 200,
-          height: 200,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.H
-        });
-      }
+      setTimeout(() => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (window.QRCode) {
+          new QRCode(container, {
+            text: targetUrl,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+      }, 50);
     }
 
     // Авто-включение экрана чаевых
@@ -715,7 +717,7 @@
       }, delayMs);
     }
 
-    // ================= ЭКРАН КЛЯНЧАНИЯ ДЕНЕГ (3 МИНУТЫ) =================
+    // ================= ЭКРАН ЧАЕВЫХ (3 МИНУТЫ) =================
     function formatTime(seconds) {
       const m = Math.floor(seconds / 60);
       const s = seconds % 60;
@@ -781,7 +783,7 @@
       renderQRCode(tipUrl, 'magic-qr-container');
     };
 
-    // ================= ЭКРАН САЛЮТА И БЛАГОДАРНОСТИ ЗА ЧАЕВЫЕ =================
+    // ================= БЛАГОДАРНОСТЬ ЗА ЧАЕВЫЕ =================
     window.triggerMagicThanksScreen = function() {
       clearAllTimeouts();
 
@@ -827,7 +829,7 @@
       fire(0.1, { spread: 120, startVelocity: 45 });
     }
 
-    // ================= СТАНДАРТНЫЙ ЭКРАН ОПЛАТЫ И ЧЕКА =================
+    // ================= ЭКРАН ОПЛАТЫ ЗАКАЗА =================
     function triggerPayment(amount, qrUrl, orderText) {
       isMagicActive = false;
       if (idleTimeout) clearTimeout(idleTimeout);
@@ -835,24 +837,25 @@
 
       baseAmount = Number(amount) || 0;
       selectedTip = 0;
-      if (orderText) document.getElementById('order-title').innerText = orderText;
+      
+      const orderTitleEl = document.getElementById('order-title');
+      if (orderTitleEl) orderTitleEl.innerText = orderText || 'Заказ на кассе';
       
       updateTotal();
-      screenBody.classList.remove('magic-flash');
-      idleScreen.classList.add('opacity-0', 'scale-95');
+      
+      screenBody.classList.remove('magic-flash', 'success-flash');
+      idleScreen.classList.add('hidden', 'opacity-0');
       magicTipScreen.classList.add('hidden', 'opacity-0');
       magicThanksScreen.classList.add('hidden', 'opacity-0');
       successScreen.classList.add('hidden', 'opacity-0');
       
-      setTimeout(() => {
-        idleScreen.classList.add('hidden');
-        paymentScreen.classList.remove('hidden');
+      paymentScreen.classList.remove('hidden');
+      
+      requestAnimationFrame(() => {
+        paymentScreen.classList.remove('opacity-0');
+        paymentScreen.classList.add('opacity-100');
         renderQRCode(qrUrl, 'qr-container');
-        requestAnimationFrame(() => {
-          paymentScreen.classList.remove('opacity-0');
-          paymentScreen.classList.add('opacity-100', 'scale-100');
-        });
-      }, 350);
+      });
     }
 
     function triggerSuccess() {
@@ -968,10 +971,11 @@
 
     function updateTotal() {
       const total = baseAmount + selectedTip;
-      document.getElementById('final-amount').innerText = `${total} ₽`;
+      const finalAmountEl = document.getElementById('final-amount');
+      if (finalAmountEl) finalAmountEl.innerText = `${total} ₽`;
     }
 
-    // Слушатель Firebase
+    // Слушатель Firebase Realtime Database
     const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
     const orderRef = ref(db, `terminals/${terminalId}/current_order`);
 
