@@ -5,18 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moon • Customer Display Screen</title>
   
-  <!-- Шрифты дизайна -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@400;500;600;700;800&family=Syne:wght@700;800;900&family=Unbounded:wght@600;800;900&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Надежная библиотека QR-кодов (Qrious) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-
-  <!-- Библиотека конфетти -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script>
@@ -39,7 +33,6 @@
   </script>
 
   <style>
-    /* Плавные переходы экранов */
     .fade-blur-enter {
       opacity: 0;
       filter: blur(14px);
@@ -58,7 +51,6 @@
       transition: all 0.65s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Анимация рукописного слова */
     .apple-handwriting path, .apple-handwriting text {
       stroke-dasharray: 900;
       stroke-dashoffset: 900;
@@ -70,7 +62,6 @@
       100% { stroke-dashoffset: 0; fill: currentColor; }
     }
 
-    /* Анимация галочки успеха */
     .checkmark-circle {
       stroke-dasharray: 300;
       stroke-dashoffset: 300;
@@ -84,7 +75,6 @@
     @keyframes drawCircle { to { stroke-dashoffset: 0; } }
     @keyframes drawCheck { to { stroke-dashoffset: 0; } }
 
-    /* Глубокий темный фон экрана */
     .ambient-bg {
       background: radial-gradient(circle at 50% 10%, rgba(255, 241, 136, 0.03) 0%, transparent 50%),
                   radial-gradient(circle at 85% 85%, rgba(147, 51, 234, 0.04) 0%, transparent 60%),
@@ -107,7 +97,6 @@
       text-shadow: 0 3px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.9);
     }
 
-    /* Стиль canvas QR-кода */
     #qr-canvas, #magic-qr-canvas {
       display: block;
       margin: 0 auto;
@@ -200,7 +189,6 @@
               <span class="font-display text-[9px] font-black text-black bg-sticker px-2 py-0.5 rounded-full absolute -top-3 left-4 rotate-3">СБП</span>
             </div>
 
-            <!-- Контейнер Canvas QR-кода -->
             <div id="qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl mb-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
               <canvas id="qr-canvas"></canvas>
             </div>
@@ -240,7 +228,6 @@
             </p>
           </div>
 
-          <!-- Выбор суммы чаевых -->
           <div class="flex flex-col gap-2">
             <span class="text-xs uppercase tracking-widest text-neutral-300 font-bold">Выбери заклинание щедрости:</span>
             <div class="flex flex-wrap gap-2.5">
@@ -363,7 +350,7 @@
       <span>дизайн-код</span>
       <span class="font-display font-bold text-neutral-200 uppercase tracking-wider">ahhu.media</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Moon Customer Display v3.0 • Direct QR Engine</div>
+    <div class="text-[11px] text-neutral-400">Moon Customer Display v3.1 • Auto-Payment Detector</div>
   </footer>
 
   <!-- ================= FIREBASE & UI SCRIPT ================= -->
@@ -441,7 +428,6 @@
       `;
     }
 
-    // ОБЯЗАТЕЛЬНЫЙ БАННЕР «МЫ ОТКРЫЛИСЬ НА ДОМЕ БЫТА» (30 СЕКУНД)
     const permanentDomBytaSlide = {
       type: 'permanent_dom_byta',
       duration: 30000,
@@ -505,6 +491,7 @@
     let returnTimeout = null;
     let magicCountdownInterval = null;
     let autoMagicTimeout = null;
+    let customerScreenPollingInterval = null; // Постоянный опрос ЮKassa на самом экране
 
     const screenBody = document.getElementById('screen-body');
     const slideContainer = document.getElementById('slide-container');
@@ -612,7 +599,6 @@
       scheduleNextAutoMagicTip();
     }
 
-    // Слушатель рекламы из Firebase
     const adsListRef = ref(db, 'ads_list');
     onValue(adsListRef, (snapshot) => {
       const ads = snapshot.val() || {};
@@ -672,7 +658,6 @@
       rebuildSlidesPool();
     });
 
-    // ================= НАДЕЖНЫЙ ГЕНЕРАТОР QR-КОДОВ (QRious + Fallback) =================
     function renderQRCode(url, canvasId = 'qr-canvas') {
       const targetUrl = url ? url.trim() : "https://moon-coffee.ru/pay";
       const canvas = document.getElementById(canvasId);
@@ -689,11 +674,8 @@
             foreground: '#000000',
             padding: 8
           });
-        } else {
-          throw new Error('QRious library not loaded');
         }
       } catch (err) {
-        // Fallback: Загрузка прямого изображения через надежный QR API
         const wrapper = canvas.parentElement;
         if (wrapper) {
           wrapper.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(targetUrl)}&margin=8" class="rounded-lg block mx-auto" width="210" height="210" alt="QR Code" />`;
@@ -701,7 +683,6 @@
       }
     }
 
-    // Авто-включение экрана чаевых
     function scheduleNextAutoMagicTip() {
       if (autoMagicTimeout) clearTimeout(autoMagicTimeout);
       const randomMinutes = Math.floor(Math.random() * (14 - 7 + 1)) + 7;
@@ -716,7 +697,6 @@
       }, delayMs);
     }
 
-    // ================= ЭКРАН ЧАЕВЫХ (3 МИНУТЫ) =================
     function formatTime(seconds) {
       const m = Math.floor(seconds / 60);
       const s = seconds % 60;
@@ -768,21 +748,10 @@
       }
 
       document.getElementById('magic-tip-display-val').innerText = `${amount} ₽`;
-
-      const shopId = localStorage.getItem('yk_shop_id') || '';
-      const customPayUrl = localStorage.getItem('yk_custom_pay_url') || '';
-
-      let tipUrl = `https://moon-coffee.ru/tip?sum=${amount}`;
-      if (customPayUrl) {
-        tipUrl = customPayUrl.includes('?') ? `${customPayUrl}&amount=${amount}` : `${customPayUrl}?amount=${amount}`;
-      } else if (shopId) {
-        tipUrl = `https://yoomoney.ru/quickpay/confirm.xml?receiver=${shopId}&quickpay-form=shop&targets=Чаевые+Moon&sum=${amount}&paymentType=SB`;
-      }
-
+      const tipUrl = `https://moon-coffee.ru/tip?sum=${amount}`;
       renderQRCode(tipUrl, 'magic-qr-canvas');
     };
 
-    // ================= БЛАГОДАРНОСТЬ ЗА ЧАЕВЫЕ =================
     window.triggerMagicThanksScreen = function() {
       clearAllTimeouts();
 
@@ -828,8 +797,47 @@
       fire(0.1, { spread: 120, startVelocity: 45 });
     }
 
+    // ================= АВТОМАТИЧЕСКИЙ ОПРОС ЮKASSA ПРЯМО С ПЛАНШЕТА =================
+    function startCustomerScreenAutoPolling(paymentId, shopId, secretKey) {
+      if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
+      if (!paymentId || !shopId || !secretKey) return;
+
+      const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
+      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(`https://api.yookassa.ru/v3/payments/${paymentId}`)}`;
+
+      customerScreenPollingInterval = setInterval(async () => {
+        try {
+          const res = await fetch(proxyUrl, {
+            method: 'GET',
+            headers: {
+              'Authorization': authHeader,
+              'Content-Type': 'application/json'
+            }
+          });
+          const data = await res.json();
+
+          if (data && (data.status === 'succeeded' || data.paid === true)) {
+            clearInterval(customerScreenPollingInterval);
+            
+            // Фиксируем в Firebase и показываем зеленый экран
+            const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+            const orderRef = ref(db, `terminals/${terminalId}/current_order`);
+            set(orderRef, {
+              status: 'PAID',
+              amount: data.amount ? data.amount.value : baseAmount,
+              timestamp: Date.now()
+            });
+
+            triggerSuccess();
+          }
+        } catch (e) {
+          console.error("Customer poll error:", e);
+        }
+      }, 1500);
+    }
+
     // ================= ЭКРАН ОПЛАТЫ ЗАКАЗА =================
-    function triggerPayment(amount, qrUrl, orderText) {
+    function triggerPayment(amount, qrUrl, orderText, paymentId, shopId, secretKey) {
       isMagicActive = false;
       if (idleTimeout) clearTimeout(idleTimeout);
       clearAllTimeouts();
@@ -855,6 +863,11 @@
         paymentScreen.classList.add('opacity-100');
         renderQRCode(qrUrl, 'qr-canvas');
       });
+
+      // Запускаем независимый опрос прямо с экрана!
+      if (paymentId && shopId && secretKey) {
+        startCustomerScreenAutoPolling(paymentId, shopId, secretKey);
+      }
     }
 
     function triggerSuccess() {
@@ -883,6 +896,9 @@
           successScreen.classList.remove('opacity-0');
           successScreen.classList.add('opacity-100');
         });
+
+        // Запуск салюта победы
+        launchConfettiFireworks();
 
         setTimeout(() => {
           successIconBox.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
@@ -920,6 +936,7 @@
       if (countdownInterval) clearInterval(countdownInterval);
       if (returnTimeout) clearTimeout(returnTimeout);
       if (magicCountdownInterval) clearInterval(magicCountdownInterval);
+      if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
     }
 
     window.resetToIdle = function(updateFirebase = false) {
@@ -982,7 +999,7 @@
       if (data) {
         if (data.status === 'WAITING_FOR_PAYMENT') {
           isSuccessActive = false;
-          triggerPayment(data.amount, data.qrUrl, data.description);
+          triggerPayment(data.amount, data.qrUrl, data.description, data.paymentId, data.shopId, data.secretKey);
         } else if (data.status === 'PAID' || data.status === 'succeeded' || data.status === 'cash_succeeded') {
           triggerSuccess();
         } else if (data.status === 'TRIGGER_MAGIC_TIPS') {
