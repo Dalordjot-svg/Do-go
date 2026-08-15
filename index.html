@@ -13,7 +13,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Библиотека QR-кодов -->
+  <!-- Библиотека генерации QR-кодов -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <!-- Библиотека конфетти -->
@@ -107,8 +107,17 @@
       text-shadow: 0 3px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.9);
     }
 
+    /* Четкий контрастный QR-код */
+    #qr-container, #magic-qr-container {
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     #qr-container img, #qr-container canvas, #magic-qr-container img, #magic-qr-container canvas { 
-      border-radius: 12px; 
+      border-radius: 8px; 
       display: block; 
       margin: 0 auto; 
     }
@@ -166,7 +175,7 @@
             <div class="flex justify-between items-end pt-3 border-t border-white/10">
               <div>
                 <span class="text-neutral-400 text-xs uppercase tracking-wider block font-bold">Итого к списанию</span>
-                <span class="text-xs text-neutral-400">Любой банк через СБП</span>
+                <span class="text-xs text-neutral-400">Любой банк через СБП / QR</span>
               </div>
               <span id="final-amount" class="font-display text-3xl md:text-4xl font-black text-white">0 ₽</span>
             </div>
@@ -187,9 +196,9 @@
           </div>
         </div>
 
-        <!-- Правая колонка: QR-код -->
+        <!-- Правая колонка: Чёткая карточка с QR-кодом -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
-          <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center transform rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
+          <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
             <div class="absolute -top-9 -right-5 text-sticker hidden sm:block">
               <svg width="60" height="50" viewBox="0 0 60 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4,4">
                 <path d="M5,40 Q25,10 50,20" />
@@ -198,11 +207,12 @@
               <span class="font-display text-[9px] font-black text-black bg-sticker px-2 py-0.5 rounded-full absolute -top-3 left-4 rotate-3">СБП</span>
             </div>
 
-            <div id="qr-wrapper" class="bg-neutral-50 border border-neutral-200 p-3 rounded-2xl mb-4 shadow-inner flex items-center justify-center min-h-[190px] min-w-[190px]">
+            <!-- Контейнер QR-кода -->
+            <div id="qr-wrapper" class="bg-neutral-100 border border-neutral-300 p-2.5 rounded-2xl mb-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
               <div id="qr-container"></div>
             </div>
 
-            <p class="font-display font-black text-base tracking-tight uppercase leading-tight">Приложи камеру</p>
+            <p class="font-display font-black text-base tracking-tight uppercase leading-tight text-black">Приложи камеру</p>
             <p class="text-xs text-neutral-500 font-semibold mt-1">Оплата сразу в мобильном банке</p>
           </div>
         </div>
@@ -210,7 +220,7 @@
       </div>
     </section>
 
-    <!-- 3. РЕЖИМ «КАСТУЮ ЭКРАН КЛЯНЧАНИЯ ДЕНЕГ» 🪄🧙‍♂️ (ТАЙМЕР 3 МИНУТЫ) -->
+    <!-- 3. РЕЖИМ «КАСТУЮ ЭКРАН КЛЯНЧАНИЯ ДЕНЕГ» 🪄 (3 МИНУТЫ) -->
     <section id="magic-tip-screen" class="w-full hidden opacity-0 transition-all duration-700">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
@@ -237,6 +247,7 @@
             </p>
           </div>
 
+          <!-- Выбор суммы чаевых -->
           <div class="flex flex-col gap-2">
             <span class="text-xs uppercase tracking-widest text-neutral-300 font-bold">Выбери заклинание щедрости:</span>
             <div class="flex flex-wrap gap-2.5">
@@ -266,14 +277,14 @@
           </div>
         </div>
 
-        <!-- Правая часть: QR -->
+        <!-- Правая часть: QR на чаевые -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
-          <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center text-center transform -rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
+          <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform -rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
             <div class="stamp-badge bg-sticker text-black font-display font-black text-[9px] px-3 py-1 uppercase -rotate-3 absolute -top-4">
               ЧАЕВЫЕ БАРИСТА ☕
             </div>
 
-            <div id="magic-qr-wrapper" class="bg-neutral-50 border border-neutral-200 p-3 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[190px] min-w-[190px]">
+            <div id="magic-qr-wrapper" class="bg-neutral-100 border border-neutral-300 p-2.5 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
               <div id="magic-qr-container"></div>
             </div>
 
@@ -359,7 +370,7 @@
       <span>дизайн-код</span>
       <span class="font-display font-bold text-neutral-200 uppercase tracking-wider">ahhu.media</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Moon Customer Display v2.6 • Magic Auto</div>
+    <div class="text-[11px] text-neutral-400">Moon Customer Display v2.7 • Crisp QR</div>
   </footer>
 
   <!-- ================= FIREBASE & UI SCRIPT ================= -->
@@ -437,10 +448,10 @@
       `;
     }
 
-    // ОБЯЗАТЕЛЬНЫЙ БАННЕР «МЫ ОТКРЫЛИСЬ! КАФЕ НА ОСТАНОВКЕ ДОМ БЫТА» (30 СЕКУНД)
+    // ОБЯЗАТЕЛЬНЫЙ БАННЕР «МЫ ОТКРЫЛИСЬ НА ДОМЕ БЫТА» (30 СЕКУНД)
     const permanentDomBytaSlide = {
       type: 'permanent_dom_byta',
-      duration: 30000, // 30 секунд показа
+      duration: 30000,
       html: `
         <div class="relative w-full max-w-5xl h-[420px] rounded-3xl overflow-hidden border border-yellow-300/40 shadow-2xl flex items-center justify-between p-6 sm:p-10 text-left">
           <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&auto=format&fit=crop&q=80" 
@@ -538,7 +549,6 @@
         `
       };
 
-      // Пул слайдов: Приветствие -> Открытие Дом быта (30 сек) -> Пользовательские баннеры -> Тизер -> Факты
       dynamicSlides = [
         { html: getRandomGreetingHtml(), type: 'greeting', duration: 8500 },
         permanentDomBytaSlide,
@@ -670,21 +680,22 @@
       rebuildSlidesPool();
     });
 
-    // Отрисовка QR
+    // Генерация четкого и контрастного QR-кода
     function renderQRCode(url, containerId = 'qr-container') {
       const container = document.getElementById(containerId);
       if (!container) return;
       container.innerHTML = '';
-      const targetUrl = url || "https://moon-coffee.ru/pay";
+      
+      const targetUrl = url ? url.trim() : "https://moon-coffee.ru/pay";
 
       if (window.QRCode) {
         new QRCode(container, {
           text: targetUrl,
-          width: 165,
-          height: 165,
-          colorDark: "#111111",
+          width: 200,
+          height: 200,
+          colorDark: "#000000",
           colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
+          correctLevel: QRCode.CorrectLevel.H
         });
       }
     }
@@ -757,51 +768,18 @@
 
       document.getElementById('magic-tip-display-val').innerText = `${amount} ₽`;
 
-      const shopId = localStorage.getItem('yk_shop_id');
-      const secretKey = localStorage.getItem('yk_secret_key');
+      const shopId = localStorage.getItem('yk_shop_id') || '';
+      const customPayUrl = localStorage.getItem('yk_custom_pay_url') || '';
 
-      if (shopId && secretKey) {
-        try {
-          const res = await fetch('/api/yookassa/create-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              shopId,
-              secretKey,
-              amount: amount,
-              description: `Чаевые на канцтовары Moon (${amount} ₽)`
-            })
-          });
-          const data = await res.json();
-          if (data.success) {
-            renderQRCode(data.qrUrl, 'magic-qr-container');
-            pollMagicTipPayment(shopId, secretKey, data.paymentId);
-          }
-        } catch (e) {
-          renderQRCode("https://moon-coffee.ru/tip", 'magic-qr-container');
-        }
-      } else {
-        renderQRCode(`https://moon-coffee.ru/tip?sum=${amount}`, 'magic-qr-container');
+      let tipUrl = `https://moon-coffee.ru/tip?sum=${amount}`;
+      if (customPayUrl) {
+        tipUrl = customPayUrl.includes('?') ? `${customPayUrl}&amount=${amount}` : `${customPayUrl}?amount=${amount}`;
+      } else if (shopId) {
+        tipUrl = `https://yoomoney.ru/quickpay/confirm.xml?receiver=${shopId}&quickpay-form=shop&targets=Чаевые+Moon&sum=${amount}&paymentType=SB`;
       }
-    };
 
-    function pollMagicTipPayment(shopId, secretKey, paymentId) {
-      if (magicTipPollInterval) clearInterval(magicTipPollInterval);
-      magicTipPollInterval = setInterval(async () => {
-        try {
-          const res = await fetch('/api/yookassa/check-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ shopId, secretKey, paymentId })
-          });
-          const data = await res.json();
-          if (data.success && (data.status === 'succeeded' || data.paid)) {
-            clearInterval(magicTipPollInterval);
-            triggerMagicThanksScreen();
-          }
-        } catch (e) {}
-      }, 2500);
-    }
+      renderQRCode(tipUrl, 'magic-qr-container');
+    };
 
     // ================= ЭКРАН САЛЮТА И БЛАГОДАРНОСТИ ЗА ЧАЕВЫЕ =================
     window.triggerMagicThanksScreen = function() {
