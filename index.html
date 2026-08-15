@@ -13,8 +13,8 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Библиотека генерации QR-кодов -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Надежная библиотека QR-кодов (Qrious) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <!-- Библиотека конфетти -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -107,19 +107,12 @@
       text-shadow: 0 3px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.9);
     }
 
-    /* Четкий контрастный QR-код */
-    #qr-container, #magic-qr-container {
+    /* Стиль canvas QR-кода */
+    #qr-canvas, #magic-qr-canvas {
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
       background: #ffffff;
-      padding: 10px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #qr-container img, #qr-container canvas, #magic-qr-container img, #magic-qr-container canvas { 
-      border-radius: 8px; 
-      display: block; 
-      margin: 0 auto; 
     }
   </style>
 </head>
@@ -207,9 +200,9 @@
               <span class="font-display text-[9px] font-black text-black bg-sticker px-2 py-0.5 rounded-full absolute -top-3 left-4 rotate-3">СБП</span>
             </div>
 
-            <!-- Контейнер QR-кода -->
-            <div id="qr-wrapper" class="bg-neutral-100 border border-neutral-300 p-2.5 rounded-2xl mb-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
-              <div id="qr-container"></div>
+            <!-- Контейнер Canvas QR-кода -->
+            <div id="qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl mb-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
+              <canvas id="qr-canvas"></canvas>
             </div>
 
             <p class="font-display font-black text-base tracking-tight uppercase leading-tight text-black">Приложи камеру</p>
@@ -284,8 +277,8 @@
               ЧАЕВЫЕ БАРИСТА ☕
             </div>
 
-            <div id="magic-qr-wrapper" class="bg-neutral-100 border border-neutral-300 p-2.5 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
-              <div id="magic-qr-container"></div>
+            <div id="magic-qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
+              <canvas id="magic-qr-canvas"></canvas>
             </div>
 
             <p id="magic-tip-display-val" class="font-display font-black text-xl tracking-tight uppercase text-black">50 ₽</p>
@@ -370,7 +363,7 @@
       <span>дизайн-код</span>
       <span class="font-display font-bold text-neutral-200 uppercase tracking-wider">ahhu.media</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Moon Customer Display v2.8 • Ultra Crisp QR</div>
+    <div class="text-[11px] text-neutral-400">Moon Customer Display v3.0 • Direct QR Engine</div>
   </footer>
 
   <!-- ================= FIREBASE & UI SCRIPT ================= -->
@@ -511,7 +504,6 @@
     let countdownInterval = null;
     let returnTimeout = null;
     let magicCountdownInterval = null;
-    let magicTipPollInterval = null;
     let autoMagicTimeout = null;
 
     const screenBody = document.getElementById('screen-body');
@@ -680,26 +672,33 @@
       rebuildSlidesPool();
     });
 
-    // Отрисовка QR-кода с гарантированной задержкой
-    function renderQRCode(url, containerId = 'qr-container') {
+    // ================= НАДЕЖНЫЙ ГЕНЕРАТОР QR-КОДОВ (QRious + Fallback) =================
+    function renderQRCode(url, canvasId = 'qr-canvas') {
       const targetUrl = url ? url.trim() : "https://moon-coffee.ru/pay";
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
 
-      setTimeout(() => {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        container.innerHTML = '';
-
-        if (window.QRCode) {
-          new QRCode(container, {
-            text: targetUrl,
-            width: 200,
-            height: 200,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
+      try {
+        if (window.QRious) {
+          new QRious({
+            element: canvas,
+            value: targetUrl,
+            size: 210,
+            level: 'H',
+            background: '#ffffff',
+            foreground: '#000000',
+            padding: 8
           });
+        } else {
+          throw new Error('QRious library not loaded');
         }
-      }, 50);
+      } catch (err) {
+        // Fallback: Загрузка прямого изображения через надежный QR API
+        const wrapper = canvas.parentElement;
+        if (wrapper) {
+          wrapper.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(targetUrl)}&margin=8" class="rounded-lg block mx-auto" width="210" height="210" alt="QR Code" />`;
+        }
+      }
     }
 
     // Авто-включение экрана чаевых
@@ -780,7 +779,7 @@
         tipUrl = `https://yoomoney.ru/quickpay/confirm.xml?receiver=${shopId}&quickpay-form=shop&targets=Чаевые+Moon&sum=${amount}&paymentType=SB`;
       }
 
-      renderQRCode(tipUrl, 'magic-qr-container');
+      renderQRCode(tipUrl, 'magic-qr-canvas');
     };
 
     // ================= БЛАГОДАРНОСТЬ ЗА ЧАЕВЫЕ =================
@@ -854,7 +853,7 @@
       requestAnimationFrame(() => {
         paymentScreen.classList.remove('opacity-0');
         paymentScreen.classList.add('opacity-100');
-        renderQRCode(qrUrl, 'qr-container');
+        renderQRCode(qrUrl, 'qr-canvas');
       });
     }
 
@@ -921,7 +920,6 @@
       if (countdownInterval) clearInterval(countdownInterval);
       if (returnTimeout) clearTimeout(returnTimeout);
       if (magicCountdownInterval) clearInterval(magicCountdownInterval);
-      if (magicTipPollInterval) clearInterval(magicTipPollInterval);
     }
 
     window.resetToIdle = function(updateFirebase = false) {
