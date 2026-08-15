@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Moon POS • Касса СБП (Direct API)</title>
+  <title>Moon POS • Касса СБП</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -38,15 +38,10 @@
                   radial-gradient(circle at 90% 90%, rgba(244, 63, 94, 0.04) 0%, transparent 50%),
                   #0d0d10;
     }
-    .sticker-badge {
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-    }
+    .sticker-badge { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
     .stamp-badge {
       clip-path: polygon(50% 0%, 65% 15%, 85% 10%, 85% 30%, 100% 45%, 90% 65%, 95% 85%, 75% 85%, 65% 100%, 45% 90%, 25% 95%, 20% 75%, 0% 65%, 12% 45%, 5% 25%, 25% 20%, 35% 0%);
     }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
   </style>
 
   <!-- Firebase Модуль -->
@@ -131,7 +126,7 @@
       <div>
         <h1 class="font-display text-xs md:text-sm font-black tracking-wide text-white uppercase flex items-center gap-2">
           Касса #1
-          <span class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">СБП Прямой QR</span>
+          <span class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">Auto-Sync</span>
         </h1>
         <p id="live-terminal-sub" class="text-[10px] md:text-xs text-neutral-400 hidden sm:block">Крутится приветствие и реклама</p>
       </div>
@@ -211,7 +206,7 @@
         <div class="pt-2 border-t border-white/10">
           <div class="grid grid-cols-4 gap-1.5 md:gap-2">
             <button onclick="addQuickAmount(50)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+50 ₽</button>
-            <button onclick="addQuickAmount(100)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+100 ₽</button>
+            <button onclick="addQuickAmount(100)" class="bg-white/10 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+100 ₽</button>
             <button onclick="addQuickAmount(250)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+250 ₽</button>
             <button onclick="addQuickAmount(500)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+500 ₽</button>
           </div>
@@ -264,7 +259,6 @@
 
   <!-- ================= СЕКЦИЯ 2: РЕКЛАМА ================= -->
   <main id="view-ads" class="hidden flex-1 p-3 md:p-8 max-w-7xl mx-auto w-full flex-col gap-4 md:gap-8">
-    
     <div class="flex justify-between items-center gap-2">
       <div>
         <h2 class="font-display text-lg md:text-2xl font-black uppercase text-white">Список баннеров</h2>
@@ -580,6 +574,16 @@
       localStorage.setItem('yk_term_id', termId);
       localStorage.setItem('cld_cloud_name', cloudName);
 
+      // Синхронизируем учетку в Firebase для экрана покупателя
+      if (window.firebaseDB && window.dbRef && window.dbSet) {
+        const authRef = window.dbRef(window.firebaseDB, `terminals/${termId}/auth`);
+        window.dbSet(authRef, {
+          shopId: shopId,
+          secretKey: secretKey,
+          updatedAt: Date.now()
+        });
+      }
+
       alert('Все настройки ЮKassa сохранены!');
       openView('pos');
     }
@@ -591,7 +595,7 @@
       });
     }
 
-    // ВЫЗОВ ЮKASSA ЧЕРЕЗ БЕЗОПАСНЫЙ CORS-ШЛЮЗ
+    // СОЗДАНИЕ ПРЯМОГО СБП-СЧЕТА
     async function createDirectSbpPayment() {
       const amount = parseInt(currentInput);
       if (!amount || amount <= 0) {
@@ -620,10 +624,7 @@
 
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const idempotenceKey = generateUUID();
-
-      // Безопасный CORS-шлюз для обхода ошибки Safari Load failed
-      const targetApiUrl = 'https://api.yookassa.ru/v3/payments';
-      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetApiUrl)}`;
+      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent('https://api.yookassa.ru/v3/payments')}`;
 
       try {
         const response = await fetch(proxyUrl, {
@@ -655,7 +656,6 @@
           throw new Error(payment.description || payment.code || 'Ошибка ответа ЮKassa');
         }
 
-        // Извлекаем чистую ссылку СБП
         let sbpQrData = '';
         if (payment.confirmation && payment.confirmation.confirmation_data) {
           sbpQrData = payment.confirmation.confirmation_data;
@@ -663,7 +663,7 @@
           sbpQrData = payment.confirmation.confirmation_url;
         }
 
-        // Записываем в Firebase
+        // Записываем в Firebase (передаем paymentId, shopId и secretKey для автопроверки)
         if (window.firebaseDB && window.dbRef && window.dbSet) {
           const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
           await window.dbSet(orderRef, {
@@ -671,14 +671,14 @@
             amount: amount,
             paymentId: payment.id,
             qrUrl: sbpQrData,
+            shopId: shopId,
+            secretKey: secretKey,
             description: `Заказ #${payment.id.slice(0, 5)}`,
             timestamp: Date.now()
           });
         }
 
         statusText.innerHTML = `<span class="text-sticker font-bold">СБП QR на ${amount} ₽ на экране! Ждем оплату...</span>`;
-
-        // Запускаем опрос статуса
         startDirectPaymentPolling(shopId, secretKey, payment.id, terminalId);
 
       } catch (err) {
@@ -692,8 +692,7 @@
 
     function startDirectPaymentPolling(shopId, secretKey, paymentId, terminalId) {
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
-      const targetApiUrl = `https://api.yookassa.ru/v3/payments/${paymentId}`;
-      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetApiUrl)}`;
+      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(`https://api.yookassa.ru/v3/payments/${paymentId}`)}`;
 
       activePollInterval = setInterval(async () => {
         try {
