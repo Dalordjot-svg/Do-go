@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Moon POS • Касса СБП (Direct API)</title>
   
-  <!-- Шрифты дизайна -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Syne:wght@700;800;900&family=Unbounded:wght@600;800;900&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <script>
@@ -213,7 +211,7 @@
         <div class="pt-2 border-t border-white/10">
           <div class="grid grid-cols-4 gap-1.5 md:gap-2">
             <button onclick="addQuickAmount(50)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+50 ₽</button>
-            <button onclick="addQuickAmount(100)" class="bg-white/10 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+100 ₽</button>
+            <button onclick="addQuickAmount(100)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+100 ₽</button>
             <button onclick="addQuickAmount(250)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+250 ₽</button>
             <button onclick="addQuickAmount(500)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+500 ₽</button>
           </div>
@@ -221,7 +219,7 @@
       </div>
     </div>
 
-    <!-- Правая колонка: Ввод суммы и выставление СБП -->
+    <!-- Правая колонка: Ввод суммы и кнопка -->
     <div class="col-span-12 lg:col-span-7 bg-surface border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-8 flex flex-col gap-4 md:gap-6 shadow-2xl order-1 lg:order-2">
       
       <div class="bg-black/50 border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 text-center relative overflow-hidden">
@@ -252,7 +250,6 @@
         <button onclick="backspace()" class="h-13 md:h-16 py-3 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 border border-rose-500/30 flex items-center justify-center text-rose-300 font-bold text-xl">⌫</button>
       </div>
 
-      <!-- Главные кнопки -->
       <div class="grid grid-cols-2 gap-2.5 md:gap-4 max-w-md mx-auto w-full pt-1">
         <button id="send-bill-btn" onclick="createDirectSbpPayment()" class="bg-sticker text-black font-display font-black text-xs md:text-sm uppercase py-4 rounded-2xl active:scale-[0.98] transition-all sticker-badge flex items-center justify-center gap-1.5">
           <span>⚡ Сформировать СБП QR</span>
@@ -515,7 +512,7 @@
     </button>
   </nav>
 
-  <!-- ================= СЦЕНАРИИ И ПРЯМОЙ СБП ЗАПРОС В ЮKASSA ================= -->
+  <!-- ================= СЦЕНАРИИ ================= -->
   <script>
     let currentInput = "0";
     let activePollInterval = null;
@@ -594,7 +591,7 @@
       });
     }
 
-    // СОЗДАНИЕ ПРЯМОГО СБП-ПЛАТЕЖА (QR СБП ДЛЯ БАНКОВСКИХ ПРИЛОЖЕНИЙ)
+    // ВЫЗОВ ЮKASSA ЧЕРЕЗ БЕЗОПАСНЫЙ CORS-ШЛЮЗ
     async function createDirectSbpPayment() {
       const amount = parseInt(currentInput);
       if (!amount || amount <= 0) {
@@ -624,8 +621,12 @@
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const idempotenceKey = generateUUID();
 
+      // Безопасный CORS-шлюз для обхода ошибки Safari Load failed
+      const targetApiUrl = 'https://api.yookassa.ru/v3/payments';
+      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetApiUrl)}`;
+
       try {
-        const response = await fetch('https://api.yookassa.ru/v3/payments', {
+        const response = await fetch(proxyUrl, {
           method: 'POST',
           headers: {
             'Authorization': authHeader,
@@ -638,10 +639,10 @@
               currency: 'RUB'
             },
             payment_method_data: {
-              type: 'sbp' // Запрашиваем напрямую СБП
+              type: 'sbp'
             },
             confirmation: {
-              type: 'qr' // Запрашиваем именно QR для СБП (https://qr.nspk.ru/...)
+              type: 'qr'
             },
             capture: true,
             description: `Оплата по QR (${amount} ₽)`
@@ -654,7 +655,7 @@
           throw new Error(payment.description || payment.code || 'Ошибка ответа ЮKassa');
         }
 
-        // Извлекаем чистую ссылку СБП НСПК
+        // Извлекаем чистую ссылку СБП
         let sbpQrData = '';
         if (payment.confirmation && payment.confirmation.confirmation_data) {
           sbpQrData = payment.confirmation.confirmation_data;
@@ -689,13 +690,14 @@
       }
     }
 
-    // Опрос GET /api/v3/payments/{id}
     function startDirectPaymentPolling(shopId, secretKey, paymentId, terminalId) {
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
+      const targetApiUrl = `https://api.yookassa.ru/v3/payments/${paymentId}`;
+      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetApiUrl)}`;
 
       activePollInterval = setInterval(async () => {
         try {
-          const res = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
+          const res = await fetch(proxyUrl, {
             method: 'GET',
             headers: {
               'Authorization': authHeader,
@@ -811,7 +813,7 @@
       tbody.innerHTML = '';
       mobileCards.innerHTML = '';
 
-      // Обязательный баннер «Дом быта»
+      // 1. Обязательный баннер «Дом быта»
       const permRow = document.createElement('tr');
       permRow.className = 'bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors border-b border-yellow-300/20';
       permRow.innerHTML = `
@@ -853,6 +855,7 @@
       `;
       mobileCards.appendChild(permMobCard);
 
+      // 2. Пользовательские баннеры
       const keys = Object.keys(adsObj);
       keys.forEach((id) => {
         const ad = adsObj[id];
