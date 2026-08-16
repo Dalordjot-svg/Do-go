@@ -114,12 +114,12 @@
       background: #ffffff;
     }
 
-    /* ================= СВЕТЯЩИЙСЯ КРАЙ ДЛЯ ОПЛАТЫ КАРТОЙ ================= */
+    /* ================= СВЕТЯЩИЙСЯ КРАЙ (NFC КАРТА) ================= */
     .nfc-edge-glow {
       position: fixed;
       top: 0;
       bottom: 0;
-      width: 40px;
+      width: 44px;
       z-index: 999;
       pointer-events: none;
       transition: all 0.4s ease;
@@ -149,7 +149,6 @@
       100% { opacity: 1; transform: scaleX(1.4); box-shadow: 0 0 85px 40px rgba(255, 241, 136, 0.9); }
     }
 
-    /* Анимация волн NFC иконки */
     .nfc-wave {
       animation: nfcWaveAnim 1.6s infinite ease-out;
     }
@@ -162,7 +161,7 @@
 </head>
 <body id="screen-body" class="ambient-bg text-white min-h-screen flex flex-col justify-between p-6 md:p-8 selection:bg-yellow-300 selection:text-black overflow-hidden font-sans relative">
 
-  <!-- СВЕТОВЫЕ ИНДИКАТОРЫ КРАЁВ ЭКРАНА (NFC) -->
+  <!-- СВЕТОВЫЕ ИНДИКАТОРЫ NFC -->
   <div id="nfc-glow-left" class="nfc-edge-glow nfc-edge-left hidden flex items-center justify-center">
     <div class="text-black font-display font-black text-2xl transform -rotate-90 whitespace-nowrap tracking-widest opacity-80">
       ◀ ПРИЛОЖИТЕ КАРТУ СЮДА
@@ -201,28 +200,32 @@
       <div id="dots-container" class="flex items-center gap-2 mt-6"></div>
     </section>
 
-    <!-- 2. РЕЖИМ ОПЛАТЫ (QR СБП ИЛИ БАНКОВСКАЯ КАРТА) -->
+    <!-- 2. РЕЖИМ ОПЛАТЫ (СБП QR / БАНКОВСКАЯ КАРТА / ИИ-СОСТАВ) -->
     <section id="payment-screen" class="w-full hidden opacity-0 transition-all duration-500">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
-        <div class="lg:col-span-7 flex flex-col gap-5 text-left">
+        <div class="lg:col-span-7 flex flex-col gap-4 text-left">
           <div class="flex items-center gap-2">
             <span id="payment-badge-tag" class="bg-sticker text-black font-display text-xs md:text-sm font-black px-4 py-1.5 rounded-full uppercase -rotate-2 sticker-badge">
               О, похоже у нас тут оплата ✨
             </span>
           </div>
 
-          <h2 id="payment-heading-main" class="font-display text-5xl md:text-6xl font-black uppercase leading-none tracking-tight text-shadow-hard">
+          <h2 id="payment-heading-main" class="font-display text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-none tracking-tight text-shadow-hard">
             Сумма <br/>
             <span class="text-sticker inline-block mt-1">к оплате</span>
           </h2>
 
-          <div class="bg-black/60 border border-white/15 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-3 max-w-lg shadow-2xl">
+          <div class="bg-black/60 border border-white/15 rounded-3xl p-5 md:p-6 backdrop-blur-xl flex flex-col gap-3 max-w-lg shadow-2xl">
             <div class="flex justify-between items-center text-sm text-neutral-300 font-medium">
               <span id="order-title">Заказ на кассе</span>
               <span id="order-method-badge" class="text-[10px] bg-white/15 text-white px-2.5 py-0.5 rounded-full font-display">СБП / QR</span>
             </div>
-            <div class="flex justify-between items-end pt-3 border-t border-white/10">
+
+            <!-- Распознанный состав заказа (если передан от ИИ) -->
+            <div id="order-items-list" class="hidden flex-col gap-1.5 py-2 border-y border-white/10 text-xs"></div>
+
+            <div class="flex justify-between items-end pt-1">
               <div>
                 <span class="text-neutral-400 text-xs uppercase tracking-wider block font-bold">Итого к списанию</span>
                 <span id="payment-sub-hint" class="text-xs text-neutral-400">Оплата в мобильном банке</span>
@@ -233,23 +236,23 @@
 
           <!-- Выбор чаевых -->
           <div>
-            <div class="flex items-center justify-between max-w-lg mb-2.5">
+            <div class="flex items-center justify-between max-w-lg mb-2">
               <p class="text-xs uppercase tracking-widest text-neutral-300 font-bold">На чай бариста:</p>
               <span class="text-xs text-neutral-300 font-medium">Спасибо за поддержку! ☕</span>
             </div>
-            <div class="flex flex-wrap gap-2.5">
-              <button onclick="setTip(0, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge">0 ₽</button>
-              <button onclick="setTip(50, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+50 ₽</button>
-              <button onclick="setTip(100, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+100 ₽</button>
-              <button onclick="setTip(200, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+200 ₽</button>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setTip(0, this)" class="tip-btn px-4 py-2 rounded-xl bg-sticker text-black font-display text-xs md:text-sm font-bold transition-all active:scale-95 sticker-badge">0 ₽</button>
+              <button onclick="setTip(50, this)" class="tip-btn px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-display text-xs md:text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+50 ₽</button>
+              <button onclick="setTip(100, this)" class="tip-btn px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-display text-xs md:text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+100 ₽</button>
+              <button onclick="setTip(200, this)" class="tip-btn px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 font-display text-xs md:text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+200 ₽</button>
             </div>
           </div>
         </div>
 
-        <!-- Правая колонка: Блок QR или Карты -->
+        <!-- Правая колонка: QR / NFC -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
           
-          <!-- Вариант А: Оплата по QR СБП -->
+          <!-- Вариант А: Оплата по СБП QR -->
           <div id="card-mode-qr" class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
             <div class="absolute -top-9 -right-5 text-sticker hidden sm:block">
               <svg width="60" height="50" viewBox="0 0 60 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4,4">
@@ -267,14 +270,12 @@
             <p class="text-xs text-neutral-500 font-semibold mt-1">Оплата сразу в мобильном банке</p>
           </div>
 
-          <!-- Вариант Б: Оплата картой (Приложи карту пожалуйста 🥺) -->
+          <!-- Вариант Б: Оплата картой (NFC) -->
           <div id="card-mode-nfc" class="hidden relative bg-gradient-to-b from-neutral-900 to-black text-white p-7 rounded-3xl border-2 border-yellow-300/60 shadow-[0_0_50px_rgba(255,241,136,0.3)] flex flex-col items-center text-center max-w-sm w-full">
-            
             <div class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3 py-1 uppercase -rotate-3 mb-4 shadow-lg">
               БЕСКОНТАКТНАЯ ОПЛАТА 💳
             </div>
 
-            <!-- Иконка терминала и волны -->
             <div class="relative my-4 flex items-center justify-center">
               <div class="w-28 h-28 rounded-full bg-sticker/10 border-2 border-sticker/30 flex items-center justify-center nfc-wave">
                 <div class="w-20 h-20 rounded-full bg-sticker/20 flex items-center justify-center text-4xl">
@@ -290,7 +291,7 @@
             </h3>
 
             <p id="nfc-side-instruction" class="text-xs text-neutral-300 font-medium mt-3 leading-relaxed bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-              Приложите банковскую карту или телефон к <strong class="text-sticker font-bold">светящемуся краю</strong> терминала 💫
+              Приложите карту или телефон к <strong class="text-sticker font-bold">светящемуся краю</strong> терминала 💫
             </p>
           </div>
 
@@ -299,7 +300,7 @@
       </div>
     </section>
 
-    <!-- 3. РЕЖИМ «КАСТУЮ ЭКРАН КЛЯНЧАНИЯ ДЕНЕГ» 🪄 (3 МИНУТЫ) -->
+    <!-- 3. РЕЖИМ ЧАЕВЫХ (3 МИНУТЫ) -->
     <section id="magic-tip-screen" class="w-full hidden opacity-0 transition-all duration-700">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
@@ -326,6 +327,7 @@
             </p>
           </div>
 
+          <!-- Выбор суммы чаевых -->
           <div class="flex flex-col gap-2">
             <span class="text-xs uppercase tracking-widest text-neutral-300 font-bold">Выбери заклинание щедрости:</span>
             <div class="flex flex-wrap gap-2.5">
@@ -355,7 +357,6 @@
           </div>
         </div>
 
-        <!-- Правая часть: QR на чаевые -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
           <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform -rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
             <div class="stamp-badge bg-sticker text-black font-display font-black text-[9px] px-3 py-1 uppercase -rotate-3 absolute -top-4">
@@ -448,7 +449,7 @@
       <span>дизайн-код</span>
       <span class="font-display font-bold text-neutral-200 uppercase tracking-wider">ahhu.media</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Moon Customer Display v3.2 • NFC Card & QR Edition</div>
+    <div class="text-[11px] text-neutral-400">Moon Customer Display v3.3 • AI Receipt & NFC Edge</div>
   </footer>
 
   <!-- ================= FIREBASE & UI SCRIPT ================= -->
@@ -584,7 +585,7 @@
     let selectedTip = 0;
     let isSuccessActive = false;
     let isMagicActive = false;
-    let currentNfcSide = 'right'; // По умолчанию правый край
+    let currentNfcSide = 'right';
 
     let countdownInterval = null;
     let returnTimeout = null;
@@ -788,7 +789,6 @@
       }
     }
 
-    // ================= ПОДСВЕТКА КРАЁВ NFC (КАРТА) =================
     function showNfcGlow(side) {
       hideNfcGlow();
       const targetSide = side || currentNfcSide || 'right';
@@ -818,7 +818,6 @@
       }, delayMs);
     }
 
-    // ================= ЭКРАН ЧАЕВЫХ (3 МИНУТЫ) =================
     function formatTime(seconds) {
       const m = Math.floor(seconds / 60);
       const s = seconds % 60;
@@ -921,7 +920,6 @@
       fire(0.1, { spread: 120, startVelocity: 45 });
     }
 
-    // ================= АВТОМАТИЧЕСКИЙ ОПРОС ЮKASSA =================
     function startCustomerScreenAutoPolling(paymentId, shopId, secretKey) {
       if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
       if (!paymentId || !shopId || !secretKey) return;
@@ -959,7 +957,7 @@
       }, 1500);
     }
 
-    // ================= ЭКРАН ОПЛАТЫ (QR ИЛИ КАРТА С ПОДСВЕТКОЙ) =================
+    // ================= ЭКРАН ОПЛАТЫ (ОТОБРАЖЕНИЕ СОСТАВА ИЛИ КАРТЫ) =================
     function triggerPayment(orderData) {
       isMagicActive = false;
       if (idleTimeout) clearTimeout(idleTimeout);
@@ -978,9 +976,27 @@
       const methodBadge = document.getElementById('order-method-badge');
       const hintSub = document.getElementById('payment-sub-hint');
       const sideInstruction = document.getElementById('nfc-side-instruction');
+      const itemsListContainer = document.getElementById('order-items-list');
+
+      // Отображение позиций чека (если есть список items от ИИ)
+      if (itemsListContainer) {
+        if (orderData.items && Array.isArray(orderData.items) && orderData.items.length > 0) {
+          itemsListContainer.innerHTML = orderData.items.map(it => `
+            <div class="flex justify-between items-center text-neutral-300">
+              <span>${it.name || 'Товар'} <strong class="text-sticker">×${it.count || 1}</strong></span>
+              <span class="font-bold text-white font-mono">${(it.price || 0) * (it.count || 1)} ₽</span>
+            </div>
+          `).join('');
+          itemsListContainer.classList.remove('hidden');
+          itemsListContainer.classList.add('flex');
+        } else {
+          itemsListContainer.classList.add('hidden');
+          itemsListContainer.classList.remove('flex');
+          itemsListContainer.innerHTML = '';
+        }
+      }
 
       if (isCardPayment) {
-        // Режим оплаты картой
         cardModeQr.classList.add('hidden');
         cardModeNfc.classList.remove('hidden');
 
@@ -990,10 +1006,8 @@
         
         sideInstruction.innerHTML = `Приложите карту или телефон к <strong class="text-sticker font-bold">${side === 'left' ? 'ЛЕВОМУ' : 'ПРАВОМУ'} светящемуся краю</strong> 💫`;
 
-        // Включаем пульсацию левого или правого края
         showNfcGlow(side);
       } else {
-        // Режим СБП / QR
         hideNfcGlow();
         cardModeNfc.classList.add('hidden');
         cardModeQr.classList.remove('hidden');
@@ -1146,7 +1160,7 @@
       if (finalAmountEl) finalAmountEl.innerText = `${total} ₽`;
     }
 
-    // Слушатель настроек терминала (выбор стороны NFC из кассы)
+    // Слушатель настроек стороны NFC
     const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
     const settingsRef = ref(db, `terminals/${terminalId}/settings`);
     onValue(settingsRef, (snapshot) => {
