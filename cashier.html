@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Moon POS • Терминал Кассира</title>
+  <title>Moon POS • Терминал Кассира (Vision AI)</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -92,7 +92,7 @@
           statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping mr-1.5"></span> ${data.amount} ₽ (${isCard ? 'Карта' : 'СБП'})`;
           statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30';
         }
-        if (orderSub) orderSub.innerText = isCard ? `Ожидание прикладывания карты (${data.amount} ₽)` : `Ожидание оплаты СБП: ${data.amount} ₽`;
+        if (orderSub) orderSub.innerText = isCard ? `Ожидание карты (${data.amount} ₽)` : `Ожидание оплаты СБП: ${data.amount} ₽`;
         if (cardPaidBtn) {
           if (isCard) cardPaidBtn.classList.remove('hidden');
           else cardPaidBtn.classList.add('hidden');
@@ -142,7 +142,7 @@
       <div>
         <h1 class="font-display text-xs md:text-sm font-black tracking-wide text-white uppercase flex items-center gap-2">
           Касса #1
-          <span class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">Live POS</span>
+          <span class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">Vision AI</span>
         </h1>
         <p id="live-terminal-sub" class="text-[10px] md:text-xs text-neutral-400 hidden sm:block">Крутится приветствие и реклама</p>
       </div>
@@ -174,12 +174,11 @@
     </div>
   </header>
 
-  <!-- ================= СЕКЦИЯ 1: КАССА (ПОЛНОЭКРАННЫЙ УМНЫЙ ВВОД) ================= -->
+  <!-- ================= СЕКЦИЯ 1: КАССА (ПОЛНОЭКРАННЫЙ УМНЫЙ ВВОД + ФОТО) ================= -->
   <main id="view-pos" class="flex-1 p-3 md:p-6 max-w-7xl mx-auto w-full flex flex-col gap-4">
     
-    <!-- Верхняя панель режимов и настроек кассы -->
+    <!-- Панель инструментов -->
     <div class="flex flex-wrap items-center justify-between gap-3 bg-surface border border-white/10 p-3.5 rounded-2xl">
-      <!-- Переключатель: Полноэкранный текст / Нумпад -->
       <div class="flex items-center gap-2">
         <button id="mode-btn-text" onclick="switchInputMode('text')" class="px-4 py-2 rounded-xl font-display text-xs font-bold uppercase bg-sticker text-black transition-all">
           📝 Текстовый ввод (ИИ Чек)
@@ -189,7 +188,6 @@
         </button>
       </div>
 
-      <!-- Выбор стороны NFC -->
       <div class="flex items-center gap-2">
         <span class="text-[11px] text-neutral-400 font-bold uppercase">Сторона карты:</span>
         <button id="btn-side-left" onclick="setNfcSide('left')" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 font-display text-[10px] font-bold">◀ Лево</button>
@@ -197,42 +195,50 @@
       </div>
     </div>
 
-    <!-- ГЛАВНАЯ РАБОЧАЯ ЗОНА: БОЛЬШОЕ ПОЛЕ ВВОДА + ПРЕДПРОСМОТР ЧЕКА -->
+    <!-- РАБОЧАЯ ЗОНА: БОЛЬШОЙ ТЕКСТОВЫЙ ВВОД + ПРЕДПРОСМОТР -->
     <div class="grid grid-cols-12 gap-4 items-stretch flex-1">
       
-      <!-- ЛЕВАЯ ЧАСТЬ: ПОЛНОЭКРАННОЕ ПОЛЕ ВВОДА -->
+      <!-- ЛЕВАЯ ЧАСТЬ: ПОЛЕ ВВОДА И КНОПКА ФОТО -->
       <div class="col-span-12 lg:col-span-7 flex flex-col gap-3">
         <div id="text-mode-card" class="flex-1 bg-surface border border-white/15 rounded-3xl p-4 md:p-6 shadow-2xl flex flex-col justify-between">
           <div>
             <div class="flex justify-between items-center mb-3">
               <span class="font-display font-black text-xs uppercase text-sticker flex items-center gap-1.5">
-                <span>📝</span> Умный ввод товаров (Строка за строкой)
+                <span>📝</span> Умный ввод (Текст / Фото Gemini)
               </span>
               <span class="text-[10px] text-neutral-400 font-mono">Формат: [Товар] [Кол-во] [Цена]</span>
             </div>
 
-            <!-- Большое поле ввода текста -->
+            <!-- Текстовое поле -->
             <textarea id="smart-pos-textarea" 
                       rows="8"
                       oninput="onSmartTextInput(event)"
                       placeholder="черника орео 1 240&#10;бабусик классик 2&#10;чизкейк 1 190"
                       class="w-full h-48 md:h-64 bg-black/60 border-2 border-white/10 focus:border-yellow-300 rounded-2xl p-4 font-mono text-sm md:text-base text-white focus:outline-none focus:shadow-[0_0_20px_rgba(255,241,136,0.2)] transition-all resize-none"></textarea>
             
-            <p class="text-[11px] text-neutral-400 mt-2">
-              💡 <em>Совет: Пиши название, затем пробел и количество (например: <strong>черника орео 1 240</strong>). Жми Enter для следующей позиции.</em>
-            </p>
+            <div class="flex justify-between items-center mt-2">
+              <p class="text-[11px] text-neutral-400">
+                💡 <em>Вводи построчно или сделай снимок списка позиций</em>
+              </p>
+              <span id="ai-vision-status" class="text-[11px] font-bold text-sticker"></span>
+            </div>
           </div>
 
-          <!-- Быстрые шаблоны -->
-          <div class="flex flex-wrap gap-2 pt-3 border-t border-white/10">
-            <button onclick="appendTemplateLine('черника орео 1 240')" class="text-xs bg-white/5 hover:bg-white/10 text-neutral-300 px-3 py-1.5 rounded-xl border border-white/5">+ Черника Орео (240)</button>
+          <!-- Кнопка фото и шаблоны -->
+          <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-white/10">
+            <!-- Инпут для загрузки фото чека/списка -->
+            <label class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-display text-xs font-bold uppercase px-4 py-2 rounded-xl cursor-pointer active:scale-95 transition-all flex items-center gap-1.5 shadow-md">
+              <span>📷 Фото заказа (Gemini)</span>
+              <input type="file" accept="image/*" onchange="uploadOrderPhotoForGemini(event)" class="hidden" />
+            </label>
+
+            <button onclick="appendTemplateLine('черника орео 1 240')" class="text-xs bg-white/5 hover:bg-white/10 text-neutral-300 px-3 py-1.5 rounded-xl border border-white/5">+ Черника (240)</button>
             <button onclick="appendTemplateLine('бабусик классик 1 290')" class="text-xs bg-white/5 hover:bg-white/10 text-neutral-300 px-3 py-1.5 rounded-xl border border-white/5">+ Бабусик (290)</button>
-            <button onclick="appendTemplateLine('чизкейк 1 190')" class="text-xs bg-white/5 hover:bg-white/10 text-neutral-300 px-3 py-1.5 rounded-xl border border-white/5">+ Чизкейк (190)</button>
-            <button onclick="clearSmartText()" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 px-3 py-1.5 rounded-xl border border-rose-500/20 ml-auto">Очистить всё ✕</button>
+            <button onclick="clearSmartText()" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 px-3 py-1.5 rounded-xl border border-rose-500/20 ml-auto">Очистить ✕</button>
           </div>
         </div>
 
-        <!-- НУМПАД (ЕСЛИ ПЕРЕКЛЮЧИЛИСЬ НА НУМПАД) -->
+        <!-- Нумпад -->
         <div id="numpad-mode-card" class="hidden flex-col gap-3 bg-surface border border-white/15 rounded-3xl p-6 shadow-2xl">
           <div class="grid grid-cols-3 gap-2 max-w-sm mx-auto w-full">
             <button onclick="pressKey('1')" class="h-14 rounded-2xl bg-surfaceLight hover:bg-white/15 active:scale-95 border border-white/10 font-display text-2xl font-black">1</button>
@@ -254,10 +260,9 @@
         </div>
       </div>
 
-      <!-- ПРАВАЯ ЧАСТЬ: ПРЕДПРОСМОТР ЧЕКА И КНОПКИ ОПЛАТЫ -->
+      <!-- ПРАВАЯ ЧАСТЬ: ПРЕДПРОСМОТР ЧЕКА И ДЕЙСТВИЯ -->
       <div class="col-span-12 lg:col-span-5 flex flex-col gap-4">
         
-        <!-- Предпросмотр чека -->
         <div class="bg-surface border border-white/15 rounded-3xl p-5 md:p-6 shadow-2xl flex flex-col justify-between flex-1">
           <div>
             <div class="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
@@ -265,13 +270,11 @@
               <span id="items-count-badge" class="text-[10px] bg-white/10 px-2 py-0.5 rounded-full font-mono text-neutral-300">0 поз.</span>
             </div>
 
-            <!-- Список распознанных позиций -->
             <div id="parsed-items-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
               <div class="text-xs text-neutral-500 italic py-4 text-center">Начните вводить текст слева...</div>
             </div>
           </div>
 
-          <!-- Итоговая сумма -->
           <div class="pt-4 border-t border-white/10 mt-4">
             <div class="flex justify-between items-end">
               <div>
@@ -286,12 +289,10 @@
           </div>
         </div>
 
-        <!-- Кнопка подтверждения оплаты картой (если выставлена) -->
         <button id="btn-confirm-card-paid" onclick="confirmCardPaymentSuccess()" class="hidden w-full bg-emerald-400 hover:bg-emerald-300 active:scale-95 text-black font-display font-black text-xs uppercase py-3.5 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2">
           <span>✅ Оплата картой прошла (Спасибо)</span>
         </button>
 
-        <!-- Кнопки отправки на оплату -->
         <div class="grid grid-cols-2 gap-3">
           <button id="send-bill-btn" onclick="createDirectSbpPayment()" class="bg-sticker text-black font-display font-black text-xs uppercase py-4 rounded-2xl active:scale-95 transition-all sticker-badge flex items-center justify-center gap-1.5">
             <span>⚡ СБП QR</span>
@@ -324,7 +325,6 @@
       </button>
     </div>
 
-    <!-- Карточка текущего статуса на терминале -->
     <div id="active-order-card" class="bg-surface border border-white/15 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
       <div class="text-xs text-neutral-400 italic">Загрузка данных заказа...</div>
     </div>
@@ -627,10 +627,9 @@
     let currentParsedItems = [];
     let activePollInterval = null;
     let selectedNfcSide = localStorage.getItem('moon_nfc_side') || 'right';
-    let currentInputMode = 'text'; // 'text' | 'numpad'
+    let currentInputMode = 'text';
     const CLOUDINARY_PRESET = "my_shop_unsigned";
 
-    // Базовый справочник цен по умолчанию
     const DEFAULT_CATALOG = {
       'черника орео': 240,
       'орео': 240,
@@ -649,62 +648,86 @@
       'американо': 160
     };
 
-    function openView(view) {
-      document.getElementById('view-pos').classList.add('hidden');
-      document.getElementById('view-orders').classList.add('hidden');
-      document.getElementById('view-ads').classList.add('hidden');
-      document.getElementById('view-settings').classList.add('hidden');
+    // ================= VISION AI (РАСПОЗНАВАНИЕ ФОТО ЧЕРЕЗ GEMINI) =================
+    window.uploadOrderPhotoForGemini = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-      const btnPos = document.getElementById('nav-pos');
-      const btnOrders = document.getElementById('nav-orders');
-      const btnAds = document.getElementById('nav-ads');
-      const btnSettings = document.getElementById('nav-settings');
-      const inactiveDesk = 'px-5 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white';
-      const activeDesk = 'px-5 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all bg-sticker text-black shadow';
+      const aiKey = localStorage.getItem('moon_ai_key') || '';
+      const baseUrl = localStorage.getItem('moon_ai_base_url') || 'https://api.aitunnel.ru/v1/';
+      const model = localStorage.getItem('moon_ai_model') || 'gemini-3.5-flash-lite';
+      const statusEl = document.getElementById('ai-vision-status');
 
-      if (btnPos) btnPos.className = inactiveDesk;
-      if (btnOrders) btnOrders.className = inactiveDesk;
-      if (btnAds) btnAds.className = inactiveDesk;
-      if (btnSettings) btnSettings.className = inactiveDesk;
-
-      const mobPos = document.getElementById('mob-nav-pos');
-      const mobOrders = document.getElementById('mob-nav-orders');
-      const mobAds = document.getElementById('mob-nav-ads');
-      const mobSettings = document.getElementById('mob-nav-settings');
-      const inactiveMob = 'flex-1 py-2 flex flex-col items-center gap-1 font-display text-[10px] font-bold uppercase text-neutral-400';
-      const activeMob = 'flex-1 py-2 flex flex-col items-center gap-1 font-display text-[10px] font-bold uppercase text-sticker';
-
-      if (mobPos) mobPos.className = inactiveMob;
-      if (mobOrders) mobOrders.className = inactiveMob;
-      if (mobAds) mobAds.className = inactiveMob;
-      if (mobSettings) mobSettings.className = inactiveMob;
-
-      if (view === 'pos') {
-        document.getElementById('view-pos').classList.remove('hidden');
-        if (btnPos) btnPos.className = activeDesk;
-        if (mobPos) mobPos.className = activeMob;
-      } else if (view === 'orders') {
-        document.getElementById('view-orders').classList.remove('hidden');
-        document.getElementById('view-orders').classList.add('flex');
-        if (btnOrders) btnOrders.className = activeDesk;
-        if (mobOrders) mobOrders.className = activeMob;
-        refreshActiveOrders();
-      } else if (view === 'ads') {
-        document.getElementById('view-ads').classList.remove('hidden');
-        document.getElementById('view-ads').classList.add('flex');
-        if (btnAds) btnAds.className = activeDesk;
-        if (mobAds) mobAds.className = activeMob;
-        updateDesktopLivePreview();
-      } else if (view === 'settings') {
-        document.getElementById('view-settings').classList.remove('hidden');
-        document.getElementById('view-settings').classList.add('flex');
-        if (btnSettings) btnSettings.className = activeDesk;
-        if (mobSettings) mobSettings.className = activeMob;
+      if (!aiKey) {
+        alert('Укажите API Ключ нейросети в Настройках!');
+        openView('settings');
+        return;
       }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
 
-    // ================= ПАРСЕР ПОЛНОЭКРАННОГО ТЕКСТА =================
+      statusEl.innerText = '⏳ Gemini сканирует фото...';
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Image = reader.result;
+
+        try {
+          const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+          const endpoint = `${cleanBaseUrl}/chat/completions`;
+
+          const prompt = `Ты кассовый распознаватель чеков/списков для кафе Moon. 
+Изучи изображение и извлеки все товары в строгом формате:
+[Название товара] [Количество] [Цена]
+Пример:
+черника орео 1 240
+бабусик классик 2 290
+чизкейк 1 190
+
+Если цены нет на фото, подставь примерную или напиши только название и количество.
+Ответь ТОЛЬКО строками товаров, без лишнего текста и markdown.`;
+
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${aiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { type: 'text', text: prompt },
+                    { type: 'image_url', image_url: { url: base64Image } }
+                  ]
+                }
+              ]
+            })
+          });
+
+          const data = await response.json();
+          if (!response.ok || !data.choices || !data.choices[0]) {
+            throw new Error(data.error?.message || 'Ошибка распознавания фото');
+          }
+
+          const recognizedText = data.choices[0].message.content.trim();
+          const textarea = document.getElementById('smart-pos-textarea');
+          textarea.value = recognizedText;
+          parsePosTextLines(recognizedText);
+
+          statusEl.innerText = '✅ Фото успешно распознано!';
+          setTimeout(() => { statusEl.innerText = ''; }, 4000);
+
+        } catch (err) {
+          alert('Ошибка Vision AI: ' + err.message);
+          statusEl.innerText = '❌ Ошибка распознавания';
+        }
+      };
+
+      reader.readAsDataURL(file);
+    };
+
+    // ================= ПАРСЕР ТЕКСТА =================
     window.onSmartTextInput = function(e) {
       const text = e.target.value;
       parsePosTextLines(text);
@@ -727,15 +750,11 @@
         const trimmed = line.trim();
         if (!trimmed) return;
 
-        // Регулярка под формат: [Название товара] [Количество] [Цена опционально]
-        // Например: "черника орео 1 240" или "бабусик 2" или "чизкейк 1"
         const parts = trimmed.split(/\s+/);
-        
         let count = 1;
         let price = 0;
         let titleParts = [];
 
-        // Проверяем последние элементы на числа
         if (parts.length >= 3 && !isNaN(parts[parts.length - 1]) && !isNaN(parts[parts.length - 2])) {
           price = parseInt(parts[parts.length - 1], 10);
           count = parseInt(parts[parts.length - 2], 10);
@@ -750,7 +769,6 @@
         let itemName = titleParts.join(' ').replace(/[-—]$/, '').trim();
         if (!itemName) itemName = 'Товар';
 
-        // Если цена не была указана явно, ищем в каталоге
         if (!price || price <= 0) {
           const lower = itemName.toLowerCase();
           for (let key in DEFAULT_CATALOG) {
@@ -759,7 +777,7 @@
               break;
             }
           }
-          if (!price) price = 200; // Дефолт если не найдено
+          if (!price) price = 200;
         }
 
         const lineSum = count * price;
@@ -821,7 +839,6 @@
       parsePosTextLines('');
     };
 
-    // ================= ПЕРЕКЛЮЧЕНИЕ РЕЖИМА ВВОДА =================
     window.switchInputMode = function(mode) {
       currentInputMode = mode;
       const btnText = document.getElementById('mode-btn-text');
@@ -849,7 +866,6 @@
       }
     };
 
-    // ================= СТОРОНА КАРТЫ NFC =================
     window.setNfcSide = function(side) {
       selectedNfcSide = side;
       localStorage.setItem('moon_nfc_side', side);
@@ -878,7 +894,6 @@
       if (setRight) setRight.className = isLeft ? inactiveClass : activeClass;
     }
 
-    // ================= РАЗДЕЛ: АКТИВНЫЕ ЗАКАЗЫ =================
     function renderActiveOrdersView(orderData) {
       const card = document.getElementById('active-order-card');
       if (!card) return;
@@ -948,7 +963,6 @@
       renderActiveOrdersView(window.currentActiveOrderData);
     };
 
-    // ================= ПЛАТЕЖНЫЕ ДЕЙСТВИЯ =================
     window.triggerCardPaymentOnScreen = async function() {
       const amount = parseInt(currentInput);
       if (!amount || amount <= 0) {
@@ -1165,27 +1179,6 @@
       clearSmartText();
     }
 
-    window.castMagicTips = async function() {
-      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-      if (window.firebaseDB && window.dbRef && window.dbSet) {
-        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-        await window.dbSet(orderRef, {
-          status: 'TRIGGER_MAGIC_TIPS',
-          timestamp: Date.now()
-        });
-        document.getElementById('pos-status-text').innerHTML = '<span class="text-purple-400 font-bold">🪄 Экран чаевых запущен!</span>';
-      }
-    };
-
-    window.closeMagicTips = async function() {
-      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-      if (window.firebaseDB && window.dbRef && window.dbSet) {
-        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-        await window.dbSet(orderRef, { status: 'IDLE' });
-        document.getElementById('pos-status-text').innerText = 'Экран покупателя свободен';
-      }
-    };
-
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('desk-shop-id').value = localStorage.getItem('yk_shop_id') || '1350725';
       document.getElementById('desk-secret-key').value = localStorage.getItem('yk_secret_key') || '';
@@ -1230,7 +1223,7 @@
       openView('pos');
     }
 
-    // Рендер баннеров
+    // Рендер рекламы
     window.renderAdsListTable = function(adsObj) {
       const tbody = document.getElementById('ads-table-body');
       const mobileCards = document.getElementById('ads-mobile-cards');
