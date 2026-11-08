@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Moon POS • Касса СБП & Карта</title>
+  <title>COFFEEMAN POS • Касса СБП & Карта</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -35,7 +35,7 @@
     * { -webkit-tap-highlight-color: transparent; user-select: none; }
     .ambient-bg {
       background: radial-gradient(circle at 10% 10%, rgba(255, 241, 136, 0.05) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 90%, rgba(244, 63, 94, 0.04) 0%, transparent 50%),
+                  radial-gradient(circle at 90% 90%, rgba(217, 119, 6, 0.05) 0%, transparent 50%),
                   #0d0d10;
     }
     .sticker-badge { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); }
@@ -88,32 +88,42 @@
           statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping mr-1.5"></span> ${data.amount} ₽ (${isCard ? 'Карта' : 'СБП'})`;
           statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30';
         }
-        if (orderSub) orderSub.innerText = isCard ? `Ожидание прикладывания карты (${data.amount} ₽)` : `Ожидание оплаты СБП: ${data.amount} ₽`;
+        if (orderSub) orderSub.innerText = isCard ? `Ожидание карты на экране (${data.amount} ₽)` : `Ожидание оплаты СБП: ${data.amount} ₽`;
         if (cardPaidBtn) {
           if (isCard) cardPaidBtn.classList.remove('hidden');
           else cardPaidBtn.classList.add('hidden');
         }
       } else if (data && data.status === 'TRIGGER_MAGIC_TIPS') {
         if (statusBadge) {
-          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse mr-1.5"></span> 🪄 Чаевые`;
+          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse mr-1.5"></span> ☕ Чаевые`;
           statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30';
         }
-        if (orderSub) orderSub.innerText = 'Экран чаевых активен (3 мин)';
+        if (orderSub) orderSub.innerText = 'Экран сбора чаевых бариста';
         if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
       } else if (data && (data.status === 'PAID' || data.status === 'succeeded' || data.status === 'cash_succeeded')) {
         if (statusBadge) {
           statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span> Оплачено`;
           statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
         }
-        if (orderSub) orderSub.innerText = 'Оплата успешно зафиксирована';
+        if (orderSub) orderSub.innerText = 'Оплата зафиксирована';
         if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
       } else {
         if (statusBadge) {
           statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-neutral-500 mr-1.5"></span> Свободен`;
           statusBadge.className = 'flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/5 text-neutral-400 border border-white/10';
         }
-        if (orderSub) orderSub.innerText = 'Крутится приветствие и реклама';
+        if (orderSub) orderSub.innerText = 'Крутится приветствие и промо 9 фишек';
         if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
+      }
+    });
+
+    // Слушатель сиропов
+    const syrupsRef = ref(db, `terminals/${terminalId}/syrups`);
+    onValue(syrupsRef, (snapshot) => {
+      const syrups = snapshot.val();
+      window.loadedSyrups = syrups;
+      if (typeof window.renderSyrupsManager === 'function') {
+        window.renderSyrupsManager(syrups);
       }
     });
 
@@ -133,25 +143,28 @@
   <header class="w-full bg-surface/90 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-3.5 flex justify-between items-center sticky top-0 z-40">
     <div class="flex items-center gap-3">
       <div class="stamp-badge bg-sticker text-black font-display font-black text-[10px] md:text-xs px-2.5 py-1 uppercase -rotate-3 shadow-md">
-        MOON POS
+        COFFEEMAN
       </div>
       <div>
         <h1 class="font-display text-xs md:text-sm font-black tracking-wide text-white uppercase flex items-center gap-2">
-          Касса #1
-          <span class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">СБП & Карта</span>
+          Касса #1 • Кызыл
+          <span class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">СБП & NFC</span>
         </h1>
-        <p id="live-terminal-sub" class="text-[10px] md:text-xs text-neutral-400 hidden sm:block">Крутится приветствие и реклама</p>
+        <p id="live-terminal-sub" class="text-[10px] md:text-xs text-neutral-400 hidden sm:block">Крутится приветствие и промо 9 фишек</p>
       </div>
     </div>
 
     <div class="hidden md:flex items-center bg-black/40 p-1 rounded-2xl border border-white/10">
-      <button id="nav-pos" onclick="openView('pos')" class="px-5 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all bg-sticker text-black shadow">
-        ⚡ Касса & Оплата
+      <button id="nav-pos" onclick="openView('pos')" class="px-4 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all bg-sticker text-black shadow">
+        ⚡ Касса
       </button>
-      <button id="nav-ads" onclick="openView('ads')" class="px-5 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white">
+      <button id="nav-syrups" onclick="openView('syrups')" class="px-4 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white">
+        🧴 Сиропы
+      </button>
+      <button id="nav-ads" onclick="openView('ads')" class="px-4 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white">
         🎨 Реклама
       </button>
-      <button id="nav-settings" onclick="openView('settings')" class="px-5 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white">
+      <button id="nav-settings" onclick="openView('settings')" class="px-4 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white">
         ⚙️ Настройки
       </button>
     </div>
@@ -175,7 +188,7 @@
       <div class="bg-surface border border-white/10 rounded-2xl md:rounded-3xl p-3.5 md:p-4 flex flex-col gap-2 shadow-xl">
         <div class="flex justify-between items-center">
           <span class="font-display font-bold text-xs uppercase text-neutral-300 flex items-center gap-1.5">
-            <span>💡</span> Сторона для карты (NFC):
+            <span>💡</span> Подсветка края (NFC):
           </span>
           <span id="current-side-display" class="text-[10px] bg-sticker text-black font-display font-black px-2 py-0.5 rounded-md uppercase">ПРАВЫЙ КРАЙ</span>
         </div>
@@ -189,62 +202,65 @@
         </div>
       </div>
 
-      <!-- Чаевые -->
-      <div class="bg-purple-900/20 border border-purple-500/30 rounded-2xl md:rounded-3xl p-3.5 md:p-4 flex flex-col gap-2.5 shadow-xl">
-        <div class="flex justify-between items-center">
-          <span class="font-display font-black text-xs uppercase text-purple-300 flex items-center gap-1.5">
-            <span>🪄</span> Экран чаевых (3 мин)
+      <!-- Управление экраном гостя (Чаевые & Сиропы) -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5 flex flex-col justify-between gap-2 shadow-xl">
+          <span class="font-display font-black text-xs uppercase text-amber-300 flex items-center gap-1">
+            <span>☕</span> Чаевые
           </span>
-          <span class="text-[10px] text-purple-400 font-mono">на канцтовары 📚</span>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="castMagicTips()" class="flex-1 bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-display font-black text-xs uppercase py-2.5 md:py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5">
-            <span>🪄 Кастовать экран</span>
+          <button onclick="castMagicTips()" class="w-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-display font-black text-[11px] uppercase py-2.5 rounded-xl shadow-lg transition-all">
+            Экран чаевых
           </button>
-          <button onclick="closeMagicTips()" class="bg-white/10 hover:bg-white/20 active:scale-95 text-neutral-300 font-display font-bold text-xs uppercase px-3 py-2.5 md:py-3 rounded-xl border border-white/10 transition-all">
-            ✕
+        </div>
+
+        <div class="bg-neutral-900 border border-white/15 rounded-2xl p-3.5 flex flex-col justify-between gap-2 shadow-xl">
+          <span class="font-display font-black text-xs uppercase text-sticker flex items-center gap-1">
+            <span>🧴</span> Полка сиропов
+          </span>
+          <button onclick="triggerShowSyrupsOnDisplay()" class="w-full bg-white/10 hover:bg-white/20 active:scale-95 text-white font-display font-bold text-[11px] uppercase py-2.5 rounded-xl border border-white/15 transition-all">
+            Показать гостю
           </button>
         </div>
       </div>
 
-      <!-- Быстрые позиции -->
+      <!-- Быстрый выбор напитков COFFEEMAN -->
       <div class="bg-surface border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col gap-3 shadow-xl">
         <div class="flex justify-between items-center">
-          <h3 class="font-display text-xs font-black uppercase text-neutral-300">Быстрый подбор</h3>
-          <span class="text-[10px] text-neutral-500 font-mono">Пресеты</span>
+          <h3 class="font-display text-xs font-black uppercase text-neutral-300">Быстрые напитки</h3>
+          <span class="text-[10px] text-neutral-500 font-mono">COFFEEMAN Bar</span>
         </div>
 
         <div class="grid grid-cols-2 gap-2 md:gap-3">
-          <button onclick="addAmountDirect(290, 'Бабл-ти Классик')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
-            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Бабл-ти Классик</span>
-            <span class="font-display font-black text-base md:text-xl text-white mt-0.5 block">290 ₽</span>
-          </button>
-          <button onclick="addAmountDirect(350, 'Матча Лате с черникой')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
-            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Матча Лате</span>
-            <span class="font-display font-black text-base md:text-xl text-white mt-0.5 block">350 ₽</span>
-          </button>
-          <button onclick="addAmountDirect(390, 'Кокосовый Спешл')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
-            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Кокосовый Спешл</span>
-            <span class="font-display font-black text-base md:text-xl text-white mt-0.5 block">390 ₽</span>
-          </button>
-          <button onclick="addAmountDirect(190, 'Десерт дня')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
-            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Чизкейк / Десерт</span>
+          <button onclick="addAmountDirect(190, 'Капучино 300мл')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
+            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Капучино 300мл</span>
             <span class="font-display font-black text-base md:text-xl text-white mt-0.5 block">190 ₽</span>
+          </button>
+          <button onclick="addAmountDirect(210, 'Латте 400мл')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
+            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Латте 400мл</span>
+            <span class="font-display font-black text-base md:text-xl text-white mt-0.5 block">210 ₽</span>
+          </button>
+          <button onclick="addAmountDirect(250, 'Раф Кофе 350мл')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
+            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Раф Кофе</span>
+            <span class="font-display font-black text-base md:text-xl text-white mt-0.5 block">250 ₽</span>
+          </button>
+          <button onclick="addAmountDirect(150, 'Американо 250мл')" class="bg-surfaceLight hover:bg-white/10 active:scale-95 border border-white/5 p-3 rounded-xl md:rounded-2xl text-left transition-all group">
+            <span class="text-[11px] text-neutral-400 group-hover:text-sticker transition-colors block truncate">Американо</span>
+            <span class="font-display font-black text-base md:text-xl text-white mt-0.5 block">150 ₽</span>
           </button>
         </div>
 
         <div class="pt-2 border-t border-white/10">
           <div class="grid grid-cols-4 gap-1.5 md:gap-2">
+            <button onclick="addQuickAmount(35)" class="bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 border border-amber-500/30 py-2 rounded-xl text-xs font-display font-bold text-amber-300">+35 Сироп</button>
             <button onclick="addQuickAmount(50)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+50 ₽</button>
             <button onclick="addQuickAmount(100)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+100 ₽</button>
-            <button onclick="addQuickAmount(250)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+250 ₽</button>
-            <button onclick="addQuickAmount(500)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+500 ₽</button>
+            <button onclick="addQuickAmount(200)" class="bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 py-2 rounded-xl text-xs font-display font-bold text-neutral-300">+200 ₽</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Правая колонка: Ввод суммы и кнопки выставления счета -->
+    <!-- Правая колонка: Ввод суммы и выставление счета -->
     <div class="col-span-12 lg:col-span-7 bg-surface border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-8 flex flex-col gap-4 md:gap-6 shadow-2xl order-1 lg:order-2">
       
       <div class="bg-black/50 border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-6 text-center relative overflow-hidden">
@@ -256,9 +272,9 @@
         <p id="pos-status-text" class="text-xs text-neutral-400 mt-1.5 font-medium">Готов к выбору способа оплаты</p>
       </div>
 
-      <!-- Кнопка подтверждения оплаты картой (появляется при режиме карты) -->
+      <!-- Кнопка подтверждения оплаты картой -->
       <button id="btn-confirm-card-paid" onclick="confirmCardPaymentSuccess()" class="hidden w-full bg-emerald-400 hover:bg-emerald-300 active:scale-95 text-black font-display font-black text-xs md:text-sm uppercase py-3.5 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-2">
-        <span>✅ Оплата картой прошла (Запустить экран Спасибо)</span>
+        <span>✅ Карта приложена успешно (Включить экран Спасибо)</span>
       </button>
 
       <!-- Numpad -->
@@ -280,16 +296,14 @@
         <button onclick="backspace()" class="h-13 md:h-16 py-3 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 border border-rose-500/30 flex items-center justify-center text-rose-300 font-bold text-xl">⌫</button>
       </div>
 
-      <!-- КНОПКИ ВЫБОРА ОПЛАТЫ: СБП QR, КАРТА NFC И СБРОС -->
+      <!-- КНОПКИ ВЫБОРА ОПЛАТЫ -->
       <div class="flex flex-col gap-2.5 max-w-md mx-auto w-full pt-1">
         <div class="grid grid-cols-2 gap-2.5">
-          <!-- Оплата СБП QR -->
           <button id="send-bill-btn" onclick="createDirectSbpPayment()" class="bg-sticker text-black font-display font-black text-xs md:text-sm uppercase py-4 rounded-2xl active:scale-[0.98] transition-all sticker-badge flex items-center justify-center gap-1.5">
             <span>⚡ СБП QR</span>
           </button>
           
-          <!-- Оплата картой с миганием края экрана -->
-          <button onclick="triggerCardPaymentOnScreen()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-display font-black text-xs md:text-sm uppercase py-4 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-1.5 border border-blue-400/30">
+          <button onclick="triggerCardPaymentOnScreen()" class="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-black font-display font-black text-xs md:text-sm uppercase py-4 rounded-2xl active:scale-[0.98] transition-all shadow-lg flex items-center justify-center gap-1.5 border border-yellow-300/40">
             <span>💳 Оплата картой</span>
           </button>
         </div>
@@ -302,12 +316,39 @@
 
   </main>
 
-  <!-- ================= СЕКЦИЯ 2: РЕКЛАМА ================= -->
+  <!-- ================= СЕКЦИЯ 2: УПРАВЛЕНИЕ СИРОПАМИ ================= -->
+  <main id="view-syrups" class="hidden flex-1 p-3 md:p-8 max-w-7xl mx-auto w-full flex-col gap-4 md:gap-6">
+    <div class="flex flex-wrap justify-between items-center gap-3">
+      <div>
+        <h2 class="font-display text-lg md:text-2xl font-black uppercase text-white flex items-center gap-2">
+          <span>🧴 Полка сиропов</span>
+          <span class="text-xs bg-sticker text-black px-2.5 py-0.5 rounded-full font-bold">Online</span>
+        </h2>
+        <p class="text-xs text-neutral-400">Включай и выключай сиропы — изменения мгновенно отражаются на экране клиента</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="triggerShowSyrupsOnDisplay()" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-display text-xs font-bold px-4 py-2.5 rounded-xl transition-all">
+          🖥️ Открыть на экране гостя
+        </button>
+        <button onclick="openNewSyrupModal()" class="bg-sticker text-black font-display font-black text-xs uppercase px-4 py-2.5 rounded-xl active:scale-95 transition-all sticker-badge">
+          + Добавить сироп
+        </button>
+      </div>
+    </div>
+
+    <!-- Сетка карточек сиропов -->
+    <div id="syrups-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+      <!-- Генерируется скриптом -->
+    </div>
+  </main>
+
+  <!-- ================= СЕКЦИЯ 3: РЕКЛАМА ================= -->
   <main id="view-ads" class="hidden flex-1 p-3 md:p-8 max-w-7xl mx-auto w-full flex-col gap-4 md:gap-8">
     <div class="flex justify-between items-center gap-2">
       <div>
-        <h2 class="font-display text-lg md:text-2xl font-black uppercase text-white">Список баннеров</h2>
-        <p class="text-xs text-neutral-400 hidden sm:block">Включай/отключай показы или создавай новые постеры</p>
+        <h2 class="font-display text-lg md:text-2xl font-black uppercase text-white">Баннеры COFFEEMAN</h2>
+        <p class="text-xs text-neutral-400 hidden sm:block">Управляй акциями и промо-слайдами экрана</p>
       </div>
       <button onclick="openAdEditorNew()" class="bg-sticker text-black font-display font-black text-xs uppercase px-4 py-2.5 md:py-3 rounded-xl md:rounded-2xl active:scale-95 transition-all sticker-badge flex items-center gap-1.5">
         <span>+ Добавить</span>
@@ -388,49 +429,49 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Верхний тег</label>
-              <input type="text" id="edit-ad-tag" oninput="updateDesktopLivePreview()" value="вакансия:" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+              <input type="text" id="edit-ad-tag" oninput="updateDesktopLivePreview()" value="акция:" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
             </div>
             <div>
               <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Штамп справа</label>
-              <input type="text" id="edit-ad-stamp" oninput="updateDesktopLivePreview()" value="АХХУ!" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+              <input type="text" id="edit-ad-stamp" oninput="updateDesktopLivePreview()" value="COFFEEMAN" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Заголовок 1</label>
-              <input type="text" id="edit-ad-title1" oninput="updateDesktopLivePreview()" value="ИЩЕМ" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none" />
+              <input type="text" id="edit-ad-title1" oninput="updateDesktopLivePreview()" value="НОВЫЙ ВКУС" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none" />
             </div>
             <div>
               <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Заголовок 2 (Желтый)</label>
-              <input type="text" id="edit-ad-title2" oninput="updateDesktopLivePreview()" value="В КОМАНДУ" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-sticker font-bold focus:outline-none" />
+              <input type="text" id="edit-ad-title2" oninput="updateDesktopLivePreview()" value="СЕЗОНА" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-sticker font-bold focus:outline-none" />
             </div>
           </div>
 
           <div>
             <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Подзаголовок</label>
-            <input type="text" id="edit-ad-sub" oninput="updateDesktopLivePreview()" value="Бариста • Мастер вкуса" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-neutral-300 focus:outline-none" />
+            <input type="text" id="edit-ad-sub" oninput="updateDesktopLivePreview()" value="Кедровый Раф со сливочной пенкой" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-neutral-300 focus:outline-none" />
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Стикер (ЗП / Цена)</label>
-              <input type="text" id="edit-ad-badge-r" oninput="updateDesktopLivePreview()" value="от 65.000 ₽" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-sticker font-bold focus:outline-none" />
+              <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Стикер (Цена / Бейдж)</label>
+              <input type="text" id="edit-ad-badge-r" oninput="updateDesktopLivePreview()" value="290 ₽" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-sticker font-bold focus:outline-none" />
             </div>
             <div>
               <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Призыв (CTA)</label>
-              <input type="text" id="edit-ad-cta-r" oninput="updateDesktopLivePreview()" value="«Хочу в команду» →" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+              <input type="text" id="edit-ad-cta-r" oninput="updateDesktopLivePreview()" value="«Попробуйте сегодня» →" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Нижняя плашка</label>
-              <input type="text" id="edit-ad-badge-l-title" oninput="updateDesktopLivePreview()" value="Гибкий график & обучение" class="w-full bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none" />
+              <input type="text" id="edit-ad-badge-l-title" oninput="updateDesktopLivePreview()" value="Натуральные сиропы" class="w-full bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none" />
             </div>
             <div>
               <label class="text-[10px] text-neutral-400 font-bold uppercase block mb-1">Текст в плашке</label>
-              <input type="text" id="edit-ad-badge-l-desc" oninput="updateDesktopLivePreview()" value="Опыт не обязателен — всему научим!" class="w-full bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none" />
+              <input type="text" id="edit-ad-badge-l-desc" oninput="updateDesktopLivePreview()" value="Готовим на свежем молоке" class="w-full bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none" />
             </div>
           </div>
 
@@ -449,37 +490,37 @@
           <span class="text-xs uppercase font-bold tracking-wider text-neutral-400">Предварительный просмотр:</span>
 
           <div class="relative w-full h-[220px] md:h-[340px] rounded-2xl md:rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex items-center justify-between p-4 md:p-6 text-left select-none">
-            <img id="desk-preview-bg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&auto=format&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover transition-all duration-150" />
+            <img id="desk-preview-bg" src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&auto=format&fit=crop&q=80" class="absolute inset-0 w-full h-full object-cover transition-all duration-150" />
             <div class="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/95"></div>
             
             <div class="relative z-10 flex flex-col justify-between h-full max-w-[60%]">
               <div>
                 <div class="flex items-center gap-1.5 mb-1">
-                  <span id="desk-preview-tag" class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-neutral-300">вакансия:</span>
-                  <span id="desk-preview-stamp" class="stamp-badge bg-white text-black font-display font-black text-[7px] md:text-[8px] px-1.5 py-0.5 uppercase -rotate-6">АХХУ!</span>
+                  <span id="desk-preview-tag" class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-neutral-300">акция:</span>
+                  <span id="desk-preview-stamp" class="stamp-badge bg-white text-black font-display font-black text-[7px] md:text-[8px] px-1.5 py-0.5 uppercase -rotate-6">COFFEEMAN</span>
                 </div>
                 <h3 class="font-display text-lg md:text-2xl font-black uppercase leading-[0.95] text-white">
-                  <span id="desk-preview-title1">ИЩЕМ</span> <br>
-                  <span id="desk-preview-title2" class="text-sticker">В КОМАНДУ</span>
+                  <span id="desk-preview-title1">НОВЫЙ ВКУС</span> <br>
+                  <span id="desk-preview-title2" class="text-sticker">СЕЗОНА</span>
                 </h3>
                 <p id="desk-preview-sub" class="font-display text-[9px] md:text-[10px] uppercase tracking-widest text-neutral-300 mt-1 font-bold truncate">
-                  Бариста • Мастер вкуса
+                  Кедровый Раф со сливочной пенкой
                 </p>
               </div>
 
               <div class="sticker-badge bg-white text-black px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-xl max-w-xs transform -rotate-1 border border-neutral-200">
-                <p id="desk-preview-badge-t" class="font-display text-[8px] md:text-[9px] font-black uppercase leading-tight truncate">Гибкий график & обучение</p>
-                <p id="desk-preview-badge-d" class="text-[7px] md:text-[8px] text-neutral-600 font-semibold truncate">Опыт не обязателен!</p>
+                <p id="desk-preview-badge-t" class="font-display text-[8px] md:text-[9px] font-black uppercase leading-tight truncate">Натуральные сиропы</p>
+                <p id="desk-preview-badge-d" class="text-[7px] md:text-[8px] text-neutral-600 font-semibold truncate">Готовим на свежем молоке</p>
               </div>
             </div>
 
             <div class="relative z-10 flex flex-col justify-between items-end h-full text-right max-w-[38%]">
               <div class="sticker-badge bg-sticker text-black font-display text-xs md:text-base font-black px-3 py-1 rounded-xl rotate-2 shadow-xl">
-                <span id="desk-preview-badge-r">от 65.000 ₽</span>
+                <span id="desk-preview-badge-r">290 ₽</span>
               </div>
               <div class="bg-black/60 backdrop-blur-md border border-white/20 p-2 rounded-xl text-right">
                 <p class="text-[8px] md:text-[10px] text-neutral-200 font-medium">На кассе:</p>
-                <p id="desk-preview-cta-r" class="font-display text-[8px] md:text-[10px] font-bold text-sticker uppercase truncate">«Хочу в команду» →</p>
+                <p id="desk-preview-cta-r" class="font-display text-[8px] md:text-[10px] font-bold text-sticker uppercase truncate">«Попробуйте сегодня» →</p>
               </div>
             </div>
           </div>
@@ -490,18 +531,18 @@
 
   </main>
 
-  <!-- ================= СЕКЦИЯ 3: НАСТРОЙКИ ЮKASSA & ТЕРМИНАЛА ================= -->
+  <!-- ================= СЕКЦИЯ 4: НАСТРОЙКИ ================= -->
   <main id="view-settings" class="hidden flex-1 p-3 md:p-8 max-w-4xl mx-auto w-full flex-col gap-4 md:gap-6">
     <div class="bg-surface border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col gap-4 md:gap-6 text-left">
       <div class="border-b border-white/10 pb-3">
-        <h2 class="font-display text-base md:text-xl font-black uppercase text-white">⚙️ Настройки кассы и терминала</h2>
-        <p class="text-xs text-neutral-400">Параметры интеграций, выбор стороны NFC и облако баннеров</p>
+        <h2 class="font-display text-base md:text-xl font-black uppercase text-white">⚙️ Настройки кассы COFFEEMAN</h2>
+        <p class="text-xs text-neutral-400">Связка с ЮKassa, сторона NFC и облако баннеров</p>
       </div>
 
       <!-- Сторона экрана для NFC -->
       <div class="flex flex-col gap-2">
         <h3 class="font-display text-xs font-bold uppercase text-sticker">1. Сторона подсветки для карт (NFC)</h3>
-        <p class="text-[11px] text-neutral-400">Укажи, с какой стороны планшета покупателю прикладывать карту:</p>
+        <p class="text-[11px] text-neutral-400">Укажи, с какого края экрана покупателю прикладывать карту:</p>
         <div class="grid grid-cols-2 gap-3 max-w-md">
           <button id="settings-side-left" onclick="setNfcSide('left')" class="py-3 px-4 rounded-xl border border-white/10 bg-white/5 font-display text-xs font-bold">
             ◀ Левый край
@@ -513,7 +554,7 @@
       </div>
 
       <div class="flex flex-col gap-3 pt-3 border-t border-white/10">
-        <h3 class="font-display text-xs font-bold uppercase text-sticker">2. Ключи ЮKassa</h3>
+        <h3 class="font-display text-xs font-bold uppercase text-sticker">2. Ключи ЮKassa (СБП & Оплата)</h3>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -527,7 +568,7 @@
         </div>
 
         <div>
-          <label class="text-xs text-neutral-300 font-bold block mb-1">Секретный ключ (Secret Key: live_...)</label>
+          <label class="text-xs text-neutral-300 font-bold block mb-1">Секретный ключ (live_...)</label>
           <input type="password" id="desk-secret-key" placeholder="live_... или test_..." class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
         </div>
       </div>
@@ -555,13 +596,17 @@
       <span class="text-lg">⚡</span>
       <span>Касса</span>
     </button>
+    <button id="mob-nav-syrups" onclick="openView('syrups')" class="flex-1 py-2 flex flex-col items-center gap-1 font-display text-[10px] font-bold uppercase text-neutral-400">
+      <span class="text-lg">🧴</span>
+      <span>Сиропы</span>
+    </button>
     <button id="mob-nav-ads" onclick="openView('ads')" class="flex-1 py-2 flex flex-col items-center gap-1 font-display text-[10px] font-bold uppercase text-neutral-400">
       <span class="text-lg">🎨</span>
       <span>Реклама</span>
     </button>
     <button id="mob-nav-settings" onclick="openView('settings')" class="flex-1 py-2 flex flex-col items-center gap-1 font-display text-[10px] font-bold uppercase text-neutral-400">
       <span class="text-lg">⚙️</span>
-      <span>Настройки</span>
+      <span>Опции</span>
     </button>
   </nav>
 
@@ -574,26 +619,31 @@
 
     function openView(view) {
       document.getElementById('view-pos').classList.add('hidden');
+      document.getElementById('view-syrups').classList.add('hidden');
       document.getElementById('view-ads').classList.add('hidden');
       document.getElementById('view-settings').classList.add('hidden');
 
       const btnPos = document.getElementById('nav-pos');
+      const btnSyrups = document.getElementById('nav-syrups');
       const btnAds = document.getElementById('nav-ads');
       const btnSettings = document.getElementById('nav-settings');
-      const inactiveDesk = 'px-5 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white';
-      const activeDesk = 'px-5 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all bg-sticker text-black shadow';
+      const inactiveDesk = 'px-4 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all text-neutral-400 hover:text-white';
+      const activeDesk = 'px-4 py-2 rounded-xl font-display text-xs font-bold uppercase transition-all bg-sticker text-black shadow';
 
       if (btnPos) btnPos.className = inactiveDesk;
+      if (btnSyrups) btnSyrups.className = inactiveDesk;
       if (btnAds) btnAds.className = inactiveDesk;
       if (btnSettings) btnSettings.className = inactiveDesk;
 
       const mobPos = document.getElementById('mob-nav-pos');
+      const mobSyrups = document.getElementById('mob-nav-syrups');
       const mobAds = document.getElementById('mob-nav-ads');
       const mobSettings = document.getElementById('mob-nav-settings');
       const inactiveMob = 'flex-1 py-2 flex flex-col items-center gap-1 font-display text-[10px] font-bold uppercase text-neutral-400';
       const activeMob = 'flex-1 py-2 flex flex-col items-center gap-1 font-display text-[10px] font-bold uppercase text-sticker';
 
       if (mobPos) mobPos.className = inactiveMob;
+      if (mobSyrups) mobSyrups.className = inactiveMob;
       if (mobAds) mobAds.className = inactiveMob;
       if (mobSettings) mobSettings.className = inactiveMob;
 
@@ -601,6 +651,12 @@
         document.getElementById('view-pos').classList.remove('hidden');
         if (btnPos) btnPos.className = activeDesk;
         if (mobPos) mobPos.className = activeMob;
+      } else if (view === 'syrups') {
+        document.getElementById('view-syrups').classList.remove('hidden');
+        document.getElementById('view-syrups').classList.add('flex');
+        if (btnSyrups) btnSyrups.className = activeDesk;
+        if (mobSyrups) mobSyrups.className = activeMob;
+        if (typeof renderSyrupsManager === 'function') renderSyrupsManager(window.loadedSyrups);
       } else if (view === 'ads') {
         document.getElementById('view-ads').classList.remove('hidden');
         document.getElementById('view-ads').classList.add('flex');
@@ -616,13 +672,12 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ================= ПЕРЕКЛЮЧЕНИЕ СТОРОНЫ NFC (ЛЕВО/ПРАВО) =================
+    // ================= ПЕРЕКЛЮЧЕНИЕ СТОРОНЫ КАРТЫ =================
     window.setNfcSide = function(side) {
       selectedNfcSide = side;
       localStorage.setItem('moon_nfc_side', side);
       updateNfcSideUI();
 
-      // Синхронизируем с экраном покупателя в Firebase
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       if (window.firebaseDB && window.dbRef && window.dbUpdate) {
         const settingsRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/settings`);
@@ -676,7 +731,7 @@
         });
       }
 
-      alert('Все настройки сохранены!');
+      alert('Настройки сохранены!');
       openView('pos');
     }
 
@@ -687,7 +742,106 @@
       });
     }
 
-    // ================= 1. РЕЖИМ ОПЛАТЫ КАРТОЙ (СВЕТЯЩИЙСЯ КРАЙ) =================
+    // ================= УПРАВЛЕНИЕ СИРОПАМИ =================
+    const defaultSyrupsList = [
+      { id: 'caramel', name: 'Солёная карамель', taste: 'Сладкий, сливочный', available: true, icon: '🍯' },
+      { id: 'vanilla', name: 'Французская ваниль', taste: 'Нежный, классический', available: true, icon: '🌼' },
+      { id: 'hazelnut', name: 'Лесной орех', taste: 'Густой ореховый аромат', available: true, icon: '🌰' },
+      { id: 'coconut', name: 'Кокос', taste: 'Тропический, мягкий', available: true, icon: '🥥' },
+      { id: 'lavender', name: 'Лаванда', taste: 'Цветочный, свежий', available: false, icon: '🪻' },
+      { id: 'popcorn', name: 'Попкорн', taste: 'Карамельно-кукурузный', available: true, icon: '🍿' },
+      { id: 'chocolate', name: 'Пряный шоколад', taste: 'Какао с корицей', available: true, icon: '🍫' },
+      { id: 'raspberry', name: 'Лесная малина', taste: 'Ягодная кислинка', available: false, icon: '🫐' }
+    ];
+
+    window.renderSyrupsManager = function(syrupsData) {
+      const container = document.getElementById('syrups-grid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let list = [];
+      if (!syrupsData) {
+        list = defaultSyrupsList;
+      } else if (Array.isArray(syrupsData)) {
+        list = syrupsData;
+      } else {
+        list = Object.keys(syrupsData).map(k => ({ id: k, ...syrupsData[k] }));
+      }
+
+      list.forEach(item => {
+        const isAvail = (item.available !== false);
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${isAvail ? 'bg-surface border-white/10 shadow-lg' : 'bg-surface/40 border-white/5 opacity-50'}`;
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-3xl">${item.icon || '🧴'}</span>
+              <button onclick="toggleSyrupStatus('${item.id}', ${isAvail})" class="text-[10px] font-display font-black uppercase px-2.5 py-1 rounded-full transition-all active:scale-95 ${isAvail ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
+                ${isAvail ? '● В наличии' : '○ Закончился'}
+              </button>
+            </div>
+            <h4 class="font-display font-bold text-sm text-white">${item.name}</h4>
+            <p class="text-xs text-neutral-400 mt-0.5">${item.taste || 'Фирменный сироп'}</p>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-white/10 text-xs">
+            <span class="text-sticker font-bold">+35 ₽</span>
+            <button onclick="deleteSyrup('${item.id}')" class="text-neutral-500 hover:text-rose-400 p-1">🗑️</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    };
+
+    window.toggleSyrupStatus = async function(syrupId, currentStatus) {
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      if (window.firebaseDB && window.dbRef && window.dbUpdate) {
+        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${syrupId}`);
+        await window.dbUpdate(syrupRef, { available: !currentStatus });
+      }
+    };
+
+    window.deleteSyrup = async function(syrupId) {
+      if (!confirm('Удалить этот сироп из списка?')) return;
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      if (window.firebaseDB && window.dbRef && window.dbRemove) {
+        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${syrupId}`);
+        await window.dbRemove(syrupRef);
+      }
+    };
+
+    window.openNewSyrupModal = async function() {
+      const name = prompt('Название сиропа (например: Солёная карамель):');
+      if (!name) return;
+      const taste = prompt('Вкус или описание (например: Сливочный, насыщенный):') || 'Натуральный сироп';
+      const icon = prompt('Иконка / Эмодзи (например: 🍯, 🥥, 🌰):') || '🧴';
+
+      const id = 's_' + Date.now();
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      if (window.firebaseDB && window.dbRef && window.dbSet) {
+        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${id}`);
+        await window.dbSet(syrupRef, {
+          id: id,
+          name: name.trim(),
+          taste: taste.trim(),
+          icon: icon.trim(),
+          available: true
+        });
+      }
+    };
+
+    window.triggerShowSyrupsOnDisplay = async function() {
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      if (window.firebaseDB && window.dbRef && window.dbSet) {
+        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
+        await window.dbSet(orderRef, {
+          status: 'SHOW_SYRUPS',
+          timestamp: Date.now()
+        });
+        document.getElementById('pos-status-text').innerHTML = '<span class="text-amber-400 font-bold">🧴 Полка сиропов открыта на экране покупателя!</span>';
+      }
+    };
+
+    // ================= РЕЖИМ КАРТЫ =================
     window.triggerCardPaymentOnScreen = async function() {
       const amount = parseInt(currentInput);
       if (!amount || amount <= 0) {
@@ -709,11 +863,10 @@
           timestamp: Date.now()
         });
 
-        document.getElementById('pos-status-text').innerHTML = `<span class="text-blue-400 font-bold">💳 Режим карты запущен! Мигает ${selectedNfcSide === 'left' ? 'левый' : 'правый'} край.</span>`;
+        document.getElementById('pos-status-text').innerHTML = `<span class="text-amber-400 font-bold">💳 Режим карты запущен! Мигает ${selectedNfcSide === 'left' ? 'левый' : 'правый'} край.</span>`;
       }
     };
 
-    // Подтверждение оплаты картой вручную
     window.confirmCardPaymentSuccess = async function() {
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       const amount = parseInt(currentInput) || 0;
@@ -727,11 +880,11 @@
         });
 
         clearAmount();
-        document.getElementById('pos-status-text').innerHTML = '<span class="text-emerald-400 font-bold">✅ Оплата картой успешно зафиксирована!</span>';
+        document.getElementById('pos-status-text').innerHTML = '<span class="text-emerald-400 font-bold">✅ Оплата картой зафиксирована! Экран говорит Спасибо.</span>';
       }
     };
 
-    // ================= 2. РЕЖИМ ОПЛАТЫ СБП QR =================
+    // ================= РЕЖИМ СБП QR =================
     async function createDirectSbpPayment() {
       const amount = parseInt(currentInput);
       if (!amount || amount <= 0) {
@@ -744,7 +897,7 @@
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
 
       if (!shopId || !secretKey) {
-        alert('Сначала введите Secret Key во вкладке «Настройки»');
+        alert('Укажите Secret Key во вкладке «Опции / Настройки»');
         openView('settings');
         return;
       }
@@ -753,7 +906,7 @@
       const statusText = document.getElementById('pos-status-text');
       
       sendBtn.disabled = true;
-      sendBtn.innerHTML = '<span>⏳ Создаем СБП счет...</span>';
+      sendBtn.innerHTML = '<span>⏳ Создаем СБП...</span>';
       statusText.innerText = 'Связываемся с ЮKassa...';
 
       if (activePollInterval) clearInterval(activePollInterval);
@@ -771,18 +924,11 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            amount: {
-              value: amount.toFixed(2),
-              currency: 'RUB'
-            },
-            payment_method_data: {
-              type: 'sbp'
-            },
-            confirmation: {
-              type: 'qr'
-            },
+            amount: { value: amount.toFixed(2), currency: 'RUB' },
+            payment_method_data: { type: 'sbp' },
+            confirmation: { type: 'qr' },
             capture: true,
-            description: `Оплата по QR (${amount} ₽)`
+            description: `COFFEEMAN Заказ на ${amount} ₽`
           })
         });
 
@@ -809,12 +955,12 @@
             qrUrl: sbpQrData,
             shopId: shopId,
             secretKey: secretKey,
-            description: `Заказ #${payment.id.slice(0, 5)}`,
+            description: `Заказ COFFEEMAN #${payment.id.slice(0, 5)}`,
             timestamp: Date.now()
           });
         }
 
-        statusText.innerHTML = `<span class="text-sticker font-bold">СБП QR на ${amount} ₽ на экране! Ждем оплату...</span>`;
+        statusText.innerHTML = `<span class="text-sticker font-bold">СБП QR на ${amount} ₽ на дисплее! Ожидаем оплату...</span>`;
         startDirectPaymentPolling(shopId, secretKey, payment.id, terminalId);
 
       } catch (err) {
@@ -855,7 +1001,7 @@
             }
 
             clearAmount();
-            document.getElementById('pos-status-text').innerHTML = '<span class="text-emerald-400 font-bold">✅ Оплата прошла! Экран поблагодарил гостя.</span>';
+            document.getElementById('pos-status-text').innerHTML = '<span class="text-emerald-400 font-bold">✅ СБП оплачена! Экран благодарит гостя.</span>';
           }
         } catch (e) {
           console.error("Polling error:", e);
@@ -871,16 +1017,7 @@
           status: 'TRIGGER_MAGIC_TIPS',
           timestamp: Date.now()
         });
-        document.getElementById('pos-status-text').innerHTML = '<span class="text-purple-400 font-bold">🪄 Экран чаевых запущен!</span>';
-      }
-    };
-
-    window.closeMagicTips = async function() {
-      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-      if (window.firebaseDB && window.dbRef && window.dbSet) {
-        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-        await window.dbSet(orderRef, { status: 'IDLE' });
-        document.getElementById('pos-status-text').innerText = 'Экран покупателя свободен';
+        document.getElementById('pos-status-text').innerHTML = '<span class="text-amber-400 font-bold">☕ Экран чаевых запущен!</span>';
       }
     };
 
@@ -940,7 +1077,7 @@
       clearAmount();
     }
 
-    // Рендер рекламы
+    // ================= РЕНДЕР РЕКЛАМЫ =================
     window.renderAdsListTable = function(adsObj) {
       const tbody = document.getElementById('ads-table-body');
       const mobileCards = document.getElementById('ads-mobile-cards');
@@ -948,25 +1085,25 @@
       tbody.innerHTML = '';
       mobileCards.innerHTML = '';
 
-      // 1. Обязательный баннер «Дом быта»
+      // Базовый промо-баннер COFFEEMAN 9 фишек
       const permRow = document.createElement('tr');
       permRow.className = 'bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors border-b border-yellow-300/20';
       permRow.innerHTML = `
         <td class="p-4 pl-6">
           <div class="w-16 h-12 rounded-xl overflow-hidden bg-neutral-800 border border-yellow-300/40 relative">
-            <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200" class="w-full h-full object-cover" />
+            <img src="coffeeman-cup.jpg" onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200'" class="w-full h-full object-cover" />
           </div>
         </td>
         <td class="p-4">
           <div class="font-display font-black text-sm text-white flex items-center gap-2">
-            МЫ ОТКРЫЛИСЬ! <span class="text-sticker">ЖДЁМ В ГОСТИ</span>
-            <span class="text-[9px] bg-sticker text-black font-display font-black px-2 py-0.5 rounded-full uppercase">30 сек</span>
+            9 ФИШЕК = <span class="text-sticker">10-Й КОФЕ БЕСПЛАТНО</span>[cite: 1]
+            <span class="text-[9px] bg-sticker text-black font-display font-black px-2 py-0.5 rounded-full uppercase">12 сек</span>
           </div>
-          <div class="text-xs text-neutral-300 mt-0.5 font-medium">Кафе быстрого питания • Остановка «Дом быта» 📍</div>
+          <div class="text-xs text-neutral-300 mt-0.5 font-medium">Программа лояльности COFFEEMAN • Kyzyl, Tuva[cite: 1]</div>
         </td>
-        <td class="p-4"><span class="bg-sticker text-black font-display font-black text-xs px-2.5 py-1 rounded-lg">ЗАХОДИТЕ!</span></td>
-        <td class="p-4 text-center"><span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🔒 Обязательный (30 сек)</span></td>
-        <td class="p-4 pr-6 text-right"><span class="text-xs text-neutral-500 italic">Не удаляется</span></td>
+        <td class="p-4"><span class="bg-sticker text-black font-display font-black text-xs px-2.5 py-1 rounded-lg">10-Й БЕСПЛАТНО</span></td>
+        <td class="p-4 text-center"><span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🔒 Основной</span></td>
+        <td class="p-4 pr-6 text-right"><span class="text-xs text-neutral-500 italic">Закреплен</span></td>
       `;
       tbody.appendChild(permRow);
 
@@ -975,22 +1112,21 @@
       permMobCard.innerHTML = `
         <div class="flex items-center gap-3">
           <div class="w-14 h-12 rounded-xl overflow-hidden bg-neutral-800 shrink-0 border border-yellow-300/40">
-            <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200" class="w-full h-full object-cover" />
+            <img src="coffeeman-cup.jpg" onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200'" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="font-display font-black text-xs text-white truncate">МЫ ОТКРЫЛИСЬ! ✨</div>
-            <div class="text-[10px] text-neutral-300 truncate">Остановка «Дом быта» 📍</div>
+            <div class="font-display font-black text-xs text-white truncate">9 ФИШЕК = 10-Й КОФЕ[cite: 1]</div>
+            <div class="text-[10px] text-neutral-300 truncate">COFFEEMAN • Kyzyl, Tuva[cite: 1]</div>
           </div>
-          <span class="text-[9px] bg-sticker text-black font-display font-black px-2 py-0.5 rounded-full">30с</span>
+          <span class="text-[9px] bg-sticker text-black font-display font-black px-2 py-0.5 rounded-full">12с</span>
         </div>
         <div class="flex justify-between items-center pt-2 border-t border-white/10 text-[10px]">
-          <span class="text-emerald-400 font-bold">🔒 Обязательный</span>
-          <span class="text-neutral-500">Не удаляется</span>
+          <span class="text-emerald-400 font-bold">🔒 Основной</span>
+          <span class="text-neutral-500">Закреплен</span>
         </div>
       `;
       mobileCards.appendChild(permMobCard);
 
-      // 2. Пользовательские баннеры
       const keys = Object.keys(adsObj);
       keys.forEach((id) => {
         const ad = adsObj[id];
@@ -1001,7 +1137,7 @@
         tr.innerHTML = `
           <td class="p-4 pl-6">
             <div class="w-16 h-12 rounded-xl overflow-hidden bg-neutral-800 border border-white/10 relative">
-              <img src="${ad.imgUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200'}" 
+              <img src="${ad.imgUrl || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200'}" 
                    style="transform: scale(${(ad.scale || 105) / 100}); object-position: ${ad.posX || 50}% ${ad.posY || 50}%;" 
                    class="w-full h-full object-cover" />
             </div>
@@ -1028,7 +1164,7 @@
         mobCard.innerHTML = `
           <div class="flex items-center gap-3">
             <div class="w-14 h-12 rounded-xl overflow-hidden bg-neutral-800 shrink-0 border border-white/10">
-              <img src="${ad.imgUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200'}" 
+              <img src="${ad.imgUrl || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200'}" 
                    style="transform: scale(${(ad.scale || 105) / 100}); object-position: ${ad.posX || 50}% ${ad.posY || 50}%;" 
                    class="w-full h-full object-cover" />
             </div>
@@ -1070,21 +1206,21 @@
     window.openAdEditorNew = function() {
       document.getElementById('edit-ad-id').value = 'ad_' + Date.now();
       document.getElementById('ad-editor-heading').innerText = 'Новый постер';
-      document.getElementById('edit-ad-img').value = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&auto=format&fit=crop&q=80';
+      document.getElementById('edit-ad-img').value = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&auto=format&fit=crop&q=80';
       
       document.getElementById('edit-ad-scale').value = 105;
       document.getElementById('edit-ad-pos-x').value = 50;
       document.getElementById('edit-ad-pos-y').value = 50;
 
-      document.getElementById('edit-ad-tag').value = 'вакансия:';
-      document.getElementById('edit-ad-stamp').value = 'АХХУ!';
-      document.getElementById('edit-ad-title1').value = 'ИЩЕМ';
-      document.getElementById('edit-ad-title2').value = 'В КОМАНДУ';
-      document.getElementById('edit-ad-sub').value = 'Бариста • Мастер вкуса';
-      document.getElementById('edit-ad-badge-r').value = 'от 65.000 ₽';
-      document.getElementById('edit-ad-cta-r').value = '«Хочу в команду» →';
-      document.getElementById('edit-ad-badge-l-title').value = 'Гибкий график & обучение';
-      document.getElementById('edit-ad-badge-l-desc').value = 'Опыт не обязателен — всему научим!';
+      document.getElementById('edit-ad-tag').value = 'акция:';
+      document.getElementById('edit-ad-stamp').value = 'COFFEEMAN';
+      document.getElementById('edit-ad-title1').value = 'НОВЫЙ ВКУС';
+      document.getElementById('edit-ad-title2').value = 'СЕЗОНА';
+      document.getElementById('edit-ad-sub').value = 'Кедровый Раф со сливочной пенкой';
+      document.getElementById('edit-ad-badge-r').value = '290 ₽';
+      document.getElementById('edit-ad-cta-r').value = '«Попробуйте сегодня» →';
+      document.getElementById('edit-ad-badge-l-title').value = 'Натуральные сиропы';
+      document.getElementById('edit-ad-badge-l-desc').value = 'Готовим на свежем молоке';
       
       document.getElementById('ad-editor-card').scrollIntoView({ behavior: 'smooth' });
       updateDesktopLivePreview();
@@ -1122,7 +1258,7 @@
     }
 
     function updateDesktopLivePreview() {
-      const img = document.getElementById('edit-ad-img').value.trim() || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200";
+      const img = document.getElementById('edit-ad-img').value.trim() || "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200";
       const previewBg = document.getElementById('desk-preview-bg');
       
       previewBg.src = img;
@@ -1199,7 +1335,7 @@
       const adData = {
         id: id,
         enabled: true,
-        imgUrl: document.getElementById('edit-ad-img').value.trim() || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200",
+        imgUrl: document.getElementById('edit-ad-img').value.trim() || "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200",
         scale: Number(document.getElementById('edit-ad-scale').value) || 105,
         posX: Number(document.getElementById('edit-ad-pos-x').value) || 50,
         posY: Number(document.getElementById('edit-ad-pos-y').value) || 50,
@@ -1226,4 +1362,4 @@
     }
   </script>
 </body>
-</html
+</html>
