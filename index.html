@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>COFFEEMAN • Customer Display Screen</title>
   
   <!-- Шрифты -->
@@ -39,6 +39,8 @@
   </script>
 
   <style>
+    * { -webkit-tap-highlight-color: transparent; user-select: none; }
+
     .fade-blur-enter {
       opacity: 0;
       filter: blur(14px);
@@ -48,13 +50,13 @@
       opacity: 1;
       filter: blur(0px);
       transform: scale(1) translateY(0px);
-      transition: all 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .fade-blur-exit {
       opacity: 0;
       filter: blur(14px);
       transform: scale(1.03) translateY(-10px);
-      transition: all 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .apple-handwriting path, .apple-handwriting text {
@@ -82,16 +84,16 @@
     @keyframes drawCheck { to { stroke-dashoffset: 0; } }
 
     .ambient-bg {
-      background: radial-gradient(circle at 50% 10%, rgba(255, 241, 136, 0.04) 0%, transparent 50%),
-                  radial-gradient(circle at 85% 85%, rgba(190, 80, 50, 0.05) 0%, transparent 60%),
-                  #0a0808;
+      background: radial-gradient(circle at 50% 10%, rgba(255, 241, 136, 0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 85% 85%, rgba(217, 119, 6, 0.06) 0%, transparent 60%),
+                  #090807;
       transition: background 0.8s ease;
     }
     .success-flash {
-      background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.04) 50%, #06100d) !important;
+      background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.04) 50%, #06100d) !important;
     }
     .magic-flash {
-      background: radial-gradient(circle at 50% 30%, rgba(234, 179, 8, 0.15) 0%, rgba(255, 241, 136, 0.05) 50%, #120d08) !important;
+      background: radial-gradient(circle at 50% 30%, rgba(234, 179, 8, 0.16) 0%, rgba(255, 241, 136, 0.05) 50%, #120d08) !important;
     }
 
     .sticker-badge { box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.7); }
@@ -106,7 +108,7 @@
     #qr-canvas, #magic-qr-canvas {
       display: block;
       margin: 0 auto;
-      border-radius: 8px;
+      border-radius: 12px;
       background: #ffffff;
     }
 
@@ -120,51 +122,55 @@
       pointer-events: none;
       transition: all 0.4s ease;
     }
-
     .nfc-edge-left {
       left: 0;
       background: linear-gradient(to right, rgba(255, 241, 136, 0.95), rgba(255, 241, 136, 0.4), transparent);
       box-shadow: 0 0 65px 30px rgba(255, 241, 136, 0.7);
       animation: pulseGlowLeft 1.2s infinite alternate ease-in-out;
     }
-
     .nfc-edge-right {
       right: 0;
       background: linear-gradient(to left, rgba(255, 241, 136, 0.95), rgba(255, 241, 136, 0.4), transparent);
       box-shadow: 0 0 65px 30px rgba(255, 241, 136, 0.7);
       animation: pulseGlowRight 1.2s infinite alternate ease-in-out;
     }
-
     @keyframes pulseGlowLeft {
-      0% { opacity: 0.35; transform: scaleX(0.85); box-shadow: 0 0 40px 15px rgba(255, 241, 136, 0.4); }
-      100% { opacity: 1; transform: scaleX(1.4); box-shadow: 0 0 90px 45px rgba(255, 241, 136, 0.9); }
+      0% { opacity: 0.35; transform: scaleX(0.85); }
+      100% { opacity: 1; transform: scaleX(1.4); }
     }
-
     @keyframes pulseGlowRight {
-      0% { opacity: 0.35; transform: scaleX(0.85); box-shadow: 0 0 40px 15px rgba(255, 241, 136, 0.4); }
-      100% { opacity: 1; transform: scaleX(1.4); box-shadow: 0 0 90px 45px rgba(255, 241, 136, 0.9); }
+      0% { opacity: 0.35; transform: scaleX(0.85); }
+      100% { opacity: 1; transform: scaleX(1.4); }
     }
 
-    .nfc-wave {
-      animation: nfcWaveAnim 1.6s infinite ease-out;
-    }
+    .nfc-wave { animation: nfcWaveAnim 1.6s infinite ease-out; }
     @keyframes nfcWaveAnim {
-      0% { transform: scale(0.9); opacity: 0.8; }
+      0%, 100% { transform: scale(0.9); opacity: 0.8; }
       50% { transform: scale(1.08); opacity: 1; }
-      100% { transform: scale(0.9); opacity: 0.8; }
     }
 
-    /* Кастомный горизонтальный скролл полки сиропов */
-    .shelf-scroll::-webkit-scrollbar {
-      height: 8px;
+    /* ================= 3D БАРАБАН ПОЛКИ СИРОПОВ ================= */
+    .drum-viewport {
+      perspective: 1200px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
-    .shelf-scroll::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 9999px;
+    .drum-viewport::-webkit-scrollbar {
+      display: none;
     }
-    .shelf-scroll::-webkit-scrollbar-thumb {
-      background: #FFF188;
-      border-radius: 9999px;
+    .drum-card {
+      scroll-snap-align: center;
+      transform-style: preserve-3d;
+      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      will-change: transform, opacity;
+    }
+    /* Эффект барной полки под бутылками */
+    .wooden-shelf-plank {
+      background: linear-gradient(180deg, #3a2212 0%, #241409 60%, #120904 100%);
+      box-shadow: 0 18px 35px rgba(0,0,0,0.95), inset 0 2px 3px rgba(255, 241, 136, 0.25);
+      border-top: 2px solid #5c381f;
     }
   </style>
 </head>
@@ -183,17 +189,17 @@
     </div>
   </div>
 
-  <!-- ХЕДЕР -->
-  <header class="w-full flex justify-between items-center z-20">
+  <!-- ================= ХЕДЕР (Зона 5 секретных нажатий) ================= -->
+  <header onclick="window.registerSecretTap()" class="w-full flex justify-between items-center z-20 cursor-default select-none">
     <div class="flex items-center gap-3">
       <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#34d399]"></div>
       <span class="text-xs uppercase tracking-widest font-bold text-neutral-300">COFFEEMAN • Online</span>
     </div>
     
     <div class="flex items-center gap-2.5">
-      <button onclick="window.toggleSyrupsShelf(true)" class="bg-white/10 hover:bg-white/20 border border-white/20 active:scale-95 text-neutral-200 text-xs font-display font-bold px-3 py-1 rounded-full flex items-center gap-1.5 transition-all">
+      <button onclick="event.stopPropagation(); window.toggleSyrupsShelf(true)" class="bg-white/10 hover:bg-white/20 border border-white/20 active:scale-95 text-neutral-100 text-xs font-display font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all shadow-lg">
         <span>🧴</span>
-        <span>Полка сиропов</span>
+        <span>Барная полка сиропов</span>
       </button>
       <div class="stamp-badge bg-white text-black font-display font-black text-[9px] px-2.5 py-1 uppercase tracking-tighter transform -rotate-6 opacity-90">
         KYZYL • TUVA
@@ -204,19 +210,21 @@
     </div>
   </header>
 
-  <!-- ОСНОВНАЯ ЗОНА -->
+  <!-- ================= ОСНОВНАЯ ЗОНА ================= -->
   <main class="flex-1 flex items-center justify-center relative my-auto w-full max-w-6xl mx-auto">
     
-    <!-- 1. РЕЖИМ ОЖИДАНИЯ (СЛАЙДЫ + АКЦИЯ 9 ФИШЕК + КЛИК ДЛЯ СИРОПОВ) -->
+    <!-- 1. РЕЖИМ ОЖИДАНИЯ (СЛАЙДЫ + АКЦИИ + КЛИК ДЛЯ СИРОПОВ) -->
     <section id="idle-screen" class="w-full flex flex-col items-center text-center transition-all duration-700 cursor-pointer" onclick="handleIdleScreenClick(event)">
       <div id="slide-container" class="w-full flex flex-col items-center justify-center min-h-[440px] fade-blur-active"></div>
-      <div id="dots-container" class="flex items-center gap-2 mt-6"></div>
-      <p class="text-[11px] text-neutral-400 font-medium mt-3 tracking-wider flex items-center gap-1.5 opacity-80">
-        <span>👆 Нажмите на экран, чтобы посмотреть карту вкусов и сиропов</span>
-      </p>
+      <div id="dots-container" class="flex items-center gap-2 mt-5"></div>
+      <div class="mt-4 inline-flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-2 rounded-full text-xs text-neutral-300 font-semibold transition-all">
+        <span>👆 Коснитесь экрана, чтобы покрутить барабан сиропов</span>
+        <span class="text-sticker font-bold">•</span>
+        <span onclick="event.stopPropagation(); window.triggerMagicTipScreen()" class="text-sticker hover:underline font-display font-bold">☕ Оставить чаевые</span>
+      </div>
     </section>
 
-    <!-- 2. РЕЖИМ ОПЛАТЫ (С КАССЫ: QR СБП / КАРТА) -->
+    <!-- 2. РЕЖИМ ОПЛАТЫ ЗАКАЗА (СБП QR ИЛИ БАНКОВСКАЯ КАРТА) -->
     <section id="payment-screen" class="w-full hidden opacity-0 transition-all duration-500">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
@@ -246,17 +254,17 @@
             </div>
           </div>
 
-          <!-- Выбор чаевых во время оплаты -->
-          <div>
+          <!-- Выбор чаевых во время оплаты (Перегенерирует реальный QR СБП!) -->
+          <div id="order-tips-block">
             <div class="flex items-center justify-between max-w-lg mb-2.5">
-              <p class="text-xs uppercase tracking-widest text-neutral-300 font-bold">Чаевые бариста:</p>
-              <span class="text-xs text-neutral-300 font-medium">Спасибо за поддержку! ☕</span>
+              <p class="text-xs uppercase tracking-widest text-neutral-300 font-bold">Добавить чаевые бариста:</p>
+              <span id="order-tip-status" class="text-xs text-sticker font-medium">Мгновенно обновит QR ☕</span>
             </div>
             <div class="flex flex-wrap gap-2.5">
-              <button onclick="setTip(0, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge">0 ₽</button>
-              <button onclick="setTip(50, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+50 ₽</button>
-              <button onclick="setTip(100, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+100 ₽</button>
-              <button onclick="setTip(200, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+200 ₽</button>
+              <button onclick="setOrderTip(0, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge">Без чаевых</button>
+              <button onclick="setOrderTip(50, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+50 ₽</button>
+              <button onclick="setOrderTip(100, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+100 ₽</button>
+              <button onclick="setOrderTip(150, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+150 ₽</button>
             </div>
           </div>
         </div>
@@ -264,21 +272,31 @@
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
           
           <!-- Оплата QR -->
-          <div id="card-mode-qr" class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
-            <div class="absolute -top-9 -right-5 text-sticker hidden sm:block">
-              <svg width="60" height="50" viewBox="0 0 60 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4,4">
-                <path d="M5,40 Q25,10 50,20" />
-                <polyline points="42,10 50,20 42,28" />
-              </svg>
-              <span class="font-display text-[9px] font-black text-black bg-sticker px-2 py-0.5 rounded-full absolute -top-3 left-4 rotate-3">СБП</span>
+          <div id="card-mode-qr" class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform rotate-1 transition-all duration-300 max-w-xs w-full">
+            <div class="absolute -top-4 bg-sticker text-black font-display font-black text-[10px] px-3.5 py-1 rounded-full uppercase shadow-md">
+              ОПЛАТА ПО СБП ⚡
             </div>
 
-            <div id="qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl mb-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
+            <!-- Спиннер загрузки QR -->
+            <div id="order-qr-loader" class="hidden min-h-[220px] min-w-[220px] flex-col items-center justify-center gap-2">
+              <div class="w-10 h-10 border-4 border-neutral-300 border-t-black rounded-full animate-spin"></div>
+              <span class="text-xs font-display font-bold text-neutral-600">Обновляем счёт...</span>
+            </div>
+
+            <!-- Ошибка генерации -->
+            <div id="order-qr-error" class="hidden min-h-[220px] min-w-[220px] flex-col items-center justify-center p-4 bg-rose-50 rounded-2xl border-2 border-rose-200 text-center">
+              <span class="text-4xl mb-2">🙈</span>
+              <p class="font-display font-black text-base text-rose-600 uppercase">Ой, не сегодня!</p>
+              <p class="text-[11px] text-neutral-600 font-semibold mt-1">Не удалось создать QR-код. Проверьте настройки Cloudflare или оплатите картой.</p>
+            </div>
+
+            <!-- Сам холст QR -->
+            <div id="qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
               <canvas id="qr-canvas"></canvas>
             </div>
 
             <p class="font-display font-black text-base tracking-tight uppercase leading-tight text-black">Наведите камеру</p>
-            <p class="text-xs text-neutral-500 font-semibold mt-1">Оплата сразу в приложении банка</p>
+            <p class="text-xs text-neutral-500 font-semibold mt-1">Оплата в приложении вашего банка</p>
           </div>
 
           <!-- Оплата картой -->
@@ -311,7 +329,7 @@
       </div>
     </section>
 
-    <!-- 3. ОТДЕЛЬНЫЙ ЭКРАН ЧАЕВЫХ -->
+    <!-- 3. РАБОЧИЙ ЭКРАН ЧАЕВЫХ (РЕАЛЬНАЯ ГЕНЕРАЦИЯ СБП ЧЕРЕЗ ЮKASSA) -->
     <section id="magic-tip-screen" class="w-full hidden opacity-0 transition-all duration-700">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
@@ -320,18 +338,18 @@
             <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3 py-1 uppercase -rotate-2">
               COFFEEMAN TEAM ☕
             </span>
-            <span class="text-xs text-amber-300 font-bold">Знак внимания бариста</span>
+            <span class="text-xs text-amber-300 font-bold">Прямой перевод по СБП</span>
           </div>
 
           <h2 class="font-display text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-tight tracking-tight text-shadow-hard">
             Понравился кофе? <br>
-            <span class="text-sticker">Оставь на чай</span> <br>
-            нашим бариста 💛
+            <span class="text-sticker">Поддержи</span> <br>
+            наших бариста 💛
           </h2>
 
           <div class="bg-black/60 border border-white/15 rounded-3xl p-5 backdrop-blur-xl flex flex-col gap-2 max-w-xl shadow-2xl">
             <p class="text-neutral-100 text-sm sm:text-base font-semibold leading-relaxed">
-              Мы вкладываем душу в каждую чашку! Любая ваша благодарность заряжает команду варить лучший кофе в Кызыле каждый день ☕✨
+              Мы вкладываем душу в каждую чашку! Выберите комфортную сумму — на экране сразу сформируется банковский QR-код СБП ☕✨
             </p>
           </div>
 
@@ -348,34 +366,56 @@
                 200 ₽ <span class="text-[10px] block font-normal text-neutral-300 font-sans">от души 💛</span>
               </button>
               <button onclick="selectMagicTip(300, this)" class="magic-tip-btn px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-sm font-bold active:scale-95 transition-all border border-white/15">
-                300 ₽ <span class="text-[10px] block font-normal text-neutral-300 font-sans">щедрый гость 👑</span>
+                300 ₽ <span class="text-[10px] block font-normal text-neutral-300 font-sans">лучший гость 👑</span>
               </button>
             </div>
           </div>
 
           <div class="flex items-center gap-4 pt-2">
             <button onclick="resetToIdle(false)" class="bg-white/10 hover:bg-white/20 active:scale-95 text-xs text-neutral-200 font-display font-bold uppercase px-5 py-2.5 rounded-xl border border-white/15 transition-all">
-              Закрыть ✕
+              Вернуться назад ✕
             </button>
             <div class="text-xs text-neutral-300 font-medium flex items-center gap-1.5">
-              <span>Экран закроется через:</span>
+              <span>Автозакрытие через:</span>
               <span id="magic-timer-val" class="font-display font-bold text-sticker text-sm">03:00</span>
             </div>
           </div>
         </div>
 
+        <!-- Правая карточка с QR чаевых или ошибкой «Ой, не сегодня» -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
-          <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform -rotate-1 hover:rotate-0 transition-transform duration-300 max-w-xs w-full">
-            <div class="stamp-badge bg-sticker text-black font-display font-black text-[9px] px-3 py-1 uppercase -rotate-3 absolute -top-4">
-              ЧАЕВЫЕ COFFEEMAN ☕
+          <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center max-w-xs w-full">
+            <div class="stamp-badge bg-sticker text-black font-display font-black text-[9px] px-3 py-1 uppercase -rotate-3 absolute -top-4 shadow">
+              ЧАЕВЫЕ СБП ☕
             </div>
 
+            <!-- Спиннер генерации QR чаевых -->
+            <div id="magic-qr-loader" class="hidden my-3 min-h-[220px] min-w-[220px] flex-col items-center justify-center gap-3">
+              <div class="w-10 h-10 border-4 border-neutral-200 border-t-black rounded-full animate-spin"></div>
+              <span class="text-xs font-display font-bold text-neutral-600">Создаем QR СБП...</span>
+            </div>
+
+            <!-- ОШИБКА: ОЙ, НЕ СЕГОДНЯ -->
+            <div id="magic-qr-error" class="hidden my-3 min-h-[220px] min-w-[220px] flex-col items-center justify-center p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl text-center">
+              <span class="text-5xl mb-2 animate-bounce">😅</span>
+              <h4 class="font-display font-black text-lg text-rose-600 uppercase leading-tight">
+                Ой, не сегодня!
+              </h4>
+              <p id="magic-error-desc" class="text-[11px] text-neutral-600 font-semibold mt-1.5 leading-snug">
+                Не удалось сгенерировать QR-код чаевых. Проверьте связь с кассой.
+              </p>
+              <button onclick="retryCurrentTipQr()" class="mt-3 bg-black text-white font-display text-[10px] font-bold uppercase px-3.5 py-1.5 rounded-lg active:scale-95">
+                Попробовать снова ↻
+              </button>
+            </div>
+
+            <!-- Холст QR-кода чаевых -->
             <div id="magic-qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
               <canvas id="magic-qr-canvas"></canvas>
             </div>
 
-            <p id="magic-tip-display-val" class="font-display font-black text-xl tracking-tight uppercase text-black">50 ₽</p>
-            <p class="text-[11px] text-neutral-500 font-semibold mt-0.5">Перевод бариста по QR</p>
+            <p id="magic-tip-display-val" class="font-display font-black text-2xl tracking-tight uppercase text-black">50 ₽</p>
+            <p class="text-[11px] text-neutral-500 font-semibold mt-0.5">Наведите камеру телефона для перевода</p>
           </div>
         </div>
 
@@ -447,64 +487,185 @@
 
   </main>
 
-  <!-- ================= МОДАЛКА: ПОЛКА СИРОПОВ СО СВАЙПОМ ================= -->
-  <div id="syrups-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col justify-center items-center p-4 md:p-8 hidden opacity-0 transition-opacity duration-300">
-    <div class="w-full max-w-5xl bg-neutral-950/90 border border-white/20 rounded-3xl p-6 md:p-8 flex flex-col gap-6 shadow-[0_0_60px_rgba(0,0,0,0.9)] relative">
+  <!-- ================= МОДАЛКА: 3D-ПОЛКА СИРОПОВ С БАРАБАНОМ И ХАРАКТЕРИСТИКАМИ СЛЕВА ================= -->
+  <div id="syrups-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex flex-col justify-center items-center p-4 md:p-8 hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-6xl bg-neutral-950/95 border border-white/15 rounded-3xl p-5 md:p-8 flex flex-col gap-5 shadow-[0_0_80px_rgba(0,0,0,0.95)] relative overflow-hidden">
       
       <!-- Шапка полки -->
-      <div class="flex justify-between items-start border-b border-white/10 pb-4">
+      <div class="flex justify-between items-center border-b border-white/10 pb-4 z-10">
         <div>
           <div class="flex items-center gap-2 mb-1">
             <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-2.5 py-0.5 uppercase -rotate-2">
-              НАЛИЧИЕ В БАРЕ
+              ИНТЕРАКТИВНЫЙ БАР
             </span>
-            <span class="text-xs text-neutral-300 font-bold">Листайте вбок пальцем 👈👉</span>
+            <span class="text-xs text-amber-300 font-bold">Крутите барабан сиропов вправо и влево 👈👉</span>
           </div>
-          <h3 class="font-display text-2xl md:text-3xl font-black uppercase text-white">
-            Полка сиропов <span class="text-sticker">COFFEEMAN</span>
+          <h3 class="font-display text-xl md:text-3xl font-black uppercase text-white">
+            Коллекция вкусов <span class="text-sticker">COFFEEMAN</span>
           </h3>
         </div>
-        <button onclick="window.toggleSyrupsShelf(false)" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center font-display font-bold text-lg text-white border border-white/20 transition-all">
+        <button onclick="window.toggleSyrupsShelf(false)" class="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center font-display font-bold text-lg text-white border border-white/20 transition-all">
           ✕
         </button>
       </div>
 
-      <!-- Контейнер со свайпом / скроллом -->
-      <div id="syrups-scroll-track" class="shelf-scroll flex gap-4 overflow-x-auto pb-4 pt-2 px-1 cursor-grab active:cursor-grabbing select-none">
-        <!-- Карточки генерируются скриптом -->
-      </div>
-
-      <!-- Подвал модалки -->
-      <div class="flex flex-wrap justify-between items-center text-xs text-neutral-400 pt-2 border-t border-white/10">
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-            <span>В наличии</span>
+      <!-- Основной контент: Слева характеристики активного сиропа, Справа 3D-барабан на полке -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto">
+        
+        <!-- ЛЕВАЯ ПАНЕЛЬ: ХАРАКТЕРИСТИКИ ВЫБРАННОГО В ЦЕНТРЕ СИРОПА -->
+        <div id="syrup-detail-panel" class="lg:col-span-5 bg-gradient-to-br from-neutral-900 via-neutral-900/90 to-black border border-white/15 rounded-3xl p-6 flex flex-col justify-between gap-4 shadow-2xl relative overflow-hidden min-h-[320px]">
+          <div class="flex justify-between items-start">
+            <div class="flex items-center gap-3">
+              <div id="detail-icon" class="w-16 h-16 rounded-2xl bg-sticker/10 border border-sticker/30 flex items-center justify-center text-4xl shadow-inner">
+                🍯
+              </div>
+              <div>
+                <span id="detail-status-badge" class="text-[10px] font-display font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  ● В наличии
+                </span>
+                <h4 id="detail-name" class="font-display text-xl md:text-2xl font-black text-white mt-1 leading-tight">
+                  Солёная карамель
+                </h4>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-neutral-600"></span>
-            <span>Закончился</span>
+
+          <p id="detail-desc" class="text-xs sm:text-sm text-neutral-300 font-medium leading-relaxed bg-black/40 p-3.5 rounded-2xl border border-white/5">
+            Тягучий сливочно-карамельный вкус с легким кристаллом морской соли в послевкусии.
+          </p>
+
+          <!-- Шкалы характеристик -->
+          <div class="flex flex-col gap-2.5">
+            <div>
+              <div class="flex justify-between text-[11px] font-bold mb-1">
+                <span class="text-neutral-400 uppercase">Сладость и плотность</span>
+                <span id="detail-sweet-val" class="text-sticker font-display">5 / 5</span>
+              </div>
+              <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div id="detail-sweet-bar" class="h-full bg-sticker rounded-full transition-all duration-300" style="width: 95%"></div>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs">
+              <span class="text-neutral-400 font-semibold">Идеально в:</span>
+              <span id="detail-pair" class="font-display font-bold text-white text-right">Латте, Капучино, Айс-кофе</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center pt-3 border-t border-white/10">
+            <span class="text-xs text-neutral-400 font-medium">Стоимость порции (20 мл):</span>
+            <span id="detail-price" class="font-display text-xl font-black text-sticker">+35 ₽</span>
           </div>
         </div>
-        <p class="text-neutral-400">Любой сироп к вашему напитку: +35 ₽</p>
+
+        <!-- ПРАВАЯ ПАНЕЛЬ: 3D-БАРАБАН БУТЫЛОЧЕК НА ПОЛКЕ -->
+        <div class="lg:col-span-7 flex flex-col justify-center relative">
+          
+          <!-- Подсказки навигации -->
+          <div class="flex justify-between items-center px-4 mb-2">
+            <button onclick="scrollSyrupDrum(-1)" class="bg-white/10 hover:bg-white/20 active:scale-90 px-3.5 py-1.5 rounded-xl font-display text-xs font-bold text-sticker border border-white/15">
+              ◀ Влево
+            </button>
+            <span class="text-[11px] uppercase tracking-widest text-neutral-400 font-bold">Центральный сироп активен</span>
+            <button onclick="scrollSyrupDrum(1)" class="bg-white/10 hover:bg-white/20 active:scale-90 px-3.5 py-1.5 rounded-xl font-display text-xs font-bold text-sticker border border-white/15">
+              Вправо ▶
+            </button>
+          </div>
+
+          <!-- Барабан с карточками -->
+          <div id="syrups-drum" class="drum-viewport flex items-center gap-5 py-8 px-[32%] cursor-grab active:cursor-grabbing select-none">
+            <!-- Генерируется скриптом -->
+          </div>
+
+          <!-- Деревянная барная полка под сиропами -->
+          <div class="wooden-shelf-plank w-full h-5 rounded-full -mt-4 relative z-0"></div>
+          <div class="w-11/12 mx-auto h-3 bg-black/80 blur-md rounded-full"></div>
+
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- ФУТЕР -->
+  <!-- ================= СКРЫТАЯ АДМИН-ПАНЕЛЬ (5 ТАПОВ + ПАРОЛЬ 0506) ================= -->
+  <div id="secret-admin-modal" class="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-2xl hidden items-center justify-center p-4">
+    
+    <!-- Шаг 1: Ввод пароля 0506 -->
+    <div id="secret-pin-box" class="bg-neutral-900 border border-white/20 rounded-3xl max-w-xs w-full p-6 text-center flex flex-col gap-4 shadow-2xl">
+      <div class="text-xs font-display font-black uppercase text-sticker tracking-widest">🔒 Доступ к терминалу</div>
+      <input type="password" id="secret-pin-input" maxlength="4" placeholder="••••" class="w-full bg-black/60 border border-white/20 rounded-2xl py-3 text-center font-display text-3xl tracking-[0.5em] text-white focus:outline-none focus:border-yellow-300" />
+      <p id="secret-pin-error" class="text-xs text-rose-400 font-bold hidden">Неверный пароль!</p>
+      
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="tapPin('1')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">1</button>
+        <button onclick="tapPin('2')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">2</button>
+        <button onclick="tapPin('3')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">3</button>
+        <button onclick="tapPin('4')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">4</button>
+        <button onclick="tapPin('5')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">5</button>
+        <button onclick="tapPin('6')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">6</button>
+        <button onclick="tapPin('7')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">7</button>
+        <button onclick="tapPin('8')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">8</button>
+        <button onclick="tapPin('9')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">9</button>
+        <button onclick="clearPin()" class="py-3 bg-rose-500/20 text-rose-300 rounded-xl font-display font-bold text-xs uppercase">Сброс</button>
+        <button onclick="tapPin('0')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">0</button>
+        <button onclick="closeSecretModal()" class="py-3 bg-white/10 text-neutral-400 rounded-xl font-display font-bold text-xs uppercase">Выход</button>
+      </div>
+    </div>
+
+    <!-- Шаг 2: Настройки Cloudflare и ЮKassa -->
+    <div id="secret-config-box" class="hidden bg-neutral-900 border border-white/20 rounded-3xl max-w-md w-full p-6 text-left flex-col gap-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-white/10 pb-3">
+        <div>
+          <span class="text-[10px] font-display font-black uppercase bg-sticker text-black px-2 py-0.5 rounded">ADMIN • 0506</span>
+          <h3 class="font-display font-black text-base uppercase text-white mt-1">Настройки экрана и СБП</h3>
+        </div>
+        <button onclick="closeSecretModal()" class="text-neutral-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div>
+        <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Ссылка на Cloudflare Worker</label>
+        <input type="url" id="adm-cf-url" placeholder="https://coffeeman.workers.dev" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Shop ID (ЮKassa)</label>
+          <input type="text" id="adm-shop-id" placeholder="1350725" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+        </div>
+        <div>
+          <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">ID Терминала</label>
+          <input type="text" id="adm-term-id" value="term_01" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Секретный ключ (Secret Key)</label>
+        <input type="password" id="adm-secret-key" placeholder="live_... или test_..." class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveSecretAdminConfig()" class="flex-1 bg-sticker text-black font-display font-black text-xs uppercase py-3.5 rounded-xl active:scale-95 transition-all">
+          💾 Сохранить и синхронизировать
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= ФУТЕР ================= -->
   <footer class="w-full flex justify-between items-center z-20 pt-6 border-t border-white/10 text-xs text-neutral-400">
     <div class="flex items-center gap-2">
       <span class="font-display font-bold text-neutral-200 uppercase tracking-wider">COFFEEMAN</span>
       <span class="text-neutral-500">•</span>
       <span>г. Кызыл, Республика Тыва</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Customer Display • Syrups & NFC Terminal</div>
+    <div class="text-[11px] text-neutral-400">Customer Display v4.0 • 3D Drum & Live SBP</div>
   </footer>
 
-  <!-- СВЯЗЬ С FIREBASE И УПРАВЛЕНИЕ -->
+  <!-- ================= СКРИПТЫ FIREBASE, БАРАБАНА И ОПЛАТЫ ================= -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB8CBeK8m25rox6BYO8ep6JeBJ7ipmYViQ",
@@ -520,10 +681,124 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // Глобальные настройки подключения (берутся из localStorage или прилетают из Firebase)
+    let terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+    let globalShopId = localStorage.getItem('yk_shop_id') || '';
+    let globalSecretKey = localStorage.getItem('yk_secret_key') || '';
+    let globalCfUrl = localStorage.getItem('cf_worker_url') || '';
+    let globalProxyMode = localStorage.getItem('cf_proxy_mode') || 'cloudflare';
+
+    // ================= СЕКРЕТНАЯ ПАНЕЛЬ НА 5 НАЖАТИЙ (ПАРОЛЬ 0506) =================
+    let secretTapCount = 0;
+    let secretTapTimer = null;
+    let enteredPin = "";
+
+    window.registerSecretTap = function() {
+      secretTapCount++;
+      if (secretTapTimer) clearTimeout(secretTapTimer);
+
+      if (secretTapCount >= 5) {
+        secretTapCount = 0;
+        openSecretModal();
+      } else {
+        secretTapTimer = setTimeout(() => {
+          secretTapCount = 0;
+        }, 1800);
+      }
+    };
+
+    function openSecretModal() {
+      enteredPin = "";
+      document.getElementById('secret-pin-input').value = "";
+      document.getElementById('secret-pin-error').classList.add('hidden');
+      document.getElementById('secret-pin-box').classList.remove('hidden');
+      document.getElementById('secret-config-box').classList.add('hidden');
+      document.getElementById('secret-config-box').classList.remove('flex');
+      
+      const modal = document.getElementById('secret-admin-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    window.closeSecretModal = function() {
+      const modal = document.getElementById('secret-admin-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    window.tapPin = function(digit) {
+      if (enteredPin.length < 4) {
+        enteredPin += digit;
+        document.getElementById('secret-pin-input').value = enteredPin;
+        document.getElementById('secret-pin-error').classList.add('hidden');
+        if (enteredPin.length === 4) {
+          checkSecretPin();
+        }
+      }
+    };
+
+    window.clearPin = function() {
+      enteredPin = "";
+      document.getElementById('secret-pin-input').value = "";
+      document.getElementById('secret-pin-error').classList.add('hidden');
+    };
+
+    document.getElementById('secret-pin-input').addEventListener('input', (e) => {
+      enteredPin = e.target.value;
+      if (enteredPin.length === 4) checkSecretPin();
+    });
+
+    function checkSecretPin() {
+      if (enteredPin === "0506") {
+        document.getElementById('secret-pin-box').classList.add('hidden');
+        const cfgBox = document.getElementById('secret-config-box');
+        cfgBox.classList.remove('hidden');
+        cfgBox.classList.add('flex');
+
+        document.getElementById('adm-cf-url').value = globalCfUrl;
+        document.getElementById('adm-shop-id').value = globalShopId;
+        document.getElementById('adm-secret-key').value = globalSecretKey;
+        document.getElementById('adm-term-id').value = terminalId;
+      } else {
+        document.getElementById('secret-pin-error').classList.remove('hidden');
+        enteredPin = "";
+        document.getElementById('secret-pin-input').value = "";
+      }
+    }
+
+    window.saveSecretAdminConfig = async function() {
+      globalCfUrl = document.getElementById('adm-cf-url').value.trim();
+      globalShopId = document.getElementById('adm-shop-id').value.trim();
+      globalSecretKey = document.getElementById('adm-secret-key').value.trim();
+      terminalId = document.getElementById('adm-term-id').value.trim() || 'term_01';
+
+      localStorage.setItem('cf_worker_url', globalCfUrl);
+      localStorage.setItem('yk_shop_id', globalShopId);
+      localStorage.setItem('yk_secret_key', globalSecretKey);
+      localStorage.setItem('yk_term_id', terminalId);
+
+      try {
+        const settingsRef = ref(db, `terminals/${terminalId}/settings`);
+        await update(settingsRef, {
+          cfWorkerUrl: globalCfUrl,
+          shopId: globalShopId,
+          secretKey: globalSecretKey,
+          proxyMode: globalCfUrl ? 'cloudflare' : 'corsproxy',
+          updatedAt: Date.now()
+        });
+      } catch (e) {
+        console.warn("Firebase sync warning:", e);
+      }
+
+      closeSecretModal();
+    };
+
+    // ================= РАСШИРЕННЫЕ РАЗНОВИДНОСТИ ЭКРАНОВ ОЖИДАНИЯ =================
     const greetingsList = [
       { word: "Привет", heading: "Твой идеальный кофе готов", sub: "COFFEEMAN • Готовим с душой каждый день ☕" },
       { word: "Салют", heading: "Время подзарядиться", sub: "Свежая обжарка и лучший вкус в Кызыле ✨" },
-      { word: "Хей", heading: "Отличный день для кофе", sub: "Возьми любимый напиток с собой 💫" }
+      { word: "Хей", heading: "Отличный день для кофе", sub: "Возьми любимый напиток с собой 💫" },
+      { word: "Добро пожаловать", heading: "Согреваем вкусом и уютом", sub: "100% отборная арабика и натуральное молоко 🥛" }
     ];
 
     function getRandomGreetingHtml() {
@@ -531,8 +806,8 @@
       return `
         <div class="flex flex-col items-center">
           <div class="apple-handwriting text-sticker mb-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
-            <svg width="300" height="120" viewBox="0 0 300 120" fill="none">
-              <text x="50%" y="75%" text-anchor="middle" font-family="'Caveat', cursive" font-size="95" font-weight="700" stroke="currentColor" stroke-width="2.5" fill="none">${g.word}</text>
+            <svg width="340" height="120" viewBox="0 0 340 120" fill="none">
+              <text x="50%" y="75%" text-anchor="middle" font-family="'Caveat', cursive" font-size="90" font-weight="700" stroke="currentColor" stroke-width="2.5" fill="none">${g.word}</text>
             </svg>
           </div>
           <h1 class="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase leading-tight tracking-tight text-white max-w-3xl text-shadow-hard">
@@ -547,12 +822,12 @@
       `;
     }
 
-    // БАННЕР АКЦИИ
+    // 1. Акция 9 фишек
     const promoNineChipsSlide = {
       type: 'promo_nine_chips',
-      duration: 12000,
+      duration: 11000,
       html: `
-        <div class="relative w-full max-w-5xl h-[440px] rounded-3xl overflow-hidden border border-yellow-300/40 shadow-2xl flex items-center justify-between p-6 sm:p-10 text-left bg-gradient-to-r from-neutral-950 via-neutral-900 to-black">
+        <div class="relative w-full max-w-5xl h-[430px] rounded-3xl overflow-hidden border border-yellow-300/40 shadow-2xl flex items-center justify-between p-6 sm:p-10 text-left bg-gradient-to-r from-neutral-950 via-neutral-900 to-black">
           <div class="absolute inset-0 z-0 flex items-center justify-end overflow-hidden pointer-events-none">
             <img src="coffeeman-cup.jpg" 
                  onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&auto=format&fit=crop&q=80'"
@@ -565,7 +840,7 @@
             <div class="backdrop-blur-md bg-black/50 p-5 rounded-3xl border border-white/15 shadow-2xl">
               <div class="flex items-center gap-2 mb-3">
                 <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3 py-1 uppercase -rotate-3">
-                  ПРОГРАММА ЛОЯЛЬНОСТИ[span_0](start_span)[span_0](end_span)
+                  ПРОГРАММА ЛОЯЛЬНОСТИ
                 </span>
                 <span class="text-xs uppercase tracking-wider text-sticker font-bold animate-pulse">ПОДАРОК ДЛЯ ГОСТЕЙ 🎁</span>
               </div>
@@ -575,17 +850,17 @@
                 <span class="text-emerald-400">БЕСПЛАТНО!</span>
               </h2>
               <p class="text-neutral-200 text-xs sm:text-sm font-semibold mt-3 leading-relaxed">
-                Покупай любой напиток, получай отметку и забирай свой 10-й подарочный кофе на кассе.[span_1](start_span)[span_1](end_span)
+                Покупай любой напиток, получай отметку и забирай свой 10-й подарочный кофе на кассе.
               </p>
             </div>
 
             <div class="flex flex-wrap gap-2 items-center pt-2">
               <div class="sticker-badge bg-white text-black px-4 py-2 rounded-2xl flex items-center gap-2">
                 <span class="text-xs font-display font-black uppercase">VK / IG:</span>
-                <span class="text-xs font-bold text-neutral-800">coffeeman_kzl</span>[span_2](start_span)[span_2](end_span)
+                <span class="text-xs font-bold text-neutral-800">coffeeman_kzl</span>
               </div>
               <div class="bg-black/60 border border-white/15 px-3 py-2 rounded-2xl text-[11px] font-bold text-neutral-300">
-                Kyzyl, Tuva 📍[span_3](start_span)[span_3](end_span)
+                Kyzyl, Tuva 📍
               </div>
             </div>
           </div>
@@ -596,54 +871,102 @@
             </div>
             <div class="bg-black/80 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl text-right">
               <p class="text-[11px] text-neutral-400 font-medium">Спроси у бариста:</p>
-              <p class="font-display text-xs font-black text-sticker uppercase mt-0.5">«Дайте карточку для фишек»</p>
+              <p class="font-display text-xs font-black text-sticker uppercase mt-0.5">«Карточку для фишек»</p>
             </div>
           </div>
         </div>
       `
     };
 
-    // БОЛЬШАЯ БАЗА ИНТЕРЕСНЫХ ФАКТОВ О КОФЕ
+    // 2. Новая разновидность: Витрина авторских напитков
+    const signatureMenuSlide = {
+      type: 'signature_menu',
+      duration: 10000,
+      html: `
+        <div class="w-full max-w-5xl flex flex-col items-center">
+          <div class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3.5 py-1 uppercase -rotate-2 mb-3">
+            ХИТЫ COFFEEMAN 🔥
+          </div>
+          <h2 class="font-display text-3xl sm:text-5xl font-black uppercase text-white text-shadow-hard mb-6">
+            Попробуй наши <span class="text-sticker">бестселлеры</span>
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full text-left">
+            <div class="bg-neutral-900/90 border border-white/15 p-5 rounded-3xl flex flex-col justify-between shadow-xl">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-3xl">🍯</span>
+                  <span class="text-[10px] font-display font-bold bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full">Хит продаж</span>
+                </div>
+                <h3 class="font-display font-black text-lg text-white">Солёно-карамельный Раф</h3>
+                <p class="text-xs text-neutral-400 mt-1">Взбитые сливки, эспрессо и густая карамель с морской солью.</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+                <span class="text-xs text-neutral-400">350 мл</span>
+                <span class="font-display font-black text-sticker text-lg">250 ₽</span>
+              </div>
+            </div>
+
+            <div class="bg-neutral-900/90 border border-yellow-300/40 p-5 rounded-3xl flex flex-col justify-between shadow-xl transform md:-translate-y-2">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-3xl">🌰</span>
+                  <span class="text-[10px] font-display font-bold bg-sticker text-black px-2.5 py-0.5 rounded-full">Выбор бариста</span>
+                </div>
+                <h3 class="font-display font-black text-lg text-white">Ореховый Флэт Уайт</h3>
+                <p class="text-xs text-neutral-400 mt-1">Двойной ристретто, тонкая молочная микропена и лесной орех.</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+                <span class="text-xs text-neutral-400">250 мл</span>
+                <span class="font-display font-black text-sticker text-lg">220 ₽</span>
+              </div>
+            </div>
+
+            <div class="bg-neutral-900/90 border border-white/15 p-5 rounded-3xl flex flex-col justify-between shadow-xl">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-3xl">🥥</span>
+                  <span class="text-[10px] font-display font-bold bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full">Нежный вкус</span>
+                </div>
+                <h3 class="font-display font-black text-lg text-white">Кокосовый Латте</h3>
+                <p class="text-xs text-neutral-400 mt-1">Мягкий эспрессо с тропической кокосовой сладостью и воздушной пенкой.</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
+                <span class="text-xs text-neutral-400">400 мл</span>
+                <span class="font-display font-black text-sticker text-lg">240 ₽</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    };
+
     const factsList = [
       { 
         tag: "История & легенда", 
         title: "Танцующие козы <br><span class='text-sticker'>открыли кофе</span>", 
-        desc: "По легенде, в IX веке эфиопский пастух Калдим заметил, что его козы становятся невероятно бодрыми и игривыми после того, как поедят красных ягод с неизвестного кустарника 🐐🍒" 
+        desc: "По легенде, эфиопский пастух Калдим заметил, что его козы не спят по ночам после ягод кофейного дерева 🐐🍒" 
       },
       { 
         tag: "Химия вкуса", 
         title: "Где больше кофеина: <br><span class='text-sticker'>в светлой обжарке!</span>", 
-        desc: "Миф, что темная обжарка крепче: при долгой жарке кофеин частично разрушается. Зерна светлой обжарки сохраняют больше кофеина и яркую ягодную кислинку 🔬⚡" 
+        desc: "При долгой темной обжарке часть кофеина разрушается, поэтому светлое зерно бодрит сильнее 🔬⚡" 
       },
       { 
         tag: "Физика эспрессо", 
         title: "Давление в 9 бар <br><span class='text-sticker'>как на глубине 90 метров</span>", 
-        desc: "Именно под таким давлением вода пробивает кофейную таблетку за 25-30 секунд, создавая плотную золотистую пенку «крема» и концентрированный вкус 🌊☕" 
+        desc: "Вода пробивает кофейную таблетку за 25 секунд, создавая плотную золотистую пенку «крема» 🌊☕" 
       },
       { 
         tag: "Авторский напиток", 
-        title: "Раф-кофе придумали <br><span class='text-sticker'>в Москве для гостя Рафаэля</span>", 
-        desc: "В конце 90-х постоянный гость попросил приготовить «что-то мягкое». Бариста взбил эспрессо со сливками 10% и ванильным сахаром прямо в питчере. Так родился легендарный раф 🍨💫" 
-      },
-      { 
-        tag: "Аромат & обоняние", 
-        title: "Более 800 <br><span class='text-sticker'>ароматических соединений</span>", 
-        desc: "Кофе по ароматической сложности превосходит даже вино! В чашке спешелти-кофе можно почувствовать ноты жасмина, бергамота, черники и шоколада 🍫🌸" 
-      },
-      { 
-        tag: "COFFEEMAN Bar", 
-        title: "Идеальный помол <br><span class='text-sticker'>настраивается каждое утро</span>", 
-        desc: "Влажность и температура воздуха в Кызыле меняются каждый день, поэтому наши бариста ежедневно калибруют жернова кофемолки для чистейшей экстракции ⚙️🎯" 
+        title: "Раф-кофе придумали <br><span class='text-sticker'>для гостя по имени Рафаэль</span>", 
+        desc: "Бариста начал взбивать эспрессо сразу со сливками и ванильным сахаром — так появился самый нежный кофейный напиток 🍨💫" 
       }
     ];
 
     function buildFactHtml(fact) {
       return `
         <div class="flex flex-col items-center max-w-3xl">
-          <svg class="w-16 h-10 mb-2 text-sticker opacity-90" viewBox="0 0 100 60" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="5,4">
-            <path d="M10,10 Q50,45 85,25" /><polyline points="75,15 85,25 75,35" fill="none" />
-          </svg>
-          <span class="text-xs uppercase font-display tracking-widest text-neutral-300 font-bold mb-2">${fact.tag}</span>
+          <span class="text-xs uppercase font-display tracking-widest text-sticker font-bold mb-2 bg-white/5 px-4 py-1 rounded-full border border-white/10">${fact.tag}</span>
           <h2 class="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase leading-tight tracking-tight text-white text-shadow-hard">
             ${fact.title}
           </h2>
@@ -656,60 +979,188 @@
       `;
     }
 
-    // ДЕФОЛТНЫЙ СПИСОК СИРОПОВ (СИНХРОНИЗИРУЕТСЯ С КАССОЙ ИЗ FIREBASE)
+    // ================= 3D-БАРАБАН СИРОПОВ И ХАРАКТЕРИСТИКИ =================
+    const defaultSyrupsMeta = {
+      'Солёная карамель': { sweet: 5, pair: 'Раф, Латте, Капучино, Айс-Латте', desc: 'Тягучий сливочно-карамельный вкус с благородным оттенком морской соли.' },
+      'Французская ваниль': { sweet: 4, pair: 'Классический Раф, Капучино, Какао', desc: 'Тёплый цветочный аромат стручковой бурбонской ванили.' },
+      'Лесной орех': { sweet: 4, pair: 'Флэт Уайт, Американо, Латте', desc: 'Насыщенный профиль обжаренного фундука с шоколадным послевкусием.' },
+      'Кокос': { sweet: 4, pair: 'Латте, Матча, Какао, Айс-кофе', desc: 'Нежная тропическая текстура кокосового молока и мякоти.' },
+      'Лаванда': { sweet: 3, pair: 'Лавандовый Раф, Латте', desc: 'Утонченный травянисто-цветочный букет крымской и прованской лаванды.' },
+      'Попкорн': { sweet: 5, pair: 'Карамельный Латте, Раф, Милкшейк', desc: 'Яркий аромат свежего кинотеатрального попкорна в карамельной глазури.' },
+      'Пряный шоколад': { sweet: 4, pair: 'Моккачино, Капучино, Эспрессо', desc: 'Глубокий вкус темного бельгийского какао с согревающей ноткой корицы.' },
+      'Лесная малина': { sweet: 3, pair: 'Эспрессо-тоник, Чай, Американо', desc: 'Сочная ягодная сладость со свежей лесной кислинкой.' }
+    };
+
     let syrupsData = [
-      { id: 'caramel', name: 'Солёная карамель', taste: 'Сладкий, сливочный', available: true, icon: '🍯' },
-      { id: 'vanilla', name: 'Французская ваниль', taste: 'Нежный, классический', available: true, icon: '🌼' },
-      { id: 'hazelnut', name: 'Лесной орех', taste: 'Густой ореховый аромат', available: true, icon: '🌰' },
-      { id: 'coconut', name: 'Кокос', taste: 'Тропический, мягкий', available: true, icon: '🥥' },
-      { id: 'lavender', name: 'Лаванда', taste: 'Цветочный, свежий', available: false, icon: '🪻' },
-      { id: 'popcorn', name: 'Попкорн', taste: 'Карамельно-кукурузный', available: true, icon: '🍿' },
-      { id: 'chocolate', name: 'Пряный шоколад', taste: 'Какао с корицей', available: true, icon: '🍫' },
-      { id: 'raspberry', name: 'Лесная малина', taste: 'Ягодная кислинка', available: false, icon: '🫐' }
+      { id: 's_caramel', name: 'Солёная карамель', taste: 'Сладкий, сливочный', price: 35, available: true, icon: '🍯' },
+      { id: 's_vanilla', name: 'Французская ваниль', taste: 'Нежный, классический', price: 35, available: true, icon: '🌼' },
+      { id: 's_hazelnut', name: 'Лесной орех', taste: 'Густой ореховый аромат', price: 35, available: true, icon: '🌰' },
+      { id: 's_coconut', name: 'Кокос', taste: 'Тропический, мягкий', price: 35, available: true, icon: '🥥' },
+      { id: 's_lavender', name: 'Лаванда', taste: 'Цветочный, свежий', price: 35, available: false, icon: '🪻' },
+      { id: 's_popcorn', name: 'Попкорн', taste: 'Карамельно-кукурузный', price: 35, available: true, icon: '🍿' },
+      { id: 's_chocolate', name: 'Пряный шоколад', taste: 'Какао с корицей', price: 35, available: true, icon: '🍫' },
+      { id: 's_raspberry', name: 'Лесная малина', taste: 'Ягодная кислинка', price: 35, available: false, icon: '🫐' }
     ];
 
-    function renderSyrupsShelf() {
-      const track = document.getElementById('syrups-scroll-track');
-      if (!track) return;
-      track.innerHTML = '';
+    let activeDrumIndex = 0;
 
-      syrupsData.forEach(item => {
+    function renderSyrupsDrum() {
+      const drum = document.getElementById('syrups-drum');
+      if (!drum) return;
+      drum.innerHTML = '';
+
+      syrupsData.forEach((item, index) => {
         const isAvail = (item.available !== false);
         const card = document.createElement('div');
-        
-        card.className = isAvail
-          ? 'min-w-[210px] bg-neutral-900/90 border border-white/15 hover:border-yellow-300/60 p-4 rounded-2xl flex flex-col justify-between transition-all duration-300 shadow-lg'
-          : 'min-w-[210px] bg-neutral-900/40 border border-white/5 p-4 rounded-2xl flex flex-col justify-between opacity-50 grayscale transition-all duration-300 shadow-none';
+        card.dataset.index = index;
+        card.onclick = () => centerDrumCard(index);
+
+        card.className = `drum-card min-w-[175px] sm:min-w-[190px] h-[250px] rounded-3xl p-4 flex flex-col justify-between items-center text-center cursor-pointer select-none border-2 ${
+          isAvail 
+            ? 'bg-gradient-to-b from-neutral-800 via-neutral-900 to-black border-white/15' 
+            : 'bg-neutral-900/40 border-white/5 grayscale opacity-50'
+        }`;
 
         card.innerHTML = `
-          <div>
-            <div class="flex justify-between items-start mb-3">
-              <span class="text-3xl">${item.icon || '🧴'}</span>
-              <span class="text-[9px] font-display font-black uppercase px-2 py-0.5 rounded-md ${isAvail ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-neutral-400 border border-white/10'}">
-                ${isAvail ? 'В наличии' : 'Закончился'}
-              </span>
-            </div>
-            <h4 class="font-display font-bold text-sm text-white leading-snug">${item.name}</h4>
-            <p class="text-xs text-neutral-400 mt-1">${item.taste || 'Фирменный сироп'}</p>
+          <div class="w-full flex justify-between items-center">
+            <span class="text-[9px] font-display font-black uppercase px-2 py-0.5 rounded-full ${isAvail ? 'bg-emerald-500/20 text-emerald-300' : 'bg-neutral-700 text-neutral-400'}">
+              ${isAvail ? 'Активен' : 'Пусто'}
+            </span>
+            <span class="text-[10px] font-display font-bold text-neutral-400">#${index + 1}</span>
           </div>
-          <div class="mt-4 pt-2 border-t border-white/10 flex justify-between items-center text-[11px]">
-            <span class="text-neutral-400">порция</span>
-            <span class="font-display font-bold ${isAvail ? 'text-sticker' : 'text-neutral-500'}">+35 ₽</span>
+
+          <!-- Имитация бутылочки на полке -->
+          <div class="my-auto flex flex-col items-center">
+            <div class="w-2.5 h-3 bg-amber-200/80 rounded-t-sm mb-0.5"></div>
+            <div class="w-20 h-24 rounded-2xl bg-gradient-to-b from-white/15 to-white/5 border border-white/20 flex items-center justify-center text-4xl shadow-inner relative">
+              ${item.icon || '🧴'}
+            </div>
+          </div>
+
+          <div class="w-full">
+            <h4 class="font-display font-black text-xs sm:text-sm text-white truncate">${item.name}</h4>
+            <p class="text-[10px] text-sticker font-display font-bold mt-0.5">+${item.price || 35} ₽</p>
           </div>
         `;
-        track.appendChild(card);
+        drum.appendChild(card);
+      });
+
+      requestAnimationFrame(() => {
+        updateDrum3DEffect();
       });
     }
 
-    // Управление модалкой сиропов
+    function updateDrum3DEffect() {
+      const drum = document.getElementById('syrups-drum');
+      if (!drum) return;
+      const cards = drum.querySelectorAll('.drum-card');
+      if (!cards.length) return;
+
+      const drumRect = drum.getBoundingClientRect();
+      const drumCenter = drumRect.left + drumRect.width / 2;
+
+      let closestIndex = 0;
+      let minDistance = Infinity;
+
+      cards.forEach((card, idx) => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const dist = cardCenter - drumCenter;
+        const absDist = Math.abs(dist);
+
+        if (absDist < minDistance) {
+          minDistance = absDist;
+          closestIndex = idx;
+        }
+
+        // Расчет 3D-барабана
+        const maxDist = drumRect.width / 1.8;
+        const ratio = Math.min(absDist / maxDist, 1);
+        const scale = 1.15 - ratio * 0.35; // Центральный крупнее (1.15), края меньше (0.8)
+        const rotateY = (dist / maxDist) * -38; // Поворот барабана
+        const translateZ = (1 - ratio) * 40;
+        const opacity = 1 - ratio * 0.55;
+
+        card.style.transform = `perspective(900px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+        card.style.opacity = Math.max(opacity, 0.35);
+      });
+
+      // Подсветка центральной карточки
+      cards.forEach((card, idx) => {
+        const isAvail = syrupsData[idx] && syrupsData[idx].available !== false;
+        if (idx === closestIndex) {
+          card.style.borderColor = isAvail ? '#FFF188' : '#737373';
+          card.style.boxShadow = isAvail ? '0 15px 40px rgba(255, 241, 136, 0.3)' : 'none';
+        } else {
+          card.style.borderColor = 'rgba(255,255,255,0.12)';
+          card.style.boxShadow = 'none';
+        }
+      });
+
+      if (closestIndex !== activeDrumIndex || document.getElementById('detail-name').innerText !== syrupsData[closestIndex]?.name) {
+        activeDrumIndex = closestIndex;
+        updateLeftSyrupSpecs(syrupsData[closestIndex]);
+      }
+    }
+
+    function updateLeftSyrupSpecs(syrup) {
+      if (!syrup) return;
+      const isAvail = (syrup.available !== false);
+      const meta = defaultSyrupsMeta[syrup.name] || {
+        sweet: 4,
+        pair: 'Латте, Капучино, Раф, Айс-кофе',
+        desc: syrup.taste || 'Натуральный ароматический сироп из барной коллекции COFFEEMAN.'
+      };
+
+      document.getElementById('detail-icon').innerText = syrup.icon || '🧴';
+      document.getElementById('detail-name').innerText = syrup.name || 'Сироп';
+      document.getElementById('detail-desc').innerText = meta.desc;
+      document.getElementById('detail-pair').innerText = meta.pair;
+      document.getElementById('detail-price').innerText = `+${syrup.price || 35} ₽`;
+      document.getElementById('detail-sweet-val').innerText = `${meta.sweet} / 5`;
+      document.getElementById('detail-sweet-bar').style.width = `${(meta.sweet / 5) * 100}%`;
+
+      const statusBadge = document.getElementById('detail-status-badge');
+      if (isAvail) {
+        statusBadge.innerText = '● В наличии в баре';
+        statusBadge.className = 'text-[10px] font-display font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      } else {
+        statusBadge.innerText = '○ Временно закончился';
+        statusBadge.className = 'text-[10px] font-display font-black uppercase px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30';
+      }
+    }
+
+    window.centerDrumCard = function(index) {
+      const drum = document.getElementById('syrups-drum');
+      const cards = drum.querySelectorAll('.drum-card');
+      if (!cards[index]) return;
+      cards[index].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    };
+
+    window.scrollSyrupDrum = function(dir) {
+      const nextIdx = Math.max(0, Math.min(syrupsData.length - 1, activeDrumIndex + dir));
+      centerDrumCard(nextIdx);
+    };
+
+    const syrupsDrumEl = document.getElementById('syrups-drum');
+    syrupsDrumEl.addEventListener('scroll', () => {
+      requestAnimationFrame(updateDrum3DEffect);
+    });
+    syrupsDrumEl.addEventListener('wheel', (evt) => {
+      evt.preventDefault();
+      syrupsDrumEl.scrollLeft += evt.deltaY;
+    });
+
     const syrupsModal = document.getElementById('syrups-modal');
     window.toggleSyrupsShelf = function(show) {
       if (show) {
-        renderSyrupsShelf();
+        renderSyrupsDrum();
         syrupsModal.classList.remove('hidden');
         requestAnimationFrame(() => {
           syrupsModal.classList.remove('opacity-0');
           syrupsModal.classList.add('opacity-100');
+          centerDrumCard(0);
+          updateDrum3DEffect();
         });
       } else {
         syrupsModal.classList.remove('opacity-100');
@@ -718,26 +1169,19 @@
       }
     };
 
-    // Клик по экрану ожидания открывает сиропы
     window.handleIdleScreenClick = function(e) {
-      // Игнорируем клик, если нажали на кнопки чаевых внутри тизера
       if (e.target.closest('button')) return;
       window.toggleSyrupsShelf(true);
     };
 
-    // Скролл мышкой по горизонтали
-    const scrollTrack = document.getElementById('syrups-scroll-track');
-    scrollTrack.addEventListener('wheel', (evt) => {
-      evt.preventDefault();
-      scrollTrack.scrollLeft += evt.deltaY;
-    });
-
+    // ================= ЛОГИКА ОПЛАТЫ И РАБОЧИХ ЧАЕВЫХ ЧЕРЕЗ ЮKASSA / CLOUDFLARE =================
     let dynamicSlides = [];
     let customAdSlides = [];
     let currentSlide = 0;
     let idleTimeout = null;
     let baseAmount = 0;
     let selectedTip = 0;
+    let currentSelectedMagicTipAmount = 50;
     let isSuccessActive = false;
     let isMagicActive = false;
     let currentNfcSide = 'right';
@@ -765,6 +1209,363 @@
     const cardModeQr = document.getElementById('card-mode-qr');
     const cardModeNfc = document.getElementById('card-mode-nfc');
 
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function buildGatewayUrl(targetYookassaUrl) {
+      const cfUrl = (globalCfUrl || localStorage.getItem('cf_worker_url') || '').trim().replace(/\/+$/, '');
+      if (cfUrl) {
+        if (cfUrl.includes('?url=')) return `${cfUrl}${encodeURIComponent(targetYookassaUrl)}`;
+        return `${cfUrl}/?url=${encodeURIComponent(targetYookassaUrl)}`;
+      }
+      return `https://corsproxy.io/?url=${encodeURIComponent(targetYookassaUrl)}`;
+    }
+
+    // Создание реального платежа СБП в ЮKassa
+    async function createLiveYookassaSbpQr(amountRub, descriptionText) {
+      const shopId = globalShopId || localStorage.getItem('yk_shop_id') || '';
+      const secretKey = globalSecretKey || localStorage.getItem('yk_secret_key') || '';
+
+      if (!shopId || !secretKey) {
+        throw new Error("Не заданы ключи Shop ID / Secret Key");
+      }
+
+      const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
+      const requestUrl = buildGatewayUrl('https://api.yookassa.ru/v3/payments');
+
+      const response = await fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'Idempotence-Key': generateUUID(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amount: { value: Number(amountRub).toFixed(2), currency: 'RUB' },
+          payment_method_data: { type: 'sbp' },
+          confirmation: { type: 'qr' },
+          capture: true,
+          description: descriptionText
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.id) {
+        throw new Error(data.description || 'Ошибка создания QR');
+      }
+
+      const qrUrl = data.confirmation?.confirmation_data || data.confirmation?.confirmation_url;
+      if (!qrUrl) throw new Error("Пустой QR от шлюза");
+
+      return { paymentId: data.id, qrUrl };
+    }
+
+    function startPaymentWatcher(paymentId, onPaidCallback) {
+      if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
+      const shopId = globalShopId || localStorage.getItem('yk_shop_id');
+      const secretKey = globalSecretKey || localStorage.getItem('yk_secret_key');
+      if (!paymentId || !shopId || !secretKey) return;
+
+      const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
+      const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${paymentId}`);
+
+      customerScreenPollingInterval = setInterval(async () => {
+        try {
+          const res = await fetch(pollUrl, {
+            method: 'GET',
+            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' }
+          });
+          const data = await res.json();
+          if (data && (data.status === 'succeeded' || data.paid === true)) {
+            clearInterval(customerScreenPollingInterval);
+            onPaidCallback(data);
+          }
+        } catch (e) {
+          console.error("Poll error:", e);
+        }
+      }, 1600);
+    }
+
+    function renderQRCodeToCanvas(url, canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || !url) return false;
+      try {
+        new QRious({
+          element: canvas,
+          value: url.trim(),
+          size: 210,
+          level: 'H',
+          background: '#ffffff',
+          foreground: '#000000',
+          padding: 8
+        });
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // ================= РАБОЧИЙ ЭКРАН ЧАЕВЫХ С ОШИБКОЙ «ОЙ, НЕ СЕГОДНЯ» =================
+    window.triggerMagicTipScreen = function() {
+      window.toggleSyrupsShelf(false);
+      isMagicActive = true;
+      if (idleTimeout) clearTimeout(idleTimeout);
+      clearAllTimeouts();
+      hideNfcGlow();
+
+      screenBody.classList.remove('success-flash');
+      screenBody.classList.add('magic-flash');
+
+      idleScreen.classList.add('hidden', 'opacity-0');
+      paymentScreen.classList.add('hidden', 'opacity-0');
+      successScreen.classList.add('hidden', 'opacity-0');
+      magicThanksScreen.classList.add('hidden', 'opacity-0');
+
+      magicTipScreen.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        magicTipScreen.classList.remove('opacity-0');
+        magicTipScreen.classList.add('opacity-100');
+      });
+
+      const firstBtn = document.querySelector('.magic-tip-btn');
+      window.selectMagicTip(50, firstBtn);
+
+      let timeLeft = 180;
+      const timerEl = document.getElementById('magic-timer-val');
+      timerEl.innerText = formatTime(timeLeft);
+
+      if (magicCountdownInterval) clearInterval(magicCountdownInterval);
+      magicCountdownInterval = setInterval(() => {
+        timeLeft -= 1;
+        if (timeLeft >= 0) timerEl.innerText = formatTime(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(magicCountdownInterval);
+          resetToIdle(false);
+        }
+      }, 1000);
+    };
+
+    window.retryCurrentTipQr = function() {
+      window.selectMagicTip(currentSelectedMagicTipAmount, null);
+    };
+
+    window.selectMagicTip = async function(amount, btn) {
+      currentSelectedMagicTipAmount = amount;
+      if (btn) {
+        document.querySelectorAll('.magic-tip-btn').forEach(b => {
+          b.className = 'magic-tip-btn px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-sm font-bold active:scale-95 transition-all border border-white/15';
+        });
+        btn.className = 'magic-tip-btn px-4 py-3 rounded-2xl bg-sticker text-black font-display text-sm font-bold active:scale-95 transition-all sticker-badge';
+      }
+
+      document.getElementById('magic-tip-display-val').innerText = `${amount} ₽`;
+
+      const loader = document.getElementById('magic-qr-loader');
+      const errorBox = document.getElementById('magic-qr-error');
+      const qrWrapper = document.getElementById('magic-qr-wrapper');
+
+      qrWrapper.classList.add('hidden');
+      errorBox.classList.add('hidden');
+      errorBox.classList.remove('flex');
+      loader.classList.remove('hidden');
+      loader.classList.add('flex');
+
+      try {
+        const { paymentId, qrUrl } = await createLiveYookassaSbpQr(amount, `Чаевые бариста COFFEEMAN (${amount} ₽)`);
+        const ok = renderQRCodeToCanvas(qrUrl, 'magic-qr-canvas');
+        if (!ok) throw new Error("Ошибка рендера QR");
+
+        loader.classList.add('hidden');
+        loader.classList.remove('flex');
+        qrWrapper.classList.remove('hidden');
+
+        // Следим за оплатой чаевых: как только оплатят — запускаем салют благодарности!
+        startPaymentWatcher(paymentId, () => {
+          window.triggerMagicThanksScreen();
+        });
+      } catch (err) {
+        loader.classList.add('hidden');
+        loader.classList.remove('flex');
+        qrWrapper.classList.add('hidden');
+        errorBox.classList.remove('hidden');
+        errorBox.classList.add('flex');
+      }
+    };
+
+    // ================= ЭКРАН ОПЛАТЫ ЗАКАЗА И ДОБАВЛЕНИЕ ЧАЕВЫХ К СЧЕТУ =================
+    let initialOrderQrUrl = '';
+    let initialOrderPaymentId = '';
+    let isCurrentOrderCard = false;
+
+    function triggerPayment(orderData) {
+      window.toggleSyrupsShelf(false);
+      isMagicActive = false;
+      if (idleTimeout) clearTimeout(idleTimeout);
+      clearAllTimeouts();
+
+      if (orderData.shopId) {
+        globalShopId = orderData.shopId;
+        localStorage.setItem('yk_shop_id', orderData.shopId);
+      }
+      if (orderData.secretKey) {
+        globalSecretKey = orderData.secretKey;
+        localStorage.setItem('yk_secret_key', orderData.secretKey);
+      }
+      if (orderData.cfWorkerUrl) {
+        globalCfUrl = orderData.cfWorkerUrl;
+        localStorage.setItem('cf_worker_url', orderData.cfWorkerUrl);
+      }
+
+      baseAmount = Number(orderData.amount) || 0;
+      selectedTip = 0;
+      initialOrderQrUrl = orderData.qrUrl || '';
+      initialOrderPaymentId = orderData.paymentId || '';
+
+      const orderTitleEl = document.getElementById('order-title');
+      if (orderTitleEl) orderTitleEl.innerText = orderData.description || 'Заказ в COFFEEMAN';
+
+      isCurrentOrderCard = (orderData.method === 'card' || orderData.type === 'card' || orderData.status === 'WAITING_FOR_CARD');
+      const side = orderData.nfcSide || currentNfcSide || 'right';
+
+      const badgeTag = document.getElementById('payment-badge-tag');
+      const methodBadge = document.getElementById('order-method-badge');
+      const hintSub = document.getElementById('payment-sub-hint');
+      const sideInstruction = document.getElementById('nfc-side-instruction');
+      const orderTipsBlock = document.getElementById('order-tips-block');
+
+      // Сброс кнопок чаевых
+      const tipBtns = document.querySelectorAll('.tip-btn');
+      tipBtns.forEach((b, i) => {
+        b.className = i === 0
+          ? 'tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge'
+          : 'tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white';
+      });
+
+      if (isCurrentOrderCard) {
+        cardModeQr.classList.add('hidden');
+        cardModeNfc.classList.remove('hidden');
+        if (orderTipsBlock) orderTipsBlock.classList.add('hidden');
+
+        badgeTag.innerText = 'Оплата картой 💳';
+        methodBadge.innerText = 'Бесконтактно (NFC)';
+        hintSub.innerText = 'Приложите карту к терминалу';
+        sideInstruction.innerHTML = `Приложите карту или телефон к <strong class="text-sticker font-bold">${side === 'left' ? 'ЛЕВОМУ' : 'ПРАВОМУ'} светящемуся краю</strong> 💫`;
+
+        showNfcGlow(side);
+      } else {
+        hideNfcGlow();
+        cardModeNfc.classList.add('hidden');
+        cardModeQr.classList.remove('hidden');
+        if (orderTipsBlock) orderTipsBlock.classList.remove('hidden');
+
+        badgeTag.innerText = 'Оплата заказа ☕';
+        methodBadge.innerText = 'СБП / QR';
+        hintSub.innerText = 'Любой банк через СБП';
+
+        document.getElementById('order-qr-loader').classList.add('hidden');
+        document.getElementById('order-qr-error').classList.add('hidden');
+        document.getElementById('qr-wrapper').classList.remove('hidden');
+
+        if (initialOrderQrUrl) {
+          renderQRCodeToCanvas(initialOrderQrUrl, 'qr-canvas');
+          if (initialOrderPaymentId) {
+            startPaymentWatcher(initialOrderPaymentId, (paidData) => {
+              markOrderPaidInFirebase(paidData.amount ? paidData.amount.value : baseAmount);
+            });
+          }
+        } else {
+          // Если касса прислала только сумму без готового QR — создаем сами
+          regenerateOrderQrWithTip(0);
+        }
+      }
+      
+      updateTotal();
+      
+      screenBody.classList.remove('magic-flash', 'success-flash');
+      idleScreen.classList.add('hidden', 'opacity-0');
+      magicTipScreen.classList.add('hidden', 'opacity-0');
+      magicThanksScreen.classList.add('hidden', 'opacity-0');
+      successScreen.classList.add('hidden', 'opacity-0');
+      
+      paymentScreen.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        paymentScreen.classList.remove('opacity-0');
+        paymentScreen.classList.add('opacity-100');
+      });
+    }
+
+    window.setOrderTip = async function(tip, btn) {
+      selectedTip = tip;
+      document.querySelectorAll('.tip-btn').forEach(b => {
+        b.className = 'tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white';
+      });
+      if (btn) {
+        btn.className = 'tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge';
+      }
+      updateTotal();
+
+      if (!isCurrentOrderCard) {
+        if (tip === 0 && initialOrderQrUrl) {
+          document.getElementById('order-qr-error').classList.add('hidden');
+          document.getElementById('order-qr-loader').classList.add('hidden');
+          document.getElementById('qr-wrapper').classList.remove('hidden');
+          renderQRCodeToCanvas(initialOrderQrUrl, 'qr-canvas');
+          if (initialOrderPaymentId) {
+            startPaymentWatcher(initialOrderPaymentId, () => markOrderPaidInFirebase(baseAmount));
+          }
+        } else {
+          await regenerateOrderQrWithTip(tip);
+        }
+      }
+    };
+
+    async function regenerateOrderQrWithTip(tipAmount) {
+      const total = baseAmount + tipAmount;
+      const loader = document.getElementById('order-qr-loader');
+      const errBox = document.getElementById('order-qr-error');
+      const qrWrap = document.getElementById('qr-wrapper');
+
+      qrWrap.classList.add('hidden');
+      errBox.classList.add('hidden');
+      loader.classList.remove('hidden');
+      loader.classList.add('flex');
+
+      try {
+        const { paymentId, qrUrl } = await createLiveYookassaSbpQr(
+          total,
+          `Заказ COFFEEMAN ${baseAmount} ₽ + чаевые ${tipAmount} ₽`
+        );
+        renderQRCodeToCanvas(qrUrl, 'qr-canvas');
+        loader.classList.add('hidden');
+        loader.classList.remove('flex');
+        qrWrap.classList.remove('hidden');
+
+        startPaymentWatcher(paymentId, () => {
+          markOrderPaidInFirebase(total);
+        });
+      } catch (e) {
+        loader.classList.add('hidden');
+        loader.classList.remove('flex');
+        errBox.classList.remove('hidden');
+        errBox.classList.add('flex');
+      }
+    }
+
+    function markOrderPaidInFirebase(paidTotal) {
+      const orderRef = ref(db, `terminals/${terminalId}/current_order`);
+      set(orderRef, {
+        status: 'PAID',
+        amount: paidTotal,
+        timestamp: Date.now()
+      });
+      triggerSuccess();
+    }
+
+    // ================= РОТАЦИЯ СЛАЙДОВ И СОБЫТИЯ =================
     function rebuildSlidesPool() {
       const generatedFacts = factsList.map(f => ({ html: buildFactHtml(f), type: 'fact', duration: 8500 }));
 
@@ -781,7 +1582,7 @@
             </h2>
             <div class="mt-4 bg-black/60 border border-white/15 px-6 py-3.5 rounded-3xl backdrop-blur-md max-w-lg shadow-xl">
               <p class="text-neutral-200 text-base font-medium">
-                Нажми сюда, чтобы оставить чаевые нашей команде 💛
+                Нажми сюда, чтобы отправить чаевые через СБП 💛
               </p>
             </div>
           </div>
@@ -791,6 +1592,7 @@
       dynamicSlides = [
         promoNineChipsSlide,
         { html: getRandomGreetingHtml(), type: 'greeting', duration: 8500 },
+        signatureMenuSlide,
         tipsTeaserSlide,
         ...customAdSlides,
         ...generatedFacts
@@ -842,7 +1644,7 @@
         const duration = currentSlideObj.duration || 8500;
         idleTimeout = setTimeout(nextSlide, duration);
 
-      }, 650);
+      }, 550);
     }
 
     function nextSlide() {
@@ -859,39 +1661,11 @@
       scheduleNextAutoMagicTip();
     }
 
-    function renderQRCode(url, canvasId = 'qr-canvas') {
-      const targetUrl = url ? url.trim() : "https://t.me/coffeeman_kzl";
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-
-      try {
-        if (window.QRious) {
-          new QRious({
-            element: canvas,
-            value: targetUrl,
-            size: 210,
-            level: 'H',
-            background: '#ffffff',
-            foreground: '#000000',
-            padding: 8
-          });
-        }
-      } catch (err) {
-        const wrapper = canvas.parentElement;
-        if (wrapper) {
-          wrapper.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${encodeURIComponent(targetUrl)}&margin=8" class="rounded-lg block mx-auto" width="210" height="210" alt="QR Code" />`;
-        }
-      }
-    }
-
     function showNfcGlow(side) {
       hideNfcGlow();
       const targetSide = side || currentNfcSide || 'right';
-      if (targetSide === 'left') {
-        nfcGlowLeft.classList.remove('hidden');
-      } else {
-        nfcGlowRight.classList.remove('hidden');
-      }
+      if (targetSide === 'left') nfcGlowLeft.classList.remove('hidden');
+      else nfcGlowRight.classList.remove('hidden');
     }
 
     function hideNfcGlow() {
@@ -918,57 +1692,6 @@
       const s = seconds % 60;
       return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     }
-
-    window.triggerMagicTipScreen = function() {
-      window.toggleSyrupsShelf(false);
-      isMagicActive = true;
-      if (idleTimeout) clearTimeout(idleTimeout);
-      clearAllTimeouts();
-      hideNfcGlow();
-
-      screenBody.classList.remove('success-flash');
-      screenBody.classList.add('magic-flash');
-
-      idleScreen.classList.add('hidden', 'opacity-0');
-      paymentScreen.classList.add('hidden', 'opacity-0');
-      successScreen.classList.add('hidden', 'opacity-0');
-      magicThanksScreen.classList.add('hidden', 'opacity-0');
-
-      magicTipScreen.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        magicTipScreen.classList.remove('opacity-0');
-        magicTipScreen.classList.add('opacity-100');
-      });
-
-      selectMagicTip(50, document.querySelector('.magic-tip-btn'));
-
-      let timeLeft = 180;
-      const timerEl = document.getElementById('magic-timer-val');
-      timerEl.innerText = formatTime(timeLeft);
-
-      if (magicCountdownInterval) clearInterval(magicCountdownInterval);
-      magicCountdownInterval = setInterval(() => {
-        timeLeft -= 1;
-        if (timeLeft >= 0) timerEl.innerText = formatTime(timeLeft);
-        if (timeLeft <= 0) {
-          clearInterval(magicCountdownInterval);
-          resetToIdle(false);
-        }
-      }, 1000);
-    };
-
-    window.selectMagicTip = async function(amount, btn) {
-      document.querySelectorAll('.magic-tip-btn').forEach(b => {
-        b.className = 'magic-tip-btn px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-sm font-bold active:scale-95 transition-all border border-white/15';
-      });
-      if (btn) {
-        btn.className = 'magic-tip-btn px-4 py-3 rounded-2xl bg-sticker text-black font-display text-sm font-bold active:scale-95 transition-all sticker-badge';
-      }
-
-      document.getElementById('magic-tip-display-val').innerText = `${amount} ₽`;
-      const tipUrl = `https://coffeeman.ru/tip?sum=${amount}`;
-      renderQRCode(tipUrl, 'magic-qr-canvas');
-    };
 
     window.triggerMagicThanksScreen = function() {
       clearAllTimeouts();
@@ -1002,77 +1725,16 @@
       if (!window.confetti) return;
       const count = 200;
       const defaults = { origin: { y: 0.7 } };
-
       function fire(particleRatio, opts) {
         confetti(Object.assign({}, defaults, opts, {
           particleCount: Math.floor(count * particleRatio)
         }));
       }
-
       fire(0.25, { spread: 26, startVelocity: 55 });
       fire(0.2, { spread: 60 });
       fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
       fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
       fire(0.1, { spread: 120, startVelocity: 45 });
-    }
-
-    // Режим оплаты, прилетающий с кассы
-    function triggerPayment(orderData) {
-      window.toggleSyrupsShelf(false);
-      isMagicActive = false;
-      if (idleTimeout) clearTimeout(idleTimeout);
-      clearAllTimeouts();
-
-      baseAmount = Number(orderData.amount) || 0;
-      selectedTip = 0;
-      
-      const orderTitleEl = document.getElementById('order-title');
-      if (orderTitleEl) orderTitleEl.innerText = orderData.description || 'Заказ в COFFEEMAN';
-
-      const isCardPayment = (orderData.method === 'card' || orderData.type === 'card' || orderData.status === 'WAITING_FOR_CARD');
-      const side = orderData.nfcSide || currentNfcSide || 'right';
-
-      const badgeTag = document.getElementById('payment-badge-tag');
-      const methodBadge = document.getElementById('order-method-badge');
-      const hintSub = document.getElementById('payment-sub-hint');
-      const sideInstruction = document.getElementById('nfc-side-instruction');
-
-      if (isCardPayment) {
-        cardModeQr.classList.add('hidden');
-        cardModeNfc.classList.remove('hidden');
-
-        badgeTag.innerText = 'Оплата картой 💳';
-        methodBadge.innerText = 'Бесконтактно (NFC)';
-        hintSub.innerText = 'Приложите карту к терминалу';
-        sideInstruction.innerHTML = `Приложите карту или телефон к <strong class="text-sticker font-bold">${side === 'left' ? 'ЛЕВОМУ' : 'ПРАВОМУ'} светящемуся краю</strong> 💫`;
-
-        showNfcGlow(side);
-      } else {
-        hideNfcGlow();
-        cardModeNfc.classList.add('hidden');
-        cardModeQr.classList.remove('hidden');
-
-        badgeTag.innerText = 'Оплата заказа ☕';
-        methodBadge.innerText = 'СБП / QR';
-        hintSub.innerText = 'Любой банк через СБП';
-
-        renderQRCode(orderData.qrUrl, 'qr-canvas');
-      }
-      
-      updateTotal();
-      
-      screenBody.classList.remove('magic-flash', 'success-flash');
-      idleScreen.classList.add('hidden', 'opacity-0');
-      magicTipScreen.classList.add('hidden', 'opacity-0');
-      magicThanksScreen.classList.add('hidden', 'opacity-0');
-      successScreen.classList.add('hidden', 'opacity-0');
-      
-      paymentScreen.classList.remove('hidden');
-      
-      requestAnimationFrame(() => {
-        paymentScreen.classList.remove('opacity-0');
-        paymentScreen.classList.add('opacity-100');
-      });
     }
 
     function triggerSuccess() {
@@ -1174,20 +1836,10 @@
         });
 
         if (updateFirebase) {
-          const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
           const orderRef = ref(db, `terminals/${terminalId}/current_order`);
           set(orderRef, { status: 'IDLE' });
         }
       }, 450);
-    };
-
-    window.setTip = function(tip, btn) {
-      selectedTip = tip;
-      document.querySelectorAll('.tip-btn').forEach(b => {
-        b.className = 'tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white';
-      });
-      btn.className = 'tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge';
-      updateTotal();
     };
 
     function updateTotal() {
@@ -1196,32 +1848,82 @@
       if (finalAmountEl) finalAmountEl.innerText = `${total} ₽`;
     }
 
-    const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-
-    // Слушатель настроек терминала (сторона NFC)
+    // ================= СЛУШАТЕЛИ FIREBASE =================
     const settingsRef = ref(db, `terminals/${terminalId}/settings`);
     onValue(settingsRef, (snapshot) => {
       const data = snapshot.val();
-      if (data && data.nfcSide) {
-        currentNfcSide = data.nfcSide;
+      if (!data) return;
+      if (data.nfcSide) currentNfcSide = data.nfcSide;
+      if (data.cfWorkerUrl !== undefined) {
+        globalCfUrl = data.cfWorkerUrl;
+        localStorage.setItem('cf_worker_url', data.cfWorkerUrl);
+      }
+      if (data.shopId) {
+        globalShopId = data.shopId;
+        localStorage.setItem('yk_shop_id', data.shopId);
+      }
+      if (data.secretKey) {
+        globalSecretKey = data.secretKey;
+        localStorage.setItem('yk_secret_key', data.secretKey);
       }
     });
 
-    // СЛУШАТЕЛЬ СИРОПОВ ИЗ БАЗЫ ДАННЫХ (УПРАВЛЯЕТСЯ С КАССЫ)
     const syrupsRef = ref(db, `terminals/${terminalId}/syrups`);
     onValue(syrupsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        if (Array.isArray(data)) {
-          syrupsData = data;
-        } else {
-          syrupsData = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        syrupsData = Array.isArray(data) ? data : Object.keys(data).map(k => ({ id: k, ...data[k] }));
+        if (!syrupsModal.classList.contains('hidden')) {
+          renderSyrupsDrum();
         }
-        renderSyrupsShelf();
       }
     });
 
-    // Слушатель команд от пульта кассира
+    const adsListRef = ref(db, 'ads_list');
+    onValue(adsListRef, (snapshot) => {
+      const ads = snapshot.val() || {};
+      const activeAds = Object.values(ads).filter(a => a && a.enabled !== false);
+      customAdSlides = activeAds.map(ad => ({
+        type: 'ad',
+        duration: 8500,
+        html: `
+          <div class="relative w-full max-w-5xl h-[420px] rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex items-center justify-between p-6 sm:p-10 text-left">
+            <img src="${ad.imgUrl || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200'}" 
+                 style="transform: scale(${(ad.scale || 105) / 100}); object-position: ${ad.posX || 50}% ${ad.posY || 50}%;" 
+                 class="absolute inset-0 w-full h-full object-cover transition-all duration-300" />
+            <div class="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/95"></div>
+            <div class="relative z-10 flex flex-col justify-between h-full max-w-md">
+              <div class="backdrop-blur-sm bg-black/30 p-4 rounded-3xl border border-white/10">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-300">${ad.tag || 'акция:'}</span>
+                  <span class="stamp-badge bg-white text-black font-display font-black text-[9px] px-2 py-0.5 uppercase -rotate-6">${ad.stamp || 'COFFEEMAN'}</span>
+                </div>
+                <h2 class="font-display text-4xl sm:text-5xl font-black uppercase leading-[0.95] tracking-tight text-white text-shadow-hard">
+                  ${ad.title1 || ''} <br>
+                  <span class="text-sticker">${ad.title2 || ''}</span>
+                </h2>
+                <p class="font-display text-xs uppercase tracking-widest text-neutral-300 mt-2 font-bold">${ad.subtitle || ''}</p>
+              </div>
+              <div class="sticker-badge bg-white text-black px-4 py-2 rounded-2xl max-w-xs transform -rotate-1 border border-neutral-200 shadow-xl">
+                <p class="font-display text-[11px] font-black uppercase leading-tight">${ad.badgeLeftTitle || ''}</p>
+                <p class="text-[10px] text-neutral-700 font-bold">${ad.badgeLeftDesc || ''}</p>
+              </div>
+            </div>
+            <div class="relative z-10 flex flex-col justify-between items-end h-full text-right max-w-xs">
+              <div class="sticker-badge bg-sticker text-black font-display text-xl sm:text-2xl font-black px-5 py-2 rounded-2xl rotate-2 shadow-2xl">
+                ${ad.badgeRight || ''}
+              </div>
+              <div class="bg-black/80 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-right shadow-2xl">
+                <p class="text-xs text-neutral-300 font-medium">На кассе:</p>
+                <p class="font-display text-xs font-black text-sticker uppercase mt-0.5">${ad.ctaRight || ''}</p>
+              </div>
+            </div>
+          </div>
+        `
+      }));
+      rebuildSlidesPool();
+    });
+
     const orderRef = ref(db, `terminals/${terminalId}/current_order`);
     onValue(orderRef, (snapshot) => {
       const data = snapshot.val();
@@ -1236,7 +1938,6 @@
         } else if (data.status === 'TRIGGER_TIPS_THANKS') {
           window.triggerMagicThanksScreen();
         } else if (data.status === 'SHOW_SYRUPS') {
-          // Принудительное открытие полки сиропов с пульта кассира
           window.toggleSyrupsShelf(true);
         } else if (data.status === 'HIDE_SYRUPS') {
           window.toggleSyrupsShelf(false);
