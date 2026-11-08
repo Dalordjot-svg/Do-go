@@ -153,6 +153,19 @@
       50% { transform: scale(1.08); opacity: 1; }
       100% { transform: scale(0.9); opacity: 0.8; }
     }
+
+    /* Кастомный горизонтальный скролл полки сиропов */
+    .shelf-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .shelf-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 9999px;
+    }
+    .shelf-scroll::-webkit-scrollbar-thumb {
+      background: #FFF188;
+      border-radius: 9999px;
+    }
   </style>
 </head>
 <body id="screen-body" class="ambient-bg text-white min-h-screen flex flex-col justify-between p-6 md:p-8 selection:bg-yellow-300 selection:text-black overflow-hidden font-sans relative">
@@ -174,10 +187,14 @@
   <header class="w-full flex justify-between items-center z-20">
     <div class="flex items-center gap-3">
       <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#34d399]"></div>
-      <span class="text-xs uppercase tracking-widest font-bold text-neutral-300">COFFEEMAN Terminal • Online</span>
+      <span class="text-xs uppercase tracking-widest font-bold text-neutral-300">COFFEEMAN • Online</span>
     </div>
     
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2.5">
+      <button onclick="window.toggleSyrupsShelf(true)" class="bg-white/10 hover:bg-white/20 border border-white/20 active:scale-95 text-neutral-200 text-xs font-display font-bold px-3 py-1 rounded-full flex items-center gap-1.5 transition-all">
+        <span>🧴</span>
+        <span>Полка сиропов</span>
+      </button>
       <div class="stamp-badge bg-white text-black font-display font-black text-[9px] px-2.5 py-1 uppercase tracking-tighter transform -rotate-6 opacity-90">
         KYZYL • TUVA
       </div>
@@ -190,10 +207,13 @@
   <!-- ОСНОВНАЯ ЗОНА -->
   <main class="flex-1 flex items-center justify-center relative my-auto w-full max-w-6xl mx-auto">
     
-    <!-- 1. РЕЖИМ ОЖИДАНИЯ (СЛАЙДЫ + АКЦИЯ 9 ФИШЕК) -->
-    <section id="idle-screen" class="w-full flex flex-col items-center text-center transition-all duration-700">
+    <!-- 1. РЕЖИМ ОЖИДАНИЯ (СЛАЙДЫ + АКЦИЯ 9 ФИШЕК + КЛИК ДЛЯ СИРОПОВ) -->
+    <section id="idle-screen" class="w-full flex flex-col items-center text-center transition-all duration-700 cursor-pointer" onclick="handleIdleScreenClick(event)">
       <div id="slide-container" class="w-full flex flex-col items-center justify-center min-h-[440px] fade-blur-active"></div>
       <div id="dots-container" class="flex items-center gap-2 mt-6"></div>
+      <p class="text-[11px] text-neutral-400 font-medium mt-3 tracking-wider flex items-center gap-1.5 opacity-80">
+        <span>👆 Нажмите на экран, чтобы посмотреть карту вкусов и сиропов</span>
+      </p>
     </section>
 
     <!-- 2. РЕЖИМ ОПЛАТЫ (С КАССЫ: QR СБП / КАРТА) -->
@@ -291,7 +311,7 @@
       </div>
     </section>
 
-    <!-- 3. ОТДЕЛЬНЫЙ ЭКРАН ЧАЕВЫХ (ВЫЗЫВАЕТСЯ С КАССЫ ИЛИ АВТОМАТОМ) -->
+    <!-- 3. ОТДЕЛЬНЫЙ ЭКРАН ЧАЕВЫХ -->
     <section id="magic-tip-screen" class="w-full hidden opacity-0 transition-all duration-700">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
@@ -427,6 +447,50 @@
 
   </main>
 
+  <!-- ================= МОДАЛКА: ПОЛКА СИРОПОВ СО СВАЙПОМ ================= -->
+  <div id="syrups-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col justify-center items-center p-4 md:p-8 hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-5xl bg-neutral-950/90 border border-white/20 rounded-3xl p-6 md:p-8 flex flex-col gap-6 shadow-[0_0_60px_rgba(0,0,0,0.9)] relative">
+      
+      <!-- Шапка полки -->
+      <div class="flex justify-between items-start border-b border-white/10 pb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-2.5 py-0.5 uppercase -rotate-2">
+              НАЛИЧИЕ В БАРЕ
+            </span>
+            <span class="text-xs text-neutral-300 font-bold">Листайте вбок пальцем 👈👉</span>
+          </div>
+          <h3 class="font-display text-2xl md:text-3xl font-black uppercase text-white">
+            Полка сиропов <span class="text-sticker">COFFEEMAN</span>
+          </h3>
+        </div>
+        <button onclick="window.toggleSyrupsShelf(false)" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center font-display font-bold text-lg text-white border border-white/20 transition-all">
+          ✕
+        </button>
+      </div>
+
+      <!-- Контейнер со свайпом / скроллом -->
+      <div id="syrups-scroll-track" class="shelf-scroll flex gap-4 overflow-x-auto pb-4 pt-2 px-1 cursor-grab active:cursor-grabbing select-none">
+        <!-- Карточки генерируются скриптом -->
+      </div>
+
+      <!-- Подвал модалки -->
+      <div class="flex flex-wrap justify-between items-center text-xs text-neutral-400 pt-2 border-t border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <span>В наличии</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-neutral-600"></span>
+            <span>Закончился</span>
+          </div>
+        </div>
+        <p class="text-neutral-400">Любой сироп к вашему напитку: +35 ₽</p>
+      </div>
+    </div>
+  </div>
+
   <!-- ФУТЕР -->
   <footer class="w-full flex justify-between items-center z-20 pt-6 border-t border-white/10 text-xs text-neutral-400">
     <div class="flex items-center gap-2">
@@ -434,7 +498,7 @@
       <span class="text-neutral-500">•</span>
       <span>г. Кызыл, Республика Тыва</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Customer Display • NFC & QR Mode</div>
+    <div class="text-[11px] text-neutral-400">Customer Display • Syrups & NFC Terminal</div>
   </footer>
 
   <!-- СВЯЗЬ С FIREBASE И УПРАВЛЕНИЕ -->
@@ -483,16 +547,13 @@
       `;
     }
 
-    // НОВЫЙ БАННЕР: АКЦИЯ 9 ФИШЕК + ФОТО СТАКАНА
-    // Замени ссылку 'coffeeman-cup.jpg' на реальный путь или хостинг твоего фото при необходимости
+    // БАННЕР АКЦИИ
     const promoNineChipsSlide = {
       type: 'promo_nine_chips',
       duration: 12000,
       html: `
         <div class="relative w-full max-w-5xl h-[440px] rounded-3xl overflow-hidden border border-yellow-300/40 shadow-2xl flex items-center justify-between p-6 sm:p-10 text-left bg-gradient-to-r from-neutral-950 via-neutral-900 to-black">
-          
-          <!-- Фоновое изображение стакана с плавным затемнением -->
-          <div class="absolute inset-0 z-0 flex items-center justify-end overflow-hidden">
+          <div class="absolute inset-0 z-0 flex items-center justify-end overflow-hidden pointer-events-none">
             <img src="coffeeman-cup.jpg" 
                  onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&auto=format&fit=crop&q=80'"
                  class="h-full w-full object-cover object-right md:object-contain md:w-1/2 opacity-75 md:opacity-90 transform scale-105" 
@@ -500,12 +561,11 @@
             <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
           </div>
           
-          <!-- Текст поверх и за стаканом -->
           <div class="relative z-10 flex flex-col justify-between h-full max-w-xl">
             <div class="backdrop-blur-md bg-black/50 p-5 rounded-3xl border border-white/15 shadow-2xl">
               <div class="flex items-center gap-2 mb-3">
                 <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3 py-1 uppercase -rotate-3">
-                  ПРОГРАММА ЛОЯЛЬНОСТИ
+                  ПРОГРАММА ЛОЯЛЬНОСТИ[span_0](start_span)[span_0](end_span)
                 </span>
                 <span class="text-xs uppercase tracking-wider text-sticker font-bold animate-pulse">ПОДАРОК ДЛЯ ГОСТЕЙ 🎁</span>
               </div>
@@ -515,18 +575,17 @@
                 <span class="text-emerald-400">БЕСПЛАТНО!</span>
               </h2>
               <p class="text-neutral-200 text-xs sm:text-sm font-semibold mt-3 leading-relaxed">
-                Покупай любой любимый напиток, получай фишку в карточку и забирай свой 10-й подарочный кофе на кассе.
+                Покупай любой напиток, получай отметку и забирай свой 10-й подарочный кофе на кассе.[span_1](start_span)[span_1](end_span)
               </p>
             </div>
 
-            <!-- Бейдж соцсетей и адреса -->
             <div class="flex flex-wrap gap-2 items-center pt-2">
               <div class="sticker-badge bg-white text-black px-4 py-2 rounded-2xl flex items-center gap-2">
                 <span class="text-xs font-display font-black uppercase">VK / IG:</span>
-                <span class="text-xs font-bold text-neutral-800">coffeeman_kzl</span>
+                <span class="text-xs font-bold text-neutral-800">coffeeman_kzl</span>[span_2](start_span)[span_2](end_span)
               </div>
               <div class="bg-black/60 border border-white/15 px-3 py-2 rounded-2xl text-[11px] font-bold text-neutral-300">
-                Kyzyl, Tuva 📍
+                Kyzyl, Tuva 📍[span_3](start_span)[span_3](end_span)
               </div>
             </div>
           </div>
@@ -540,14 +599,42 @@
               <p class="font-display text-xs font-black text-sticker uppercase mt-0.5">«Дайте карточку для фишек»</p>
             </div>
           </div>
-
         </div>
       `
     };
 
+    // БОЛЬШАЯ БАЗА ИНТЕРЕСНЫХ ФАКТОВ О КОФЕ
     const factsList = [
-      { tag: "COFFEEMAN", title: "Качественное зерно <br><span class='text-sticker'>и свежая обжарка</span>", desc: "Мы готовим кофе только на проверенном зерне, настраивая помол каждый день для идеального баланса вкуса ☕" },
-      { tag: "Любимый вкус", title: "Авторские сиропы <br><span class='text-sticker'>и натуральное молоко</span>", desc: "Капучино, латте, раф или флэт уайт — настроим температуру и сладость напитка точно под твой вкус 💫" }
+      { 
+        tag: "История & легенда", 
+        title: "Танцующие козы <br><span class='text-sticker'>открыли кофе</span>", 
+        desc: "По легенде, в IX веке эфиопский пастух Калдим заметил, что его козы становятся невероятно бодрыми и игривыми после того, как поедят красных ягод с неизвестного кустарника 🐐🍒" 
+      },
+      { 
+        tag: "Химия вкуса", 
+        title: "Где больше кофеина: <br><span class='text-sticker'>в светлой обжарке!</span>", 
+        desc: "Миф, что темная обжарка крепче: при долгой жарке кофеин частично разрушается. Зерна светлой обжарки сохраняют больше кофеина и яркую ягодную кислинку 🔬⚡" 
+      },
+      { 
+        tag: "Физика эспрессо", 
+        title: "Давление в 9 бар <br><span class='text-sticker'>как на глубине 90 метров</span>", 
+        desc: "Именно под таким давлением вода пробивает кофейную таблетку за 25-30 секунд, создавая плотную золотистую пенку «крема» и концентрированный вкус 🌊☕" 
+      },
+      { 
+        tag: "Авторский напиток", 
+        title: "Раф-кофе придумали <br><span class='text-sticker'>в Москве для гостя Рафаэля</span>", 
+        desc: "В конце 90-х постоянный гость попросил приготовить «что-то мягкое». Бариста взбил эспрессо со сливками 10% и ванильным сахаром прямо в питчере. Так родился легендарный раф 🍨💫" 
+      },
+      { 
+        tag: "Аромат & обоняние", 
+        title: "Более 800 <br><span class='text-sticker'>ароматических соединений</span>", 
+        desc: "Кофе по ароматической сложности превосходит даже вино! В чашке спешелти-кофе можно почувствовать ноты жасмина, бергамота, черники и шоколада 🍫🌸" 
+      },
+      { 
+        tag: "COFFEEMAN Bar", 
+        title: "Идеальный помол <br><span class='text-sticker'>настраивается каждое утро</span>", 
+        desc: "Влажность и температура воздуха в Кызыле меняются каждый день, поэтому наши бариста ежедневно калибруют жернова кофемолки для чистейшей экстракции ⚙️🎯" 
+      }
     ];
 
     function buildFactHtml(fact) {
@@ -568,6 +655,82 @@
         </div>
       `;
     }
+
+    // ДЕФОЛТНЫЙ СПИСОК СИРОПОВ (СИНХРОНИЗИРУЕТСЯ С КАССОЙ ИЗ FIREBASE)
+    let syrupsData = [
+      { id: 'caramel', name: 'Солёная карамель', taste: 'Сладкий, сливочный', available: true, icon: '🍯' },
+      { id: 'vanilla', name: 'Французская ваниль', taste: 'Нежный, классический', available: true, icon: '🌼' },
+      { id: 'hazelnut', name: 'Лесной орех', taste: 'Густой ореховый аромат', available: true, icon: '🌰' },
+      { id: 'coconut', name: 'Кокос', taste: 'Тропический, мягкий', available: true, icon: '🥥' },
+      { id: 'lavender', name: 'Лаванда', taste: 'Цветочный, свежий', available: false, icon: '🪻' },
+      { id: 'popcorn', name: 'Попкорн', taste: 'Карамельно-кукурузный', available: true, icon: '🍿' },
+      { id: 'chocolate', name: 'Пряный шоколад', taste: 'Какао с корицей', available: true, icon: '🍫' },
+      { id: 'raspberry', name: 'Лесная малина', taste: 'Ягодная кислинка', available: false, icon: '🫐' }
+    ];
+
+    function renderSyrupsShelf() {
+      const track = document.getElementById('syrups-scroll-track');
+      if (!track) return;
+      track.innerHTML = '';
+
+      syrupsData.forEach(item => {
+        const isAvail = (item.available !== false);
+        const card = document.createElement('div');
+        
+        card.className = isAvail
+          ? 'min-w-[210px] bg-neutral-900/90 border border-white/15 hover:border-yellow-300/60 p-4 rounded-2xl flex flex-col justify-between transition-all duration-300 shadow-lg'
+          : 'min-w-[210px] bg-neutral-900/40 border border-white/5 p-4 rounded-2xl flex flex-col justify-between opacity-50 grayscale transition-all duration-300 shadow-none';
+
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start mb-3">
+              <span class="text-3xl">${item.icon || '🧴'}</span>
+              <span class="text-[9px] font-display font-black uppercase px-2 py-0.5 rounded-md ${isAvail ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-neutral-400 border border-white/10'}">
+                ${isAvail ? 'В наличии' : 'Закончился'}
+              </span>
+            </div>
+            <h4 class="font-display font-bold text-sm text-white leading-snug">${item.name}</h4>
+            <p class="text-xs text-neutral-400 mt-1">${item.taste || 'Фирменный сироп'}</p>
+          </div>
+          <div class="mt-4 pt-2 border-t border-white/10 flex justify-between items-center text-[11px]">
+            <span class="text-neutral-400">порция</span>
+            <span class="font-display font-bold ${isAvail ? 'text-sticker' : 'text-neutral-500'}">+35 ₽</span>
+          </div>
+        `;
+        track.appendChild(card);
+      });
+    }
+
+    // Управление модалкой сиропов
+    const syrupsModal = document.getElementById('syrups-modal');
+    window.toggleSyrupsShelf = function(show) {
+      if (show) {
+        renderSyrupsShelf();
+        syrupsModal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          syrupsModal.classList.remove('opacity-0');
+          syrupsModal.classList.add('opacity-100');
+        });
+      } else {
+        syrupsModal.classList.remove('opacity-100');
+        syrupsModal.classList.add('opacity-0');
+        setTimeout(() => syrupsModal.classList.add('hidden'), 300);
+      }
+    };
+
+    // Клик по экрану ожидания открывает сиропы
+    window.handleIdleScreenClick = function(e) {
+      // Игнорируем клик, если нажали на кнопки чаевых внутри тизера
+      if (e.target.closest('button')) return;
+      window.toggleSyrupsShelf(true);
+    };
+
+    // Скролл мышкой по горизонтали
+    const scrollTrack = document.getElementById('syrups-scroll-track');
+    scrollTrack.addEventListener('wheel', (evt) => {
+      evt.preventDefault();
+      scrollTrack.scrollLeft += evt.deltaY;
+    });
 
     let dynamicSlides = [];
     let customAdSlides = [];
@@ -609,7 +772,7 @@
         type: 'tips_teaser',
         duration: 8500,
         html: `
-          <div class="flex flex-col items-center max-w-3xl cursor-pointer" onclick="window.triggerMagicTipScreen()">
+          <div class="flex flex-col items-center max-w-3xl cursor-pointer" onclick="event.stopPropagation(); window.triggerMagicTipScreen()">
             <div class="stamp-badge bg-sticker text-black font-display font-black text-xs px-4 py-1.5 uppercase -rotate-3 mb-4 shadow-xl">
               COFFEEMAN TEAM ☕
             </div>
@@ -618,7 +781,7 @@
             </h2>
             <div class="mt-4 bg-black/60 border border-white/15 px-6 py-3.5 rounded-3xl backdrop-blur-md max-w-lg shadow-xl">
               <p class="text-neutral-200 text-base font-medium">
-                Нажми на экран, чтобы оставить чаевые нашей команде 💛
+                Нажми сюда, чтобы оставить чаевые нашей команде 💛
               </p>
             </div>
           </div>
@@ -661,7 +824,6 @@
       
       setTimeout(() => {
         if (!dynamicSlides[currentSlide]) currentSlide = 0;
-
         const currentSlideObj = dynamicSlides[currentSlide];
 
         if (currentSlideObj.type === 'greeting') {
@@ -743,7 +905,7 @@
       const delayMs = randomMinutes * 60 * 1000;
 
       autoMagicTimeout = setTimeout(() => {
-        if (!isSuccessActive && !isMagicActive && paymentScreen.classList.contains('hidden')) {
+        if (!isSuccessActive && !isMagicActive && paymentScreen.classList.contains('hidden') && syrupsModal.classList.contains('hidden')) {
           window.triggerMagicTipScreen();
         } else {
           scheduleNextAutoMagicTip();
@@ -758,6 +920,7 @@
     }
 
     window.triggerMagicTipScreen = function() {
+      window.toggleSyrupsShelf(false);
       isMagicActive = true;
       if (idleTimeout) clearTimeout(idleTimeout);
       clearAllTimeouts();
@@ -853,8 +1016,9 @@
       fire(0.1, { spread: 120, startVelocity: 45 });
     }
 
-    // Режим оплаты, прилетающий с пульта кассира
+    // Режим оплаты, прилетающий с кассы
     function triggerPayment(orderData) {
+      window.toggleSyrupsShelf(false);
       isMagicActive = false;
       if (idleTimeout) clearTimeout(idleTimeout);
       clearAllTimeouts();
@@ -1032,13 +1196,28 @@
       if (finalAmountEl) finalAmountEl.innerText = `${total} ₽`;
     }
 
-    // Слушатель настроек стороны карты (left/right)
     const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+
+    // Слушатель настроек терминала (сторона NFC)
     const settingsRef = ref(db, `terminals/${terminalId}/settings`);
     onValue(settingsRef, (snapshot) => {
       const data = snapshot.val();
       if (data && data.nfcSide) {
         currentNfcSide = data.nfcSide;
+      }
+    });
+
+    // СЛУШАТЕЛЬ СИРОПОВ ИЗ БАЗЫ ДАННЫХ (УПРАВЛЯЕТСЯ С КАССЫ)
+    const syrupsRef = ref(db, `terminals/${terminalId}/syrups`);
+    onValue(syrupsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        if (Array.isArray(data)) {
+          syrupsData = data;
+        } else {
+          syrupsData = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        }
+        renderSyrupsShelf();
       }
     });
 
@@ -1056,6 +1235,11 @@
           window.triggerMagicTipScreen();
         } else if (data.status === 'TRIGGER_TIPS_THANKS') {
           window.triggerMagicThanksScreen();
+        } else if (data.status === 'SHOW_SYRUPS') {
+          // Принудительное открытие полки сиропов с пульта кассира
+          window.toggleSyrupsShelf(true);
+        } else if (data.status === 'HIDE_SYRUPS') {
+          window.toggleSyrupsShelf(false);
         } else if ((data.status === 'IDLE' || data.status === 'canceled') && !isSuccessActive && !isMagicActive) {
           resetToIdle(false);
         }
