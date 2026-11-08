@@ -73,68 +73,104 @@
     window.dbUpdate = update;
     window.dbRemove = remove;
 
-    const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-    const orderStatusRef = ref(db, `terminals/${terminalId}/current_order`);
-    
-    onValue(orderStatusRef, (snapshot) => {
-      const data = snapshot.val();
-      const statusBadge = document.getElementById('live-terminal-status');
-      const orderSub = document.getElementById('live-terminal-sub');
-      const cardPaidBtn = document.getElementById('btn-confirm-card-paid');
+    // Стартовый набор сиропов для авто-заполнения пустой БД
+    const initialSyrupsSeed = {
+      s_caramel: { id: 's_caramel', name: 'Солёная карамель', taste: 'Сладкий, сливочный', price: 35, available: true, icon: '🍯' },
+      s_vanilla: { id: 's_vanilla', name: 'Французская ваниль', taste: 'Нежный, классический', price: 35, available: true, icon: '🌼' },
+      s_hazelnut: { id: 's_hazelnut', name: 'Лесной орех', taste: 'Густой ореховый аромат', price: 35, available: true, icon: '🌰' },
+      s_coconut: { id: 's_coconut', name: 'Кокос', taste: 'Тропический, мягкий', price: 35, available: true, icon: '🥥' },
+      s_lavender: { id: 's_lavender', name: 'Лаванда', taste: 'Цветочный, свежий', price: 35, available: false, icon: '🪻' },
+      s_popcorn: { id: 's_popcorn', name: 'Попкорн', taste: 'Карамельно-кукурузный', price: 35, available: true, icon: '🍿' },
+      s_chocolate: { id: 's_chocolate', name: 'Пряный шоколад', taste: 'Какао с корицей', price: 35, available: true, icon: '🍫' },
+      s_raspberry: { id: 's_raspberry', name: 'Лесная малина', taste: 'Ягодная кислинка', price: 35, available: false, icon: '🫐' }
+    };
+
+    window.seedDefaultSyrupsToDB = async function() {
+      const termId = localStorage.getItem('yk_term_id') || 'term_01';
+      const syrupsRef = ref(db, `terminals/${termId}/syrups`);
+      await set(syrupsRef, initialSyrupsSeed);
+    };
+
+    function attachListeners() {
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       
-      if (data && (data.status === 'WAITING_FOR_PAYMENT' || data.status === 'WAITING_FOR_CARD')) {
-        const isCard = data.method === 'card' || data.status === 'WAITING_FOR_CARD';
-        if (statusBadge) {
-          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping mr-1.5"></span> ${data.amount} ₽ (${isCard ? 'Карта' : 'СБП'})`;
-          statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30';
+      // 1. Статус экрана и заказов
+      const orderStatusRef = ref(db, `terminals/${terminalId}/current_order`);
+      onValue(orderStatusRef, (snapshot) => {
+        const data = snapshot.val();
+        const statusBadge = document.getElementById('live-terminal-status');
+        const orderSub = document.getElementById('live-terminal-sub');
+        const cardPaidBtn = document.getElementById('btn-confirm-card-paid');
+        
+        if (data && (data.status === 'WAITING_FOR_PAYMENT' || data.status === 'WAITING_FOR_CARD')) {
+          const isCard = data.method === 'card' || data.status === 'WAITING_FOR_CARD';
+          if (statusBadge) {
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping mr-1.5"></span> ${data.amount} ₽ (${isCard ? 'Карта' : 'СБП'})`;
+            statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30';
+          }
+          if (orderSub) orderSub.innerText = isCard ? `Ожидание карты на экране (${data.amount} ₽)` : `Ожидание оплаты СБП: ${data.amount} ₽`;
+          if (cardPaidBtn) {
+            if (isCard) cardPaidBtn.classList.remove('hidden');
+            else cardPaidBtn.classList.add('hidden');
+          }
+        } else if (data && data.status === 'TRIGGER_MAGIC_TIPS') {
+          if (statusBadge) {
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse mr-1.5"></span> ☕ Чаевые`;
+            statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+          }
+          if (orderSub) orderSub.innerText = 'Экран сбора чаевых бариста';
+          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
+        } else if (data && data.status === 'SHOW_SYRUPS') {
+          if (statusBadge) {
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse mr-1.5"></span> 🧴 Полка сиропов`;
+            statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30';
+          }
+          if (orderSub) orderSub.innerText = 'Гость смотрит полку сиропов';
+          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
+        } else if (data && (data.status === 'PAID' || data.status === 'succeeded' || data.status === 'cash_succeeded')) {
+          if (statusBadge) {
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span> Оплачено`;
+            statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+          }
+          if (orderSub) orderSub.innerText = 'Оплата зафиксирована';
+          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
+        } else {
+          if (statusBadge) {
+            statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-neutral-500 mr-1.5"></span> Свободен`;
+            statusBadge.className = 'flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/5 text-neutral-400 border border-white/10';
+          }
+          if (orderSub) orderSub.innerText = 'Крутится приветствие и промо 9 фишек';
+          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
         }
-        if (orderSub) orderSub.innerText = isCard ? `Ожидание карты на экране (${data.amount} ₽)` : `Ожидание оплаты СБП: ${data.amount} ₽`;
-        if (cardPaidBtn) {
-          if (isCard) cardPaidBtn.classList.remove('hidden');
-          else cardPaidBtn.classList.add('hidden');
-        }
-      } else if (data && data.status === 'TRIGGER_MAGIC_TIPS') {
-        if (statusBadge) {
-          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse mr-1.5"></span> ☕ Чаевые`;
-          statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30';
-        }
-        if (orderSub) orderSub.innerText = 'Экран сбора чаевых бариста';
-        if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-      } else if (data && (data.status === 'PAID' || data.status === 'succeeded' || data.status === 'cash_succeeded')) {
-        if (statusBadge) {
-          statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5"></span> Оплачено`;
-          statusBadge.className = 'flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-        }
-        if (orderSub) orderSub.innerText = 'Оплата зафиксирована';
-        if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-      } else {
-        if (statusBadge) {
-          statusBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-neutral-500 mr-1.5"></span> Свободен`;
-          statusBadge.className = 'flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/5 text-neutral-400 border border-white/10';
-        }
-        if (orderSub) orderSub.innerText = 'Крутится приветствие и промо 9 фишек';
-        if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-      }
-    });
+      });
 
-    // Слушатель сиропов
-    const syrupsRef = ref(db, `terminals/${terminalId}/syrups`);
-    onValue(syrupsRef, (snapshot) => {
-      const syrups = snapshot.val();
-      window.loadedSyrups = syrups;
-      if (typeof window.renderSyrupsManager === 'function') {
-        window.renderSyrupsManager(syrups);
-      }
-    });
+      // 2. Слушатель сиропов с авто-инициализацией БД
+      const syrupsRef = ref(db, `terminals/${terminalId}/syrups`);
+      onValue(syrupsRef, async (snapshot) => {
+        let syrups = snapshot.val();
+        if (!syrups) {
+          // Если в базе вообще пусто — записываем туда дефолтные сиропы, чтобы работало редактирование!
+          await set(syrupsRef, initialSyrupsSeed);
+          syrups = initialSyrupsSeed;
+        }
+        window.loadedSyrups = syrups;
+        if (typeof window.renderSyrupsManager === 'function') {
+          window.renderSyrupsManager(syrups);
+        }
+      });
 
-    const adsListRef = ref(db, 'ads_list');
-    onValue(adsListRef, (snapshot) => {
-      const ads = snapshot.val() || {};
-      window.loadedAds = ads;
-      if (typeof window.renderAdsListTable === 'function') {
-        window.renderAdsListTable(ads);
-      }
-    });
+      // 3. Слушатель рекламы
+      const adsListRef = ref(db, 'ads_list');
+      onValue(adsListRef, (snapshot) => {
+        const ads = snapshot.val() || {};
+        window.loadedAds = ads;
+        if (typeof window.renderAdsListTable === 'function') {
+          window.renderAdsListTable(ads);
+        }
+      });
+    }
+
+    attachListeners();
   </script>
 </head>
 <body class="ambient-bg text-white min-h-screen flex flex-col font-sans selection:bg-yellow-300 selection:text-black pb-20 md:pb-0">
@@ -148,7 +184,7 @@
       <div>
         <h1 class="font-display text-xs md:text-sm font-black tracking-wide text-white uppercase flex items-center gap-2">
           Касса #1 • Кызыл
-          <span class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">СБП & NFC</span>
+          <span id="cf-status-pill" class="hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold">СБП & NFC</span>
         </h1>
         <p id="live-terminal-sub" class="text-[10px] md:text-xs text-neutral-400 hidden sm:block">Крутится приветствие и промо 9 фишек</p>
       </div>
@@ -205,20 +241,22 @@
       <!-- Управление экраном гостя (Чаевые & Сиропы) -->
       <div class="grid grid-cols-2 gap-2.5">
         <div class="bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5 flex flex-col justify-between gap-2 shadow-xl">
-          <span class="font-display font-black text-xs uppercase text-amber-300 flex items-center gap-1">
-            <span>☕</span> Чаевые
-          </span>
+          <div class="flex justify-between items-center">
+            <span class="font-display font-black text-xs uppercase text-amber-300">☕ Чаевые</span>
+            <button onclick="triggerTipsThanksOnDisplay()" title="Поблагодарить за чаевые" class="text-[10px] bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 px-2 py-0.5 rounded-lg border border-amber-400/30">🎉 Спасибо</button>
+          </div>
           <button onclick="castMagicTips()" class="w-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-display font-black text-[11px] uppercase py-2.5 rounded-xl shadow-lg transition-all">
-            Экран чаевых
+            Включить чаевые
           </button>
         </div>
 
         <div class="bg-neutral-900 border border-white/15 rounded-2xl p-3.5 flex flex-col justify-between gap-2 shadow-xl">
-          <span class="font-display font-black text-xs uppercase text-sticker flex items-center gap-1">
-            <span>🧴</span> Полка сиропов
-          </span>
+          <div class="flex justify-between items-center">
+            <span class="font-display font-black text-xs uppercase text-sticker">🧴 Сиропы</span>
+            <button onclick="hideSyrupsOnDisplay()" title="Закрыть полку на экране" class="text-[10px] bg-white/10 hover:bg-white/20 text-neutral-300 px-2 py-0.5 rounded-lg">Закрыть ✕</button>
+          </div>
           <button onclick="triggerShowSyrupsOnDisplay()" class="w-full bg-white/10 hover:bg-white/20 active:scale-95 text-white font-display font-bold text-[11px] uppercase py-2.5 rounded-xl border border-white/15 transition-all">
-            Показать гостю
+            Показать полку
           </button>
         </div>
       </div>
@@ -316,22 +354,25 @@
 
   </main>
 
-  <!-- ================= СЕКЦИЯ 2: УПРАВЛЕНИЕ СИРОПАМИ ================= -->
-  <main id="view-syrups" class="hidden flex-1 p-3 md:p-8 max-w-7xl mx-auto w-full flex-col gap-4 md:gap-6">
-    <div class="flex flex-wrap justify-between items-center gap-3">
+  <!-- ================= СЕКЦИЯ 2: УПРАВЛЕНИЕ СИРОПАМИ (ПОЛНОЦЕННАЯ) ================= -->
+  <main id="view-syrups" class="hidden flex-1 p-3 md:p-8 max-w-7xl mx-auto w-full flex-col gap-5">
+    <div class="flex flex-wrap justify-between items-center gap-3 bg-surface border border-white/10 p-4 md:p-6 rounded-3xl shadow-xl">
       <div>
-        <h2 class="font-display text-lg md:text-2xl font-black uppercase text-white flex items-center gap-2">
-          <span>🧴 Полка сиропов</span>
-          <span class="text-xs bg-sticker text-black px-2.5 py-0.5 rounded-full font-bold">Online</span>
-        </h2>
-        <p class="text-xs text-neutral-400">Включай и выключай сиропы — изменения мгновенно отражаются на экране клиента</p>
+        <div class="flex items-center gap-2">
+          <h2 class="font-display text-lg md:text-2xl font-black uppercase text-white">🧴 Полка сиропов</h2>
+          <span id="syrups-count-badge" class="text-xs bg-sticker text-black px-2.5 py-0.5 rounded-full font-display font-black">0 шт</span>
+        </div>
+        <p class="text-xs text-neutral-400 mt-1">Нажимай на кнопку статуса, чтобы сделать сироп серым («Закончился») или активным на экране гостя</p>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button onclick="triggerShowSyrupsOnDisplay()" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-display text-xs font-bold px-4 py-2.5 rounded-xl transition-all">
-          🖥️ Открыть на экране гостя
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="triggerShowSyrupsOnDisplay()" class="bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 text-white font-display text-xs font-bold px-4 py-2.5 rounded-xl transition-all">
+          🖥️ Открыть на экране
         </button>
-        <button onclick="openNewSyrupModal()" class="bg-sticker text-black font-display font-black text-xs uppercase px-4 py-2.5 rounded-xl active:scale-95 transition-all sticker-badge">
+        <button onclick="hideSyrupsOnDisplay()" class="bg-white/5 hover:bg-white/15 active:scale-95 border border-white/10 text-neutral-300 font-display text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all">
+          Закрыть ✕
+        </button>
+        <button onclick="openSyrupModal()" class="bg-sticker text-black font-display font-black text-xs uppercase px-4 py-2.5 rounded-xl active:scale-95 transition-all sticker-badge">
           + Добавить сироп
         </button>
       </div>
@@ -341,7 +382,77 @@
     <div id="syrups-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
       <!-- Генерируется скриптом -->
     </div>
+
+    <div class="flex justify-end pt-2">
+      <button onclick="resetSyrupsToDefault()" class="text-xs text-neutral-500 hover:text-neutral-300 underline font-medium">
+        🔄 Восстановить стандартный набор сиропов
+      </button>
+    </div>
   </main>
+
+  <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ СИРОПА -->
+  <div id="syrup-editor-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="bg-surface border border-white/20 rounded-3xl max-w-md w-full p-6 shadow-2xl flex flex-col gap-4">
+      <div class="flex justify-between items-center border-b border-white/10 pb-3">
+        <h3 id="syrup-modal-title" class="font-display font-black text-base uppercase text-sticker">Добавить сироп</h3>
+        <button onclick="closeSyrupModal()" class="text-neutral-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <input type="hidden" id="syrup-id-input" value="" />
+
+      <div>
+        <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Выбери иконку или введи свою</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="syrup-icon-input" value="🍯" class="w-14 text-center text-2xl bg-white/5 border border-white/15 rounded-xl py-2 focus:outline-none focus:border-yellow-300" />
+          <div class="flex flex-wrap gap-1.5 flex-1">
+            <button type="button" onclick="setSyrupIcon('🍯')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🍯</button>
+            <button type="button" onclick="setSyrupIcon('🌼')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🌼</button>
+            <button type="button" onclick="setSyrupIcon('🌰')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🌰</button>
+            <button type="button" onclick="setSyrupIcon('🥥')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🥥</button>
+            <button type="button" onclick="setSyrupIcon('🪻')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🪻</button>
+            <button type="button" onclick="setSyrupIcon('🍿')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🍿</button>
+            <button type="button" onclick="setSyrupIcon('🍫')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🍫</button>
+            <button type="button" onclick="setSyrupIcon('🫐')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🫐</button>
+            <button type="button" onclick="setSyrupIcon('🍓')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🍓</button>
+            <button type="button" onclick="setSyrupIcon('🍌')" class="p-2 bg-white/5 hover:bg-white/15 rounded-lg text-lg">🍌</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Название сиропа</label>
+        <input type="text" id="syrup-name-input" placeholder="Например: Солёная карамель" class="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-yellow-300" />
+      </div>
+
+      <div>
+        <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Описание вкуса</label>
+        <input type="text" id="syrup-taste-input" placeholder="Например: Сладкий, сливочный" class="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-300" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Цена порции (₽)</label>
+          <input type="number" id="syrup-price-input" value="35" class="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-2 text-sm text-white font-display font-bold focus:outline-none focus:border-yellow-300" />
+        </div>
+        <div>
+          <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Статус</label>
+          <select id="syrup-avail-input" class="w-full bg-surfaceLight border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-yellow-300">
+            <option value="true">● В наличии</option>
+            <option value="false">○ Закончился (серый)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveSyrupForm()" class="flex-1 bg-sticker text-black font-display font-black text-xs uppercase py-3.5 rounded-xl active:scale-95 transition-all sticker-badge">
+          💾 Сохранить
+        </button>
+        <button onclick="closeSyrupModal()" class="bg-white/10 hover:bg-white/15 text-neutral-300 font-bold text-xs px-4 py-3.5 rounded-xl">
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= СЕКЦИЯ 3: РЕКЛАМА ================= -->
   <main id="view-ads" class="hidden flex-1 p-3 md:p-8 max-w-7xl mx-auto w-full flex-col gap-4 md:gap-8">
@@ -533,13 +644,13 @@
 
   <!-- ================= СЕКЦИЯ 4: НАСТРОЙКИ ================= -->
   <main id="view-settings" class="hidden flex-1 p-3 md:p-8 max-w-4xl mx-auto w-full flex-col gap-4 md:gap-6">
-    <div class="bg-surface border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col gap-4 md:gap-6 text-left">
+    <div class="bg-surface border border-white/10 rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl flex flex-col gap-5 text-left">
       <div class="border-b border-white/10 pb-3">
         <h2 class="font-display text-base md:text-xl font-black uppercase text-white">⚙️ Настройки кассы COFFEEMAN</h2>
-        <p class="text-xs text-neutral-400">Связка с ЮKassa, сторона NFC и облако баннеров</p>
+        <p class="text-xs text-neutral-400">Связь через Cloudflare, ключи ЮKassa, сторона NFC и облако баннеров</p>
       </div>
 
-      <!-- Сторона экрана для NFC -->
+      <!-- 1. Сторона экрана для NFC -->
       <div class="flex flex-col gap-2">
         <h3 class="font-display text-xs font-bold uppercase text-sticker">1. Сторона подсветки для карт (NFC)</h3>
         <p class="text-[11px] text-neutral-400">Укажи, с какого края экрана покупателю прикладывать карту:</p>
@@ -553,8 +664,41 @@
         </div>
       </div>
 
-      <div class="flex flex-col gap-3 pt-3 border-t border-white/10">
-        <h3 class="font-display text-xs font-bold uppercase text-sticker">2. Ключи ЮKassa (СБП & Оплата)</h3>
+      <!-- 2. Связь с кассой через Cloudflare -->
+      <div class="flex flex-col gap-3 pt-4 border-t border-white/10">
+        <div class="flex justify-between items-center">
+          <h3 class="font-display text-xs font-bold uppercase text-sticker flex items-center gap-2">
+            <span>☁️ 2. Способ связи через Cloudflare</span>
+          </h3>
+          <span class="text-[10px] bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2.5 py-0.5 rounded-full font-bold">Workers / Tunnel</span>
+        </div>
+        <p class="text-[11px] text-neutral-400 leading-relaxed">
+          Выбери режим соединения для запросов к кассе и ЮKassa. Свой Cloudflare Worker работает быстрее и стабильнее публичных прокси.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-neutral-300 font-bold block mb-1">Режим проксирования</label>
+            <select id="desk-proxy-mode" class="w-full bg-surfaceLight border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white font-bold focus:outline-none focus:border-yellow-300">
+              <option value="cloudflare">☁️ Через ссылку Cloudflare (Рекомендуется)</option>
+              <option value="corsproxy">🌐 Стандартный прокси (corsproxy.io)</option>
+              <option value="direct">⚡ Прямой запрос к шлюзу</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-neutral-300 font-bold block mb-1">Ссылка Cloudflare (Worker / Tunnel URL)</label>
+            <input type="url" id="desk-cf-url" placeholder="https://coffeeman-pos.yourname.workers.dev" class="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+          </div>
+        </div>
+        <div class="flex items-center justify-between bg-black/40 border border-white/10 rounded-xl px-3.5 py-2 text-[11px]">
+          <span id="cf-test-result" class="text-neutral-400">Формат ссылки: <code class="text-sticker">https://...workers.dev</code> (поддерживает <code class="text-neutral-300">?url=</code> или прямой прокси)</span>
+          <button type="button" onclick="testCloudflareConnection()" class="bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1 rounded-lg shrink-0 ml-2">Проверить связь</button>
+        </div>
+      </div>
+
+      <!-- 3. Ключи ЮKassa -->
+      <div class="flex flex-col gap-3 pt-4 border-t border-white/10">
+        <h3 class="font-display text-xs font-bold uppercase text-sticker">3. Ключи ЮKassa и ID Терминала</h3>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -562,7 +706,7 @@
             <input type="text" id="desk-shop-id" placeholder="1350725" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
           </div>
           <div>
-            <label class="text-xs text-neutral-300 font-bold block mb-1">Terminal ID</label>
+            <label class="text-xs text-neutral-300 font-bold block mb-1">Terminal ID (связь кассы и экрана)</label>
             <input type="text" id="desk-terminal-id" value="term_01" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
           </div>
         </div>
@@ -573,9 +717,10 @@
         </div>
       </div>
 
-      <div class="flex flex-col gap-3 pt-3 border-t border-white/10">
+      <!-- 4. Облако изображений -->
+      <div class="flex flex-col gap-3 pt-4 border-t border-white/10">
         <div class="flex justify-between items-center">
-          <h3 class="font-display text-xs font-bold uppercase text-sticker">3. Облако изображений Cloudinary</h3>
+          <h3 class="font-display text-xs font-bold uppercase text-sticker">4. Облако изображений Cloudinary</h3>
           <span class="text-[9px] text-neutral-400 font-mono">my_shop_unsigned</span>
         </div>
         <div>
@@ -585,7 +730,7 @@
       </div>
 
       <button onclick="saveDesktopSettings()" class="w-full bg-sticker text-black font-display font-black text-xs uppercase py-3.5 md:py-4 rounded-xl md:rounded-2xl active:scale-95 transition-all sticker-badge mt-2">
-        Сохранить настройки
+        💾 Сохранить все настройки
       </button>
     </div>
   </main>
@@ -616,6 +761,57 @@
     let activePollInterval = null;
     let selectedNfcSide = localStorage.getItem('moon_nfc_side') || 'right';
     const CLOUDINARY_PRESET = "my_shop_unsigned";
+
+    // Формирование ссылки запроса с учетом настроек Cloudflare
+    function buildGatewayUrl(targetYookassaUrl) {
+      const mode = localStorage.getItem('cf_proxy_mode') || 'corsproxy';
+      const cfUrl = (localStorage.getItem('cf_worker_url') || '').trim().replace(/\/+$/, '');
+
+      if (mode === 'cloudflare' && cfUrl) {
+        // Если воркер принимает ?url= или проксирует напрямую
+        if (cfUrl.includes('?url=')) {
+          return `${cfUrl}${encodeURIComponent(targetYookassaUrl)}`;
+        }
+        return `${cfUrl}/?url=${encodeURIComponent(targetYookassaUrl)}`;
+      } else if (mode === 'direct' && cfUrl) {
+        // Если поднят собственный Cloudflare Tunnel напрямую на API-сервер
+        const path = targetYookassaUrl.replace('https://api.yookassa.ru', '');
+        return `${cfUrl}${path}`;
+      }
+      return `https://corsproxy.io/?url=${encodeURIComponent(targetYookassaUrl)}`;
+    }
+
+    function updateCfBadgeUI() {
+      const mode = localStorage.getItem('cf_proxy_mode') || 'corsproxy';
+      const cfUrl = (localStorage.getItem('cf_worker_url') || '').trim();
+      const pill = document.getElementById('cf-status-pill');
+      if (!pill) return;
+
+      if (mode === 'cloudflare' && cfUrl) {
+        pill.innerText = '☁️ Cloudflare Active';
+        pill.className = 'hidden sm:inline-block text-[9px] bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-full font-sans font-semibold';
+      } else {
+        pill.innerText = 'СБП & NFC';
+        pill.className = 'hidden sm:inline-block text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-sans font-semibold';
+      }
+    }
+
+    window.testCloudflareConnection = async function() {
+      const cfUrl = document.getElementById('desk-cf-url').value.trim();
+      const resEl = document.getElementById('cf-test-result');
+      if (!cfUrl) {
+        resEl.innerHTML = '<span class="text-rose-400 font-bold">❌ Сначала введите ссылку на Cloudflare Worker</span>';
+        return;
+      }
+      resEl.innerHTML = '<span class="text-sticker animate-pulse">⏳ Проверяем доступность узла Cloudflare...</span>';
+      try {
+        const cleanUrl = cfUrl.replace(/\/+$/, '');
+        const response = await fetch(cleanUrl, { method: 'GET', mode: 'cors' });
+        resEl.innerHTML = `<span class="text-emerald-400 font-bold">✅ Узел Cloudflare отвечает (HTTP ${response.status})! Готов к работе.</span>`;
+      } catch (err) {
+        resEl.innerHTML = `<span class="text-amber-300 font-bold">⚠️ Ответ: ${err.message}. Убедитесь, что в Worker включены заголовки CORS.</span>`;
+      }
+    };
 
     function openView(view) {
       document.getElementById('view-pos').classList.add('hidden');
@@ -709,7 +905,10 @@
       document.getElementById('desk-secret-key').value = localStorage.getItem('yk_secret_key') || '';
       document.getElementById('desk-terminal-id').value = localStorage.getItem('yk_term_id') || 'term_01';
       document.getElementById('desk-cloud-name').value = localStorage.getItem('cld_cloud_name') || '';
+      document.getElementById('desk-proxy-mode').value = localStorage.getItem('cf_proxy_mode') || 'cloudflare';
+      document.getElementById('desk-cf-url').value = localStorage.getItem('cf_worker_url') || '';
       updateNfcSideUI();
+      updateCfBadgeUI();
     });
 
     function saveDesktopSettings() {
@@ -717,21 +916,29 @@
       const secretKey = document.getElementById('desk-secret-key').value.trim();
       const termId = document.getElementById('desk-terminal-id').value.trim() || 'term_01';
       const cloudName = document.getElementById('desk-cloud-name').value.trim();
+      const proxyMode = document.getElementById('desk-proxy-mode').value;
+      const cfUrl = document.getElementById('desk-cf-url').value.trim();
 
       localStorage.setItem('yk_shop_id', shopId);
       localStorage.setItem('yk_secret_key', secretKey);
       localStorage.setItem('yk_term_id', termId);
       localStorage.setItem('cld_cloud_name', cloudName);
+      localStorage.setItem('cf_proxy_mode', proxyMode);
+      localStorage.setItem('cf_worker_url', cfUrl);
 
+      // Сохраняем настройки и Cloudflare URL в Firebase, чтобы экран покупателя тоже его знал
       if (window.firebaseDB && window.dbRef && window.dbUpdate) {
         const settingsRef = window.dbRef(window.firebaseDB, `terminals/${termId}/settings`);
         window.dbUpdate(settingsRef, {
           nfcSide: selectedNfcSide,
+          proxyMode: proxyMode,
+          cfWorkerUrl: cfUrl,
           updatedAt: Date.now()
         });
       }
 
-      alert('Настройки сохранены!');
+      updateCfBadgeUI();
+      alert('Настройки кассы и Cloudflare успешно сохранены!');
       openView('pos');
     }
 
@@ -742,90 +949,143 @@
       });
     }
 
-    // ================= УПРАВЛЕНИЕ СИРОПАМИ =================
-    const defaultSyrupsList = [
-      { id: 'caramel', name: 'Солёная карамель', taste: 'Сладкий, сливочный', available: true, icon: '🍯' },
-      { id: 'vanilla', name: 'Французская ваниль', taste: 'Нежный, классический', available: true, icon: '🌼' },
-      { id: 'hazelnut', name: 'Лесной орех', taste: 'Густой ореховый аромат', available: true, icon: '🌰' },
-      { id: 'coconut', name: 'Кокос', taste: 'Тропический, мягкий', available: true, icon: '🥥' },
-      { id: 'lavender', name: 'Лаванда', taste: 'Цветочный, свежий', available: false, icon: '🪻' },
-      { id: 'popcorn', name: 'Попкорн', taste: 'Карамельно-кукурузный', available: true, icon: '🍿' },
-      { id: 'chocolate', name: 'Пряный шоколад', taste: 'Какао с корицей', available: true, icon: '🍫' },
-      { id: 'raspberry', name: 'Лесная малина', taste: 'Ягодная кислинка', available: false, icon: '🫐' }
-    ];
-
+    // ================= ИСПРАВЛЕННОЕ УПРАВЛЕНИЕ СИРОПАМИ =================
     window.renderSyrupsManager = function(syrupsData) {
       const container = document.getElementById('syrups-grid');
+      const countBadge = document.getElementById('syrups-count-badge');
       if (!container) return;
       container.innerHTML = '';
 
-      let list = [];
-      if (!syrupsData) {
-        list = defaultSyrupsList;
-      } else if (Array.isArray(syrupsData)) {
-        list = syrupsData;
-      } else {
-        list = Object.keys(syrupsData).map(k => ({ id: k, ...syrupsData[k] }));
-      }
+      if (!syrupsData) return;
 
-      list.forEach(item => {
+      const keys = Object.keys(syrupsData);
+      if (countBadge) countBadge.innerText = `${keys.length} шт`;
+
+      keys.forEach(key => {
+        const item = syrupsData[key];
+        if (!item) return;
+        const syrupKey = key;
         const isAvail = (item.available !== false);
+        const price = item.price !== undefined ? item.price : 35;
+
         const card = document.createElement('div');
-        card.className = `p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${isAvail ? 'bg-surface border-white/10 shadow-lg' : 'bg-surface/40 border-white/5 opacity-50'}`;
+        card.className = `p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${isAvail ? 'bg-surface border-white/15 shadow-lg' : 'bg-surface/40 border-white/5 opacity-55'}`;
         card.innerHTML = `
           <div>
-            <div class="flex justify-between items-start mb-2">
+            <div class="flex justify-between items-start mb-2.5">
               <span class="text-3xl">${item.icon || '🧴'}</span>
-              <button onclick="toggleSyrupStatus('${item.id}', ${isAvail})" class="text-[10px] font-display font-black uppercase px-2.5 py-1 rounded-full transition-all active:scale-95 ${isAvail ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
+              <button onclick="toggleSyrupStatus('${syrupKey}', ${isAvail})" class="text-[10px] font-display font-black uppercase px-3 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer ${isAvail ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30'}">
                 ${isAvail ? '● В наличии' : '○ Закончился'}
               </button>
             </div>
-            <h4 class="font-display font-bold text-sm text-white">${item.name}</h4>
+            <h4 class="font-display font-bold text-sm text-white">${item.name || 'Без названия'}</h4>
             <p class="text-xs text-neutral-400 mt-0.5">${item.taste || 'Фирменный сироп'}</p>
           </div>
-          <div class="flex justify-between items-center pt-2 border-t border-white/10 text-xs">
-            <span class="text-sticker font-bold">+35 ₽</span>
-            <button onclick="deleteSyrup('${item.id}')" class="text-neutral-500 hover:text-rose-400 p-1">🗑️</button>
+          <div class="flex justify-between items-center pt-2.5 border-t border-white/10 text-xs">
+            <span class="text-sticker font-display font-bold">+${price} ₽</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="openSyrupModal('${syrupKey}')" class="bg-white/10 hover:bg-white/20 text-neutral-200 px-2.5 py-1 rounded-lg text-[11px] font-bold">✏️ Изм.</button>
+              <button onclick="deleteSyrup('${syrupKey}')" class="bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 px-2 py-1 rounded-lg text-[11px]">🗑️</button>
+            </div>
           </div>
         `;
         container.appendChild(card);
       });
     };
 
-    window.toggleSyrupStatus = async function(syrupId, currentStatus) {
+    window.toggleSyrupStatus = async function(syrupKey, currentStatus) {
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       if (window.firebaseDB && window.dbRef && window.dbUpdate) {
-        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${syrupId}`);
-        await window.dbUpdate(syrupRef, { available: !currentStatus });
+        const itemRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${syrupKey}`);
+        await window.dbUpdate(itemRef, { available: !currentStatus });
       }
     };
 
-    window.deleteSyrup = async function(syrupId) {
-      if (!confirm('Удалить этот сироп из списка?')) return;
+    window.setSyrupIcon = function(emoji) {
+      document.getElementById('syrup-icon-input').value = emoji;
+    };
+
+    window.openSyrupModal = function(syrupKey = null) {
+      const modal = document.getElementById('syrup-editor-modal');
+      const titleEl = document.getElementById('syrup-modal-title');
+      const idInput = document.getElementById('syrup-id-input');
+      const iconInput = document.getElementById('syrup-icon-input');
+      const nameInput = document.getElementById('syrup-name-input');
+      const tasteInput = document.getElementById('syrup-taste-input');
+      const priceInput = document.getElementById('syrup-price-input');
+      const availInput = document.getElementById('syrup-avail-input');
+
+      if (syrupKey && window.loadedSyrups && window.loadedSyrups[syrupKey]) {
+        const s = window.loadedSyrups[syrupKey];
+        titleEl.innerText = 'Редактировать сироп';
+        idInput.value = syrupKey;
+        iconInput.value = s.icon || '🧴';
+        nameInput.value = s.name || '';
+        tasteInput.value = s.taste || '';
+        priceInput.value = s.price !== undefined ? s.price : 35;
+        availInput.value = (s.available !== false) ? 'true' : 'false';
+      } else {
+        titleEl.innerText = 'Новый сироп';
+        idInput.value = 's_' + Date.now();
+        iconInput.value = '🍯';
+        nameInput.value = '';
+        tasteInput.value = '';
+        priceInput.value = 35;
+        availInput.value = 'true';
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      nameInput.focus();
+    };
+
+    window.closeSyrupModal = function() {
+      const modal = document.getElementById('syrup-editor-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    window.saveSyrupForm = async function() {
+      const key = document.getElementById('syrup-id-input').value.trim() || ('s_' + Date.now());
+      const icon = document.getElementById('syrup-icon-input').value.trim() || '🧴';
+      const name = document.getElementById('syrup-name-input').value.trim();
+      const taste = document.getElementById('syrup-taste-input').value.trim() || 'Фирменный сироп';
+      const price = Number(document.getElementById('syrup-price-input').value) || 35;
+      const available = document.getElementById('syrup-avail-input').value === 'true';
+
+      if (!name) {
+        alert('Введите название сиропа');
+        return;
+      }
+
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      if (window.firebaseDB && window.dbRef && window.dbSet) {
+        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${key}`);
+        await window.dbSet(syrupRef, {
+          id: key,
+          name: name,
+          taste: taste,
+          icon: icon,
+          price: price,
+          available: available
+        });
+        closeSyrupModal();
+      }
+    };
+
+    window.deleteSyrup = async function(syrupKey) {
+      if (!confirm('Удалить этот сироп с полки?')) return;
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       if (window.firebaseDB && window.dbRef && window.dbRemove) {
-        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${syrupId}`);
+        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${syrupKey}`);
         await window.dbRemove(syrupRef);
       }
     };
 
-    window.openNewSyrupModal = async function() {
-      const name = prompt('Название сиропа (например: Солёная карамель):');
-      if (!name) return;
-      const taste = prompt('Вкус или описание (например: Сливочный, насыщенный):') || 'Натуральный сироп';
-      const icon = prompt('Иконка / Эмодзи (например: 🍯, 🥥, 🌰):') || '🧴';
-
-      const id = 's_' + Date.now();
-      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-      if (window.firebaseDB && window.dbRef && window.dbSet) {
-        const syrupRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/syrups/${id}`);
-        await window.dbSet(syrupRef, {
-          id: id,
-          name: name.trim(),
-          taste: taste.trim(),
-          icon: icon.trim(),
-          available: true
-        });
+    window.resetSyrupsToDefault = async function() {
+      if (!confirm('Сбросить полку к стандартному списку из 8 сиропов?')) return;
+      if (typeof window.seedDefaultSyrupsToDB === 'function') {
+        await window.seedDefaultSyrupsToDB();
       }
     };
 
@@ -838,6 +1098,30 @@
           timestamp: Date.now()
         });
         document.getElementById('pos-status-text').innerHTML = '<span class="text-amber-400 font-bold">🧴 Полка сиропов открыта на экране покупателя!</span>';
+      }
+    };
+
+    window.hideSyrupsOnDisplay = async function() {
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      if (window.firebaseDB && window.dbRef && window.dbSet) {
+        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
+        await window.dbSet(orderRef, {
+          status: 'HIDE_SYRUPS',
+          timestamp: Date.now()
+        });
+        document.getElementById('pos-status-text').innerText = 'Полка сиропов закрыта';
+      }
+    };
+
+    window.triggerTipsThanksOnDisplay = async function() {
+      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      if (window.firebaseDB && window.dbRef && window.dbSet) {
+        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
+        await window.dbSet(orderRef, {
+          status: 'TRIGGER_TIPS_THANKS',
+          timestamp: Date.now()
+        });
+        document.getElementById('pos-status-text').innerHTML = '<span class="text-emerald-400 font-bold">🎉 Запущен салют благодарности за чаевые!</span>';
       }
     };
 
@@ -884,7 +1168,7 @@
       }
     };
 
-    // ================= РЕЖИМ СБП QR =================
+    // ================= РЕЖИМ СБП QR (С ПОДДЕРЖКОЙ CLOUDFLARE) =================
     async function createDirectSbpPayment() {
       const amount = parseInt(currentInput);
       if (!amount || amount <= 0) {
@@ -895,9 +1179,11 @@
       const shopId = localStorage.getItem('yk_shop_id') || '1350725';
       const secretKey = localStorage.getItem('yk_secret_key');
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
+      const cfWorkerUrl = (localStorage.getItem('cf_worker_url') || '').trim();
+      const proxyMode = localStorage.getItem('cf_proxy_mode') || 'corsproxy';
 
       if (!shopId || !secretKey) {
-        alert('Укажите Secret Key во вкладке «Опции / Настройки»');
+        alert('Укажите Secret Key во вкладке «Настройки»');
         openView('settings');
         return;
       }
@@ -907,16 +1193,16 @@
       
       sendBtn.disabled = true;
       sendBtn.innerHTML = '<span>⏳ Создаем СБП...</span>';
-      statusText.innerText = 'Связываемся с ЮKassa...';
+      statusText.innerText = proxyMode === 'cloudflare' && cfWorkerUrl ? 'Связываемся через Cloudflare...' : 'Связываемся с ЮKassa...';
 
       if (activePollInterval) clearInterval(activePollInterval);
 
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const idempotenceKey = generateUUID();
-      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent('https://api.yookassa.ru/v3/payments')}`;
+      const requestUrl = buildGatewayUrl('https://api.yookassa.ru/v3/payments');
 
       try {
-        const response = await fetch(proxyUrl, {
+        const response = await fetch(requestUrl, {
           method: 'POST',
           headers: {
             'Authorization': authHeader,
@@ -935,7 +1221,7 @@
         const payment = await response.json();
 
         if (!response.ok || !payment.id) {
-          throw new Error(payment.description || payment.code || 'Ошибка ответа ЮKassa');
+          throw new Error(payment.description || payment.code || 'Ошибка ответа шлюза');
         }
 
         let sbpQrData = '';
@@ -955,6 +1241,8 @@
             qrUrl: sbpQrData,
             shopId: shopId,
             secretKey: secretKey,
+            cfWorkerUrl: cfWorkerUrl,
+            proxyMode: proxyMode,
             description: `Заказ COFFEEMAN #${payment.id.slice(0, 5)}`,
             timestamp: Date.now()
           });
@@ -964,7 +1252,7 @@
         startDirectPaymentPolling(shopId, secretKey, payment.id, terminalId);
 
       } catch (err) {
-        alert('Ошибка ЮKassa: ' + err.message);
+        alert('Ошибка связи: ' + err.message);
         statusText.innerText = 'Ошибка: ' + err.message;
       } finally {
         sendBtn.disabled = false;
@@ -974,11 +1262,11 @@
 
     function startDirectPaymentPolling(shopId, secretKey, paymentId, terminalId) {
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
-      const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(`https://api.yookassa.ru/v3/payments/${paymentId}`)}`;
+      const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${paymentId}`);
 
       activePollInterval = setInterval(async () => {
         try {
-          const res = await fetch(proxyUrl, {
+          const res = await fetch(pollUrl, {
             method: 'GET',
             headers: {
               'Authorization': authHeader,
@@ -1059,7 +1347,7 @@
     }
 
     window.addEventListener('keydown', (e) => {
-      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
       if (e.key >= '0' && e.key <= '9') pressKey(e.key);
       else if (e.key === 'Backspace') backspace();
       else if (e.key === 'Enter') createDirectSbpPayment();
@@ -1085,7 +1373,6 @@
       tbody.innerHTML = '';
       mobileCards.innerHTML = '';
 
-      // Базовый промо-баннер COFFEEMAN 9 фишек
       const permRow = document.createElement('tr');
       permRow.className = 'bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors border-b border-yellow-300/20';
       permRow.innerHTML = `
@@ -1096,10 +1383,10 @@
         </td>
         <td class="p-4">
           <div class="font-display font-black text-sm text-white flex items-center gap-2">
-            9 ФИШЕК = <span class="text-sticker">10-Й КОФЕ БЕСПЛАТНО</span>[cite: 1]
+            9 ФИШЕК = <span class="text-sticker">10-Й КОФЕ БЕСПЛАТНО</span>
             <span class="text-[9px] bg-sticker text-black font-display font-black px-2 py-0.5 rounded-full uppercase">12 сек</span>
           </div>
-          <div class="text-xs text-neutral-300 mt-0.5 font-medium">Программа лояльности COFFEEMAN • Kyzyl, Tuva[cite: 1]</div>
+          <div class="text-xs text-neutral-300 mt-0.5 font-medium">Программа лояльности COFFEEMAN • Kyzyl, Tuva</div>
         </td>
         <td class="p-4"><span class="bg-sticker text-black font-display font-black text-xs px-2.5 py-1 rounded-lg">10-Й БЕСПЛАТНО</span></td>
         <td class="p-4 text-center"><span class="px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🔒 Основной</span></td>
@@ -1115,8 +1402,8 @@
             <img src="coffeeman-cup.jpg" onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200'" class="w-full h-full object-cover" />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="font-display font-black text-xs text-white truncate">9 ФИШЕК = 10-Й КОФЕ[cite: 1]</div>
-            <div class="text-[10px] text-neutral-300 truncate">COFFEEMAN • Kyzyl, Tuva[cite: 1]</div>
+            <div class="font-display font-black text-xs text-white truncate">9 ФИШЕК = 10-Й КОФЕ</div>
+            <div class="text-[10px] text-neutral-300 truncate">COFFEEMAN • Kyzyl, Tuva</div>
           </div>
           <span class="text-[9px] bg-sticker text-black font-display font-black px-2 py-0.5 rounded-full">12с</span>
         </div>
