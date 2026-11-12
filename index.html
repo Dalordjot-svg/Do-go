@@ -2,21 +2,19 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>COFFEEMAN • Customer Display Screen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#100A08">
+  <title>COFFEEMAN • Customer Display</title>
   
-  <!-- Шрифты -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@400;500;600;700;800&family=Syne:wght@700;800;900&family=Unbounded:wght@600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Syne:wght@700;800;900&family=Unbounded:wght@600;800;900&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Библиотека QR-кодов (Qrious) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-
-  <!-- Библиотека конфетти -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script>
@@ -30,8 +28,16 @@
             sans: ['Montserrat', 'sans-serif'],
           },
           colors: {
-            sticker: '#FFF188',
-            brandDark: '#08080a',
+            gold: '#D4A754',
+            goldLite: '#F0C978',
+            goldDeep: '#B8873A',
+            cream: '#F5E6D3',
+            coral: '#FF8A65',
+            mint: '#6FCF97',
+            rose: '#E85D75',
+            ink: '#0F0A08',
+            inkDeep: '#080403',
+            surface: '#1A110E',
           }
         }
       }
@@ -39,630 +45,1562 @@
   </script>
 
   <style>
-    * { -webkit-tap-highlight-color: transparent; user-select: none; }
+    /* ═══════════════════════════════════════════
+       RESET & VIEWPORT
+    ═══════════════════════════════════════════ */
+    * { 
+      -webkit-tap-highlight-color: transparent; 
+      user-select: none; 
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    html, body {
+      height: 100dvh;
+      min-height: 100dvh;
+      overscroll-behavior: none;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      font-feature-settings: "ss01", "cv02";
+    }
 
+    /* ═══════════════════════════════════════════
+       BASE — MOLTEN ESPRESSO THEME
+    ═══════════════════════════════════════════ */
+    #screen-body {
+      display: flex;
+      flex-direction: column;
+      background: 
+        radial-gradient(ellipse 70% 55% at 20% 15%, rgba(212, 167, 84, 0.14) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 85% 20%, rgba(255, 138, 101, 0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 50% at 75% 88%, rgba(184, 135, 58, 0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 45% at 15% 85%, rgba(111, 207, 151, 0.05) 0%, transparent 60%),
+        linear-gradient(180deg, #100A08 0%, #080403 100%);
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      padding-left: max(20px, env(safe-area-inset-left));
+      padding-right: max(20px, env(safe-area-inset-right));
+      transition: background 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @media (min-width: 900px) {
+      #screen-body {
+        padding-top: max(22px, env(safe-area-inset-top));
+        padding-bottom: max(22px, env(safe-area-inset-bottom));
+        padding-left: max(30px, env(safe-area-inset-left));
+        padding-right: max(30px, env(safe-area-inset-right));
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       STATE BACKGROUNDS
+    ═══════════════════════════════════════════ */
+    .state-payment {
+      background: 
+        radial-gradient(ellipse 65% 55% at 25% 20%, rgba(111, 207, 151, 0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 30%, rgba(212, 167, 84, 0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 50% at 60% 85%, rgba(240, 201, 120, 0.08) 0%, transparent 65%),
+        linear-gradient(180deg, #080A0A 0%, #050403 100%) !important;
+    }
+    .state-tips {
+      background: 
+        radial-gradient(ellipse 65% 55% at 20% 20%, rgba(255, 138, 101, 0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 50% at 80% 25%, rgba(232, 93, 117, 0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 55% at 65% 85%, rgba(212, 167, 84, 0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 45% at 30% 90%, rgba(255, 200, 168, 0.06) 0%, transparent 60%),
+        linear-gradient(180deg, #150A0A 0%, #080302 100%) !important;
+    }
+    .state-success {
+      background: 
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(111, 207, 151, 0.20) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 45% at 30% 80%, rgba(240, 201, 120, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 70% 80%, rgba(111, 207, 151, 0.06) 0%, transparent 60%),
+        linear-gradient(180deg, #050D08 0%, #030605 100%) !important;
+    }
+    .state-promo {
+      background: 
+        radial-gradient(ellipse 70% 60% at 30% 25%, rgba(212, 167, 84, 0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 65% 55% at 75% 40%, rgba(232, 93, 117, 0.14) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 50% at 20% 85%, rgba(255, 138, 101, 0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 45% at 85% 90%, rgba(240, 201, 120, 0.10) 0%, transparent 60%),
+        linear-gradient(180deg, #150A06 0%, #080404 100%) !important;
+    }
+
+    /* ═══════════════════════════════════════════
+       LAYOUT PRIMITIVES
+    ═══════════════════════════════════════════ */
+    header, footer { flex-shrink: 0; position: relative; z-index: 20; }
+    main {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen-section {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .screen-section.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* ═══════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════ */
     .fade-blur-enter {
       opacity: 0;
-      filter: blur(14px);
-      transform: scale(0.96) translateY(10px);
+      filter: blur(18px);
+      transform: scale(0.95) translateY(14px);
     }
     .fade-blur-active {
       opacity: 1;
-      filter: blur(0px);
-      transform: scale(1) translateY(0px);
-      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: blur(0);
+      transform: scale(1) translateY(0);
+      transition: all 0.85s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .fade-blur-exit {
       opacity: 0;
-      filter: blur(14px);
-      transform: scale(1.03) translateY(-10px);
-      transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+      filter: blur(18px);
+      transform: scale(1.02) translateY(-12px);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .apple-handwriting path, .apple-handwriting text {
+    /* Handwriting draw */
+    .apple-handwriting text {
       stroke-dasharray: 900;
       stroke-dashoffset: 900;
-      animation: drawAppleHello 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      animation: drawHandwriting 2.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
-    @keyframes drawAppleHello {
+    @keyframes drawHandwriting {
       0% { stroke-dashoffset: 900; fill: transparent; }
       75% { stroke-dashoffset: 0; fill: transparent; }
       100% { stroke-dashoffset: 0; fill: currentColor; }
     }
 
+    /* Checkmark */
     .checkmark-circle {
       stroke-dasharray: 300;
       stroke-dashoffset: 300;
-      animation: drawCircle 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: drawCircle 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     .checkmark-check {
       stroke-dasharray: 100;
       stroke-dashoffset: 100;
-      animation: drawCheck 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
+      animation: drawCheck 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
     }
     @keyframes drawCircle { to { stroke-dashoffset: 0; } }
     @keyframes drawCheck { to { stroke-dashoffset: 0; } }
 
-    .ambient-bg {
-      background: radial-gradient(circle at 50% 10%, rgba(255, 241, 136, 0.05) 0%, transparent 50%),
-                  radial-gradient(circle at 85% 85%, rgba(217, 119, 6, 0.06) 0%, transparent 60%),
-                  #090807;
-      transition: background 0.8s ease;
+    /* Gold shimmer text */
+    .gold-text {
+      background: linear-gradient(135deg, 
+        #F0C978 0%, 
+        #FFDFA0 25%, 
+        #D4A754 50%, 
+        #F0C978 75%, 
+        #B8873A 100%);
+      background-size: 250% 250%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: goldShimmer 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 30px rgba(212, 167, 84, 0.35));
     }
-    .success-flash {
-      background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.04) 50%, #06100d) !important;
-    }
-    .magic-flash {
-      background: radial-gradient(circle at 50% 30%, rgba(234, 179, 8, 0.16) 0%, rgba(255, 241, 136, 0.05) 50%, #120d08) !important;
+    @keyframes goldShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
-    .sticker-badge { box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.7); }
+    /* Pulse glow */
+    .pulse-glow {
+      animation: pulseGlow 2.4s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(212, 167, 84, 0.5), 0 10px 30px rgba(0,0,0,0.4);
+      }
+      50% { 
+        box-shadow: 0 0 0 12px rgba(212, 167, 84, 0), 0 10px 30px rgba(0,0,0,0.4);
+      }
+    }
+
+    /* Heartbeat */
+    .heartbeat {
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14% { transform: scale(1.15); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.12); }
+      70% { transform: scale(1); }
+    }
+
+    /* Coin drop */
+    .coin-drop {
+      animation: coinDrop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes coinDrop {
+      0% { transform: translateY(-200px) rotate(0deg); opacity: 0; }
+      60% { transform: translateY(10px) rotate(360deg); opacity: 1; }
+      80% { transform: translateY(-6px) rotate(380deg); }
+      100% { transform: translateY(0) rotate(360deg); opacity: 1; }
+    }
+
+    /* Sparkle */
+    .sparkle {
+      animation: sparkle 2.6s ease-in-out infinite;
+    }
+    @keyframes sparkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Ring pulse (for tips CTA) */
+    .ring-pulse {
+      position: relative;
+    }
+    .ring-pulse::before,
+    .ring-pulse::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: inherit;
+      border: 2px solid rgba(255, 138, 101, 0.6);
+      animation: ringPulse 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      pointer-events: none;
+    }
+    .ring-pulse::after {
+      animation-delay: 1.2s;
+    }
+    @keyframes ringPulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+
+    /* Rotating rays behind price */
+    .rays {
+      position: absolute;
+      inset: -50%;
+      background: conic-gradient(from 0deg,
+        transparent 0deg,
+        rgba(212, 167, 84, 0.15) 30deg,
+        transparent 60deg,
+        transparent 90deg,
+        rgba(240, 201, 120, 0.12) 120deg,
+        transparent 150deg,
+        transparent 180deg,
+        rgba(212, 167, 84, 0.15) 210deg,
+        transparent 240deg,
+        transparent 270deg,
+        rgba(240, 201, 120, 0.12) 300deg,
+        transparent 330deg);
+      animation: raysRotate 20s linear infinite;
+      z-index: -1;
+      filter: blur(20px);
+      pointer-events: none;
+    }
+    @keyframes raysRotate { to { transform: rotate(360deg); } }
+
+    /* Wave animation for success */
+    .wave-letter {
+      display: inline-block;
+      animation: waveLetter 2.4s ease-in-out infinite;
+    }
+    @keyframes waveLetter {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-8px) rotate(-3deg); }
+      50% { transform: translateY(0) rotate(0deg); }
+      75% { transform: translateY(-4px) rotate(3deg); }
+    }
+
+    /* Pulse scale */
+    .pulse-scale {
+      animation: pulseScale 2s ease-in-out infinite;
+    }
+    @keyframes pulseScale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* ═══════════════════════════════════════════
+       GLASS CARDS
+    ═══════════════════════════════════════════ */
+    .glass {
+      background: rgba(26, 17, 14, 0.6);
+      backdrop-filter: blur(24px) saturate(1.5);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      border: 1px solid rgba(212, 167, 84, 0.15);
+      box-shadow: 
+        0 24px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .glass-soft {
+      background: rgba(245, 230, 211, 0.04);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(245, 230, 211, 0.1);
+    }
+    .glass-strong {
+      background: rgba(10, 6, 4, 0.85);
+      backdrop-filter: blur(32px) saturate(1.4);
+      -webkit-backdrop-filter: blur(32px) saturate(1.4);
+      border: 1px solid rgba(212, 167, 84, 0.20);
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Gold gradient border */
+    .gold-border {
+      position: relative;
+      isolation: isolate;
+    }
+    .gold-border::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      padding: 1.5px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, 
+        rgba(240, 201, 120, 0.6) 0%, 
+        rgba(212, 167, 84, 0.4) 30%, 
+        rgba(184, 135, 58, 0.5) 60%, 
+        rgba(240, 201, 120, 0.6) 100%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* ═══════════════════════════════════════════
+       BADGES
+    ═══════════════════════════════════════════ */
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 900;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
     .stamp-badge {
       clip-path: polygon(50% 0%, 65% 15%, 85% 10%, 85% 30%, 100% 45%, 90% 65%, 95% 85%, 75% 85%, 65% 100%, 45% 90%, 25% 95%, 20% 75%, 0% 65%, 12% 45%, 5% 25%, 25% 20%, 35% 0%);
     }
-    
-    .text-shadow-hard {
-      text-shadow: 0 3px 12px rgba(0,0,0,0.95), 0 1px 3px rgba(0,0,0,0.9);
+    .text-shadow-soft {
+      text-shadow: 0 2px 20px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4);
     }
 
-    #qr-canvas, #magic-qr-canvas {
-      display: block;
-      margin: 0 auto;
-      border-radius: 12px;
-      background: #ffffff;
-    }
-
-    /* Подсветка краёв NFC */
-    .nfc-edge-glow {
+    /* ═══════════════════════════════════════════
+       ATMOSPHERE
+    ═══════════════════════════════════════════ */
+    .stage-atmosphere {
       position: fixed;
-      top: 0;
-      bottom: 0;
-      width: 44px;
-      z-index: 999;
+      inset: 0;
+      z-index: 0;
       pointer-events: none;
-      transition: all 0.4s ease;
+      overflow: hidden;
     }
-    .nfc-edge-left {
-      left: 0;
-      background: linear-gradient(to right, rgba(255, 241, 136, 0.95), rgba(255, 241, 136, 0.4), transparent);
-      box-shadow: 0 0 65px 30px rgba(255, 241, 136, 0.7);
-      animation: pulseGlowLeft 1.2s infinite alternate ease-in-out;
+    .blob {
+      position: absolute;
+      border-radius: 999px;
+      filter: blur(80px);
+      opacity: 0.6;
+      mix-blend-mode: screen;
     }
-    .nfc-edge-right {
-      right: 0;
-      background: linear-gradient(to left, rgba(255, 241, 136, 0.95), rgba(255, 241, 136, 0.4), transparent);
-      box-shadow: 0 0 65px 30px rgba(255, 241, 136, 0.7);
-      animation: pulseGlowRight 1.2s infinite alternate ease-in-out;
+    .blob-1 {
+      width: 42vw; height: 42vw;
+      left: -10vw; top: -12vw;
+      background: radial-gradient(circle, rgba(212, 167, 84, 0.24) 0%, transparent 70%);
+      animation: driftA 24s ease-in-out infinite alternate;
     }
-    @keyframes pulseGlowLeft {
-      0% { opacity: 0.35; transform: scaleX(0.85); }
-      100% { opacity: 1; transform: scaleX(1.4); }
+    .blob-2 {
+      width: 36vw; height: 36vw;
+      right: -12vw; top: 20%;
+      background: radial-gradient(circle, rgba(232, 93, 117, 0.18) 0%, transparent 70%);
+      animation: driftB 28s ease-in-out infinite alternate;
     }
-    @keyframes pulseGlowRight {
-      0% { opacity: 0.35; transform: scaleX(0.85); }
-      100% { opacity: 1; transform: scaleX(1.4); }
+    .blob-3 {
+      width: 34vw; height: 34vw;
+      left: 20%; bottom: -8vw;
+      background: radial-gradient(circle, rgba(255, 138, 101, 0.16) 0%, transparent 70%);
+      animation: driftC 26s ease-in-out infinite alternate;
+    }
+    .blob-4 {
+      width: 22vw; height: 22vw;
+      right: 8%; bottom: 12%;
+      background: radial-gradient(circle, rgba(111, 207, 151, 0.10) 0%, transparent 70%);
+      animation: driftD 22s ease-in-out infinite alternate;
+    }
+    @keyframes driftA {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(6vw, 5vh, 0) scale(1.15); }
+    }
+    @keyframes driftB {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(-7vw, -4vh, 0) scale(1.1); }
+    }
+    @keyframes driftC {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(5vw, -6vh, 0) scale(1.08); }
+    }
+    @keyframes driftD {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(-5vw, 4vh, 0) scale(1.12); }
+    }
+    .grain {
+      position: absolute;
+      inset: -20%;
+      opacity: 0.12;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      animation: grainShift 0.9s steps(2) infinite;
+      mix-blend-mode: overlay;
+    }
+    @keyframes grainShift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-2%, 1%); }
+    }
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
     }
 
-    .nfc-wave { animation: nfcWaveAnim 1.6s infinite ease-out; }
-    @keyframes nfcWaveAnim {
-      0%, 100% { transform: scale(0.9); opacity: 0.8; }
-      50% { transform: scale(1.08); opacity: 1; }
+    /* Floating particles */
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #F0C978;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #F0C978, 0 0 16px rgba(240, 201, 120, 0.5);
+      pointer-events: none;
+      animation: floatParticle 8s ease-in-out infinite;
+    }
+    @keyframes floatParticle {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-20vh) translateX(30px); opacity: 0; }
     }
 
-    /* ================= 3D БАРАБАН ПОЛКИ СИРОПОВ ================= */
+    /* ═══════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════ */
+    .brand-title {
+      letter-spacing: 0.28em;
+      background: linear-gradient(90deg, #F5E6D3 0%, #F0C978 50%, #F5E6D3 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 20px rgba(240, 201, 120, 0.25));
+    }
+
+    /* ═══════════════════════════════════════════
+       IDLE SLIDES
+    ═══════════════════════════════════════════ */
+    .slide-stage {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .slide-stage::before {
+      content: "";
+      position: absolute;
+      inset: 12% 18%;
+      background: radial-gradient(ellipse at center, rgba(212, 167, 84, 0.08), transparent 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    #slide-container {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      touch-action: pan-y;
+      cursor: grab;
+      width: 100%;
+    }
+    #slide-container:active { cursor: grabbing; }
+
+    /* Slide progress bar */
+    .slide-progress-track {
+      width: 120px;
+      height: 3px;
+      background: rgba(245, 230, 211, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .slide-progress-bar {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      background: linear-gradient(90deg, #F0C978, #D4A754);
+      border-radius: 999px;
+      transition: width 0.1s linear;
+      box-shadow: 0 0 8px rgba(240, 201, 120, 0.6);
+    }
+
+    .slide-dot {
+      height: 8px;
+      border-radius: 999px;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      background: rgba(245, 230, 211, 0.22);
+      border: none;
+      cursor: pointer;
+      min-width: 8px;
+    }
+    .slide-dot.active {
+      width: 34px !important;
+      background: linear-gradient(90deg, #F0C978, #D4A754);
+      box-shadow: 0 0 16px rgba(240, 201, 120, 0.6);
+    }
+
+    .swipe-hint {
+      animation: swipeHint 2.6s ease-in-out infinite;
+    }
+    @keyframes swipeHint {
+      0%, 100% { transform: translateX(0); opacity: 0.35; }
+      50% { transform: translateX(8px); opacity: 0.9; }
+    }
+
+    /* ═══════════════════════════════════════════
+       AMOUNT HERO
+    ═══════════════════════════════════════════ */
+    .amount-hero {
+      font-size: clamp(72px, 13vh, 152px);
+      line-height: 0.85;
+      letter-spacing: -0.05em;
+      background: linear-gradient(135deg, #F5E6D3 0%, #F0C978 40%, #D4A754 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 40px rgba(240, 201, 120, 0.35)) drop-shadow(0 6px 16px rgba(0,0,0,0.6));
+    }
+
+    /* ═══════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════ */
+    .btn-gold {
+      background: linear-gradient(135deg, #F0C978 0%, #D4A754 50%, #B8873A 100%);
+      color: #1A0F08;
+      box-shadow: 
+        0 12px 32px rgba(212, 167, 84, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-gold::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.5) 50%, transparent 70%);
+      transform: translateX(-100%);
+      animation: btnShine 3.6s ease-in-out infinite;
+    }
+    @keyframes btnShine {
+      0% { transform: translateX(-100%); }
+      50%, 100% { transform: translateX(100%); }
+    }
+    .btn-gold:hover { 
+      transform: translateY(-2px);
+      box-shadow: 
+        0 16px 40px rgba(212, 167, 84, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+    .btn-gold:active { transform: translateY(0) scale(0.98); }
+
+    .btn-coral {
+      background: linear-gradient(135deg, #FFA488 0%, #FF8A65 50%, #E85D75 100%);
+      color: #1A0508;
+      box-shadow: 
+        0 12px 32px rgba(255, 138, 101, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-coral:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(255, 138, 101, 0.42);
+    }
+    .btn-coral:active { transform: translateY(0) scale(0.98); }
+
+    .btn-ghost {
+      background: rgba(245, 230, 211, 0.06);
+      border: 1px solid rgba(245, 230, 211, 0.18);
+      color: #F5E6D3;
+      transition: all 0.25s;
+    }
+    .btn-ghost:hover {
+      background: rgba(245, 230, 211, 0.10);
+      border-color: rgba(245, 230, 211, 0.30);
+    }
+    .btn-ghost:active { transform: scale(0.97); }
+
+    /* Tips buttons */
+    .tip-btn {
+      min-height: 58px;
+      padding: 13px 22px !important;
+      font-size: 16px !important;
+      font-weight: 800 !important;
+      border-radius: 16px !important;
+      transition: all 0.22s;
+    }
+    @media (min-width: 900px) {
+      .tip-btn { min-height: 62px; padding: 14px 26px !important; font-size: 17px !important; }
+    }
+
+    /* Magic tips - BIG buttons */
+    .magic-tip-btn {
+      min-height: 92px;
+      padding: 16px 20px !important;
+      border-radius: 22px !important;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .magic-tip-btn:hover {
+      transform: translateY(-3px);
+    }
+    .magic-tip-btn.selected {
+      background: linear-gradient(135deg, #FFA488 0%, #FF8A65 50%, #E85D75 100%) !important;
+      color: #1A0508 !important;
+      box-shadow: 0 16px 40px rgba(255, 138, 101, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+      border-color: transparent !important;
+    }
+
+    /* ═══════════════════════════════════════════
+       QR PAPER (elegant)
+    ═══════════════════════════════════════════ */
+    .qr-paper {
+      background: linear-gradient(180deg, #FFFCF5 0%, #FDF6E8 100%);
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(212, 167, 84, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -2px 8px rgba(212, 167, 84, 0.08);
+      position: relative;
+    }
+    .qr-paper::before {
+      content: "";
+      position: absolute;
+      inset: -24px;
+      border-radius: 48px;
+      background: conic-gradient(from 120deg, 
+        rgba(240, 201, 120, 0.0), 
+        rgba(240, 201, 120, 0.6), 
+        rgba(255, 138, 101, 0.35),
+        rgba(232, 93, 117, 0.25),
+        rgba(240, 201, 120, 0.0));
+      filter: blur(18px);
+      animation: haloSpin 10s linear infinite;
+      z-index: -1;
+      opacity: 0.9;
+    }
+    @keyframes haloSpin { to { transform: rotate(1turn); } }
+
+    /* Scan line */
+    .qr-scanline {
+      position: absolute;
+      left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(212, 167, 84, 0.8), transparent);
+      box-shadow: 0 0 12px rgba(240, 201, 120, 0.9);
+      animation: scanline 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      pointer-events: none;
+      border-radius: 2px;
+    }
+    @keyframes scanline {
+      0% { top: 0%; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    .shimmer {
+      background-image: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.4) 48%, transparent 62%);
+      background-size: 220% 100%;
+      animation: sheen 4.5s ease-in-out infinite;
+    }
+    @keyframes sheen {
+      0% { background-position: 120% 0; }
+      100% { background-position: -40% 0; }
+    }
+
+    /* ═══════════════════════════════════════════
+       MENU CARDS
+    ═══════════════════════════════════════════ */
+    .menu-card {
+      background: 
+        linear-gradient(180deg, rgba(212, 167, 84, 0.06), transparent 45%),
+        rgba(16, 10, 8, 0.78);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 167, 84, 0.16);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s;
+    }
+    .menu-card:hover {
+      border-color: rgba(212, 167, 84, 0.32);
+      transform: translateY(-2px);
+    }
+    .menu-card-hot {
+      border-color: rgba(255, 138, 101, 0.4);
+      box-shadow: 0 0 0 1px rgba(255, 138, 101, 0.25), 0 24px 60px rgba(255, 138, 101, 0.15);
+      background: 
+        linear-gradient(180deg, rgba(255, 138, 101, 0.08), transparent 50%),
+        rgba(20, 12, 10, 0.82);
+    }
+
+    /* ═══════════════════════════════════════════
+       SUCCESS
+    ═══════════════════════════════════════════ */
+    #success-icon-box svg { 
+      filter: drop-shadow(0 0 40px rgba(111, 207, 151, 0.7)); 
+    }
+
+    /* Feedback emoji row */
+    .feedback-emoji {
+      min-width: 64px;
+      min-height: 64px;
+      border-radius: 20px;
+      background: rgba(245, 230, 211, 0.06);
+      border: 1px solid rgba(245, 230, 211, 0.14);
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .feedback-emoji:hover {
+      transform: translateY(-4px) scale(1.08);
+      background: rgba(245, 230, 211, 0.12);
+      border-color: rgba(240, 201, 120, 0.4);
+    }
+    .feedback-emoji.picked {
+      background: linear-gradient(135deg, #F0C978 0%, #D4A754 100%);
+      transform: scale(1.15);
+      box-shadow: 0 12px 32px rgba(212, 167, 84, 0.4);
+      border-color: transparent;
+    }
+
+    /* ═══════════════════════════════════════════
+       SPECIAL PROMO
+    ═══════════════════════════════════════════ */
+    #special-promo-screen { position: relative; }
+    .promo-bg-blur {
+      position: absolute;
+      inset: -5%;
+      background-size: cover;
+      background-position: center;
+      filter: blur(80px) brightness(0.28) saturate(1.6);
+      opacity: 0.55;
+      z-index: -2;
+      transform: scale(1.2);
+    }
+    .promo-bg-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.22;
+      z-index: -1;
+      mask-image: radial-gradient(circle at 70% 50%, #000 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(circle at 70% 50%, #000 30%, transparent 75%);
+    }
+    .promo-card-hero {
+      background: 
+        linear-gradient(135deg, rgba(240, 201, 120, 0.14), transparent 55%),
+        linear-gradient(180deg, rgba(16, 10, 8, 0.88), rgba(8, 4, 3, 0.96));
+      border: 1px solid rgba(240, 201, 120, 0.30);
+      box-shadow:
+        0 40px 120px rgba(0, 0, 0, 0.9),
+        0 0 100px rgba(255, 138, 101, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(32px) saturate(1.4);
+    }
+    .promo-enter { animation: promoEnter 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes promoEnter {
+      0% { opacity: 0; transform: scale(0.9) translateY(50px); filter: blur(24px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+    }
+    .promo-price {
+      font-size: clamp(72px, 14vh, 148px);
+      line-height: 0.85;
+      letter-spacing: -0.05em;
+      background: linear-gradient(135deg, #FFDFA0 0%, #F0C978 30%, #FF8A65 60%, #E85D75 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 50px rgba(240, 201, 120, 0.55));
+      animation: promoPricePulse 3s ease-in-out infinite;
+    }
+    @keyframes promoPricePulse {
+      0%, 100% { 
+        filter: drop-shadow(0 0 50px rgba(240, 201, 120, 0.55)); 
+        transform: scale(1); 
+        background-position: 0% 50%;
+      }
+      50% { 
+        filter: drop-shadow(0 0 80px rgba(255, 138, 101, 0.85)); 
+        transform: scale(1.03); 
+        background-position: 100% 50%;
+      }
+    }
+    .promo-sticker-burst {
+      animation: stickerBurst 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+    }
+    @keyframes stickerBurst {
+      0% { transform: scale(0) rotate(-90deg); opacity: 0; }
+      60% { transform: scale(1.15) rotate(8deg); opacity: 1; }
+      100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+    }
+    .promo-spark {
+      position: absolute;
+      width: 6px; height: 6px;
+      background: #FFDFA0;
+      border-radius: 50%;
+      box-shadow: 0 0 14px #FFDFA0, 0 0 28px rgba(240, 201, 120, 0.6);
+      animation: sparkFloat 5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes sparkFloat {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.35; }
+      50% { transform: translateY(-28px) scale(1.4); opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════════
+       SYRUPS DRUM
+    ═══════════════════════════════════════════ */
     .drum-viewport {
-      perspective: 1200px;
+      perspective: 1400px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
-    .drum-viewport::-webkit-scrollbar {
-      display: none;
-    }
+    .drum-viewport::-webkit-scrollbar { display: none; }
     .drum-card {
       scroll-snap-align: center;
       transform-style: preserve-3d;
-      transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease, border-color 0.3s ease, box-shadow 0.3s ease;
       will-change: transform, opacity;
     }
-    /* Эффект барной полки под бутылками */
     .wooden-shelf-plank {
-      background: linear-gradient(180deg, #3a2212 0%, #241409 60%, #120904 100%);
-      box-shadow: 0 18px 35px rgba(0,0,0,0.95), inset 0 2px 3px rgba(255, 241, 136, 0.25);
-      border-top: 2px solid #5c381f;
+      background: linear-gradient(180deg, #2E1810 0%, #1A0D06 60%, #0E0603 100%);
+      box-shadow: 0 18px 35px rgba(0,0,0,0.95), inset 0 2px 3px rgba(240, 201, 120, 0.18);
+      border-top: 2px solid #4A2A14;
+    }
+
+    /* ═══════════════════════════════════════════
+       QR CANVAS
+    ═══════════════════════════════════════════ */
+    #qr-canvas, #magic-qr-canvas {
+      display: block;
+      margin: 0 auto;
+      border-radius: 14px;
+      background: #FFFCF5;
+      width: 100% !important;
+      height: auto !important;
+      max-width: 280px;
+    }
+
+    /* ═══════════════════════════════════════════
+       NFC GLOW
+    ═══════════════════════════════════════════ */
+    .nfc-edge-glow {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 56px;
+      z-index: 999;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .nfc-edge-left {
+      left: 0;
+      background: linear-gradient(to right, 
+        rgba(240, 201, 120, 0.95), 
+        rgba(212, 167, 84, 0.6),
+        rgba(212, 167, 84, 0.2),
+        transparent);
+      box-shadow: 0 0 80px 35px rgba(240, 201, 120, 0.55);
+      animation: pulseGlowLeft 1.3s infinite alternate ease-in-out;
+    }
+    .nfc-edge-right {
+      right: 0;
+      background: linear-gradient(to left, 
+        rgba(240, 201, 120, 0.95), 
+        rgba(212, 167, 84, 0.6),
+        rgba(212, 167, 84, 0.2),
+        transparent);
+      box-shadow: 0 0 80px 35px rgba(240, 201, 120, 0.55);
+      animation: pulseGlowRight 1.3s infinite alternate ease-in-out;
+    }
+    @keyframes pulseGlowLeft {
+      0% { opacity: 0.35; transform: scaleX(0.85); }
+      100% { opacity: 1; transform: scaleX(1.35); }
+    }
+    @keyframes pulseGlowRight {
+      0% { opacity: 0.35; transform: scaleX(0.85); }
+      100% { opacity: 1; transform: scaleX(1.35); }
+    }
+    .nfc-wave { animation: nfcWaveAnim 1.8s infinite ease-out; }
+    @keyframes nfcWaveAnim {
+      0%, 100% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════════
+       TOAST NOTIFICATION
+    ═══════════════════════════════════════════ */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(10, 6, 4, 0.92);
+      border: 1px solid rgba(240, 201, 120, 0.3);
+      color: #F5E6D3;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(240, 201, 120, 0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 5000;
+      backdrop-filter: blur(20px);
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ═══════════════════════════════════════════
+       IDLE CTA
+    ═══════════════════════════════════════════ */
+    .idle-cta {
+      background: rgba(245, 230, 211, 0.04);
+      border: 1px solid rgba(245, 230, 211, 0.14);
+      box-shadow: 
+        0 10px 40px rgba(0,0,0,0.4), 
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+    }
+
+    /* ═══════════════════════════════════════════
+       TIPS JAR (animated decoration)
+    ═══════════════════════════════════════════ */
+    .tip-jar {
+      filter: drop-shadow(0 20px 40px rgba(255, 138, 101, 0.3));
+      animation: jarBounce 3s ease-in-out infinite;
+    }
+    @keyframes jarBounce {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-8px) rotate(2deg); }
+    }
+
+    /* ═══════════════════════════════════════════
+       COUNTER (живой счётчик)
+    ═══════════════════════════════════════════ */
+    .counter-pulse {
+      animation: counterPulse 0.6s ease-out;
+    }
+    @keyframes counterPulse {
+      0% { transform: scale(1); color: #F0C978; }
+      50% { transform: scale(1.15); color: #FFDFA0; }
+      100% { transform: scale(1); color: #F0C978; }
+    }
+
+    /* Portrait phones fallback */
+    @media (orientation: portrait) and (max-width: 900px) {
+      .slide-stage::before { inset: 8% 4%; }
     }
   </style>
 </head>
-<body id="screen-body" class="ambient-bg text-white min-h-screen flex flex-col justify-between p-6 md:p-8 selection:bg-yellow-300 selection:text-black overflow-hidden font-sans relative">
+<body id="screen-body" class="text-cream selection:bg-gold/30 selection:text-ink font-sans relative">
 
-  <!-- Световые индикаторы терминала NFC -->
+  <!-- ═══════════════════════════════════════════
+       ATMOSPHERE
+  ═══════════════════════════════════════════ -->
+  <div class="stage-atmosphere" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+    <div id="particle-layer" class="absolute inset-0 pointer-events-none"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       NFC GLOW
+  ═══════════════════════════════════════════ -->
   <div id="nfc-glow-left" class="nfc-edge-glow nfc-edge-left hidden flex items-center justify-center">
-    <div class="text-black font-display font-black text-2xl transform -rotate-90 whitespace-nowrap tracking-widest opacity-80">
-      ◀ ПРИЛОЖИТЕ КАРТУ СЮДА
+    <div class="text-ink font-display font-black text-lg transform -rotate-90 whitespace-nowrap tracking-widest opacity-90">
+      ◀ ПРИЛОЖИТЕ КАРТУ
     </div>
   </div>
-
   <div id="nfc-glow-right" class="nfc-edge-glow nfc-edge-right hidden flex items-center justify-center">
-    <div class="text-black font-display font-black text-2xl transform rotate-90 whitespace-nowrap tracking-widest opacity-80">
-      ПРИЛОЖИТЕ КАРТУ СЮДА ▶
+    <div class="text-ink font-display font-black text-lg transform rotate-90 whitespace-nowrap tracking-widest opacity-90">
+      ПРИЛОЖИТЕ КАРТУ ▶
     </div>
   </div>
 
-  <!-- ================= ХЕДЕР (Зона 5 секретных нажатий) ================= -->
-  <header onclick="window.registerSecretTap()" class="w-full flex justify-between items-center z-20 cursor-default select-none">
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════ -->
+  <header onclick="window.registerSecretTap()" class="w-full flex justify-between items-center py-2 gap-3 cursor-default select-none">
     <div class="flex items-center gap-3">
-      <div id="status-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#34d399]"></div>
-      <span class="text-xs uppercase tracking-widest font-bold text-neutral-300">COFFEEMAN • Online</span>
+      <div class="w-2.5 h-2.5 rounded-full bg-mint animate-pulse shadow-[0_0_20px_rgba(111,207,151,0.8)]"></div>
+      <div class="flex flex-col leading-none">
+        <span class="brand-title font-display font-black text-xs md:text-[13px] uppercase">COFFEEMAN</span>
+        <span class="text-[10px] uppercase tracking-[0.3em] font-bold text-cream/55 mt-1 hidden sm:block">Кызыл • онлайн</span>
+      </div>
     </div>
     
     <div class="flex items-center gap-2.5">
-      <button onclick="event.stopPropagation(); window.toggleSyrupsShelf(true)" class="bg-white/10 hover:bg-white/20 border border-white/20 active:scale-95 text-neutral-100 text-xs font-display font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all shadow-lg">
-        <span>🧴</span>
-        <span>Барная полка сиропов</span>
+      <button onclick="event.stopPropagation(); window.toggleSyrupsShelf(true)" class="btn-gold text-xs md:text-sm font-display font-black px-4 md:px-5 py-2.5 rounded-full flex items-center gap-2 min-h-[44px]">
+        <span class="text-base md:text-lg">🧴</span>
+        <span class="hidden sm:inline">Полка вкусов</span>
+        <span class="sm:hidden">Вкусы</span>
       </button>
-      <div class="stamp-badge bg-white text-black font-display font-black text-[9px] px-2.5 py-1 uppercase tracking-tighter transform -rotate-6 opacity-90">
-        KYZYL • TUVA
-      </div>
-      <div class="sticker-badge bg-sticker text-black px-3.5 py-1 rounded-full font-display text-xs font-black uppercase tracking-wider transform rotate-1">
-        COFFEEMAN ✨
+      <div class="stamp-badge bg-cream text-ink font-display font-black text-[10px] px-2.5 py-1 uppercase tracking-tight transform -rotate-6 hidden md:block">
+        KYZYL
       </div>
     </div>
   </header>
 
-  <!-- ================= ОСНОВНАЯ ЗОНА ================= -->
-  <main class="flex-1 flex items-center justify-center relative my-auto w-full max-w-6xl mx-auto">
-    
-    <!-- 1. РЕЖИМ ОЖИДАНИЯ (СЛАЙДЫ + АКЦИИ + КЛИК ДЛЯ СИРОПОВ) -->
-    <section id="idle-screen" class="w-full flex flex-col items-center text-center transition-all duration-700 cursor-pointer" onclick="handleIdleScreenClick(event)">
-      <div id="slide-container" class="w-full flex flex-col items-center justify-center min-h-[440px] fade-blur-active"></div>
-      <div id="dots-container" class="flex items-center gap-2 mt-5"></div>
-      <div class="mt-4 inline-flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-2 rounded-full text-xs text-neutral-300 font-semibold transition-all">
-        <span>👆 Коснитесь экрана, чтобы покрутить барабан сиропов</span>
-        <span class="text-sticker font-bold">•</span>
-        <span onclick="event.stopPropagation(); window.triggerMagicTipScreen()" class="text-sticker hover:underline font-display font-bold">☕ Оставить чаевые</span>
+  <!-- ═══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
+  <main class="w-full max-w-[1280px] mx-auto">
+
+    <!-- ═════════ 1. IDLE ═════════ -->
+    <section id="idle-screen" class="screen-section active" onclick="handleIdleScreenClick(event)">
+      <div id="slide-container" class="slide-stage min-h-[340px] md:min-h-[400px] max-h-[calc(100dvh-280px)]"></div>
+      
+      <div class="flex flex-col items-center gap-3 mt-4 md:mt-5 flex-shrink-0">
+        <div class="slide-progress-track">
+          <div id="slide-progress" class="slide-progress-bar"></div>
+        </div>
+        <div id="dots-container" class="flex items-center justify-center gap-2"></div>
+      </div>
+      
+      <div class="idle-cta mt-3 md:mt-4 inline-flex items-center gap-3 px-5 md:px-6 py-2.5 md:py-3 rounded-full text-xs md:text-sm text-cream font-semibold flex-shrink-0">
+        <span>Коснитесь экрана — полка вкусов</span>
+        <span class="text-gold font-black">•</span>
+        <span onclick="event.stopPropagation(); window.triggerMagicTipScreen()" class="text-gold hover:text-goldLite transition-colors font-display font-black tracking-wide min-h-[32px] inline-flex items-center">Чаевые бариста</span>
       </div>
     </section>
 
-    <!-- 2. РЕЖИМ ОПЛАТЫ ЗАКАЗА (СБП QR ИЛИ БАНКОВСКАЯ КАРТА) -->
-    <section id="payment-screen" class="w-full hidden opacity-0 transition-all duration-500">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+    <!-- ═════════ 2. PAYMENT ═════════ -->
+    <section id="payment-screen" class="screen-section">
+      <div class="w-full h-full max-h-[calc(100dvh-200px)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-center overflow-hidden">
         
-        <div class="lg:col-span-7 flex flex-col gap-5 text-left">
-          <div class="flex items-center gap-2">
-            <span id="payment-badge-tag" class="bg-sticker text-black font-display text-xs md:text-sm font-black px-4 py-1.5 rounded-full uppercase -rotate-2 sticker-badge">
-              Оплата заказа ☕
+        <div class="lg:col-span-7 flex flex-col gap-3 md:gap-4 text-left justify-center">
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span id="payment-badge-tag" class="pill-badge bg-gradient-to-r from-goldLite to-gold text-ink shimmer">
+              Оплата заказа
             </span>
+            <span id="order-method-badge" class="text-[11px] md:text-xs bg-white/8 text-cream px-3 py-1 rounded-full font-display border border-white/12">СБП / QR</span>
           </div>
 
-          <h2 id="payment-heading-main" class="font-display text-5xl md:text-6xl font-black uppercase leading-none tracking-tight text-shadow-hard">
-            Сумма <br/>
-            <span class="text-sticker inline-block mt-1">к оплате</span>
-          </h2>
-
-          <div class="bg-black/70 border border-white/15 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-3 max-w-lg shadow-2xl">
-            <div class="flex justify-between items-center text-sm text-neutral-300 font-medium">
-              <span id="order-title">Заказ на кассе COFFEEMAN</span>
-              <span id="order-method-badge" class="text-[10px] bg-white/15 text-white px-2.5 py-0.5 rounded-full font-display">СБП / QR</span>
-            </div>
-            <div class="flex justify-between items-end pt-3 border-t border-white/10">
-              <div>
-                <span class="text-neutral-400 text-xs uppercase tracking-wider block font-bold">Итого к списанию</span>
-                <span id="payment-sub-hint" class="text-xs text-neutral-400">Оплата через мобильный банк</span>
-              </div>
-              <span id="final-amount" class="font-display text-3xl md:text-4xl font-black text-white">0 ₽</span>
-            </div>
+          <div>
+            <h2 class="font-display text-xl md:text-2xl font-black uppercase leading-none tracking-tight text-cream/55">
+              К оплате
+            </h2>
+            <span id="final-amount" class="amount-hero font-display font-black block mt-1">0 ₽</span>
           </div>
 
-          <!-- Выбор чаевых во время оплаты (Перегенерирует реальный QR СБП!) -->
+          <div class="glass rounded-2xl md:rounded-[26px] px-4 md:px-5 py-3 md:py-4 flex flex-col gap-1 max-w-xl">
+            <span id="order-title" class="text-sm md:text-base text-cream font-bold leading-tight">Заказ на кассе COFFEEMAN</span>
+            <span id="payment-sub-hint" class="text-xs md:text-sm text-cream/55 font-medium">Оплата через мобильный банк</span>
+          </div>
+
           <div id="order-tips-block">
-            <div class="flex items-center justify-between max-w-lg mb-2.5">
-              <p class="text-xs uppercase tracking-widest text-neutral-300 font-bold">Добавить чаевые бариста:</p>
-              <span id="order-tip-status" class="text-xs text-sticker font-medium">Мгновенно обновит QR ☕</span>
+            <div class="flex items-center justify-between max-w-xl mb-2">
+              <p class="text-[11px] md:text-xs uppercase tracking-[0.2em] text-cream/75 font-black">Чаевые бариста</p>
+              <span class="text-[11px] text-gold font-bold">QR обновится</span>
             </div>
-            <div class="flex flex-wrap gap-2.5">
-              <button onclick="setOrderTip(0, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge">Без чаевых</button>
-              <button onclick="setOrderTip(50, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+50 ₽</button>
-              <button onclick="setOrderTip(100, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+100 ₽</button>
-              <button onclick="setOrderTip(150, this)" class="tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white">+150 ₽</button>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setOrderTip(0, this)" class="tip-btn btn-gold">Без чаевых</button>
+              <button onclick="setOrderTip(50, this)" class="tip-btn btn-ghost">+50 ₽</button>
+              <button onclick="setOrderTip(100, this)" class="tip-btn btn-ghost">+100 ₽</button>
+              <button onclick="setOrderTip(150, this)" class="tip-btn btn-ghost">+150 ₽</button>
             </div>
           </div>
         </div>
 
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
           
-          <!-- Оплата QR -->
-          <div id="card-mode-qr" class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center transform rotate-1 transition-all duration-300 max-w-xs w-full">
-            <div class="absolute -top-4 bg-sticker text-black font-display font-black text-[10px] px-3.5 py-1 rounded-full uppercase shadow-md">
+          <!-- QR -->
+          <div id="card-mode-qr" class="qr-paper relative text-ink p-5 md:p-6 rounded-[28px] md:rounded-[32px] flex flex-col items-center text-center max-w-[320px] w-full">
+            <div class="absolute -top-3.5 pill-badge bg-gradient-to-r from-goldLite to-gold text-ink shadow-lg">
               ОПЛАТА ПО СБП ⚡
             </div>
 
-            <!-- Спиннер загрузки QR -->
             <div id="order-qr-loader" class="hidden min-h-[220px] min-w-[220px] flex-col items-center justify-center gap-2">
-              <div class="w-10 h-10 border-4 border-neutral-300 border-t-black rounded-full animate-spin"></div>
-              <span class="text-xs font-display font-bold text-neutral-600">Обновляем счёт...</span>
+              <div class="w-10 h-10 border-4 border-neutral-200 border-t-gold rounded-full animate-spin"></div>
+              <span class="text-[11px] font-display font-bold text-neutral-600">Обновляем счёт...</span>
             </div>
 
-            <!-- Ошибка генерации -->
-            <div id="order-qr-error" class="hidden min-h-[220px] min-w-[220px] flex-col items-center justify-center p-4 bg-rose-50 rounded-2xl border-2 border-rose-200 text-center">
-              <span class="text-4xl mb-2">🙈</span>
-              <p class="font-display font-black text-base text-rose-600 uppercase">Ой, не сегодня!</p>
-              <p class="text-[11px] text-neutral-600 font-semibold mt-1">Не удалось создать QR-код. Проверьте настройки Cloudflare или оплатите картой.</p>
+            <div id="order-qr-error" class="hidden min-h-[220px] min-w-[220px] flex-col items-center justify-center p-3 bg-rose-50 rounded-2xl border-2 border-rose-200 text-center">
+              <span class="text-3xl mb-1">🙈</span>
+              <p class="font-display font-black text-sm text-rose-600 uppercase">Ой, не сегодня!</p>
+              <p class="text-[10px] text-neutral-600 font-semibold mt-1 leading-tight">Не удалось создать QR. Проверьте Cloudflare.</p>
             </div>
 
-            <!-- Сам холст QR -->
-            <div id="qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
+            <div id="qr-wrapper" class="relative bg-white border-2 border-neutral-100 p-2 rounded-2xl my-2 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px] w-[260px] overflow-hidden">
+              <div class="qr-scanline"></div>
               <canvas id="qr-canvas"></canvas>
             </div>
 
-            <p class="font-display font-black text-base tracking-tight uppercase leading-tight text-black">Наведите камеру</p>
-            <p class="text-xs text-neutral-500 font-semibold mt-1">Оплата в приложении вашего банка</p>
+            <p class="font-display font-black text-base md:text-lg tracking-tight uppercase leading-tight text-ink mt-1">Наведите камеру</p>
+            <p class="text-xs text-neutral-500 font-semibold mt-0.5">Оплата в приложении банка</p>
           </div>
 
-          <!-- Оплата картой -->
-          <div id="card-mode-nfc" class="hidden relative bg-gradient-to-b from-neutral-900 to-black text-white p-7 rounded-3xl border-2 border-yellow-300/60 shadow-[0_0_50px_rgba(255,241,136,0.3)] flex flex-col items-center text-center max-w-sm w-full">
-            <div class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3 py-1 uppercase -rotate-3 mb-4 shadow-lg">
+          <!-- NFC -->
+          <div id="card-mode-nfc" class="hidden relative glass-strong text-cream p-6 md:p-8 rounded-[28px] md:rounded-[32px] border-2 border-gold/40 flex flex-col items-center text-center max-w-md w-full shadow-[0_0_80px_rgba(240,201,120,0.25)]">
+            <div class="pill-badge bg-gradient-to-r from-goldLite to-gold text-ink mb-3 shadow-lg">
               БЕСКОНТАКТНАЯ ОПЛАТА 💳
             </div>
 
-            <div class="relative my-4 flex items-center justify-center">
-              <div class="w-28 h-28 rounded-full bg-sticker/10 border-2 border-sticker/30 flex items-center justify-center nfc-wave">
-                <div class="w-20 h-20 rounded-full bg-sticker/20 flex items-center justify-center text-4xl">
-                  💳
-                </div>
+            <div class="relative my-3 flex items-center justify-center">
+              <div class="w-24 h-24 rounded-full bg-gold/10 border-2 border-gold/30 flex items-center justify-center nfc-wave">
+                <div class="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center text-3xl">💳</div>
               </div>
-              <div class="absolute -top-2 -right-2 text-2xl animate-bounce">✨</div>
+              <div class="absolute -top-1 -right-1 text-xl animate-bounce">✨</div>
             </div>
 
-            <h3 class="font-display text-xl sm:text-2xl font-black uppercase text-white leading-tight mt-2 text-shadow-hard">
+            <h3 class="font-display text-2xl md:text-3xl font-black uppercase text-cream leading-tight mt-1 text-shadow-soft">
               Приложите карту <br>
-              <span class="text-sticker">или телефон</span>
+              <span class="gold-text">или телефон</span>
             </h3>
 
-            <p id="nfc-side-instruction" class="text-xs text-neutral-300 font-medium mt-3 leading-relaxed bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-              Приложите к <strong class="text-sticker font-bold">светящемуся краю</strong> терминала 💫
+            <p id="nfc-side-instruction" class="text-sm md:text-base text-cream font-semibold mt-3 leading-relaxed bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
+              Приложите к <strong class="text-gold font-bold">светящемуся краю</strong> 💫
             </p>
           </div>
-
         </div>
-
       </div>
     </section>
 
-    <!-- 3. РАБОЧИЙ ЭКРАН ЧАЕВЫХ (РЕАЛЬНАЯ ГЕНЕРАЦИЯ СБП ЧЕРЕЗ ЮKASSA) -->
-    <section id="magic-tip-screen" class="w-full hidden opacity-0 transition-all duration-700">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+    <!-- ═════════ 3. MAGIC TIPS — WOW! ═════════ -->
+    <section id="magic-tip-screen" class="screen-section">
+      <div class="w-full h-full max-h-[calc(100dvh-200px)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-center overflow-hidden">
         
-        <div class="lg:col-span-7 flex flex-col gap-4 text-left">
-          <div class="flex items-center gap-2">
-            <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3 py-1 uppercase -rotate-2">
-              COFFEEMAN TEAM ☕
-            </span>
-            <span class="text-xs text-amber-300 font-bold">Прямой перевод по СБП</span>
+        <div class="lg:col-span-7 flex flex-col gap-3 md:gap-4 text-left justify-center">
+          <!-- Top row with jar + counter -->
+          <div class="flex items-center gap-3 flex-wrap">
+            <div class="tip-jar text-4xl md:text-5xl">🫙</div>
+            <div class="pill-badge bg-gradient-to-r from-coral to-rose text-white shadow-lg">
+              ❤️ Поддержите бариста
+            </div>
+            <div id="tips-today-counter" class="text-[11px] md:text-xs text-cream/70 font-semibold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse"></span>
+              <span>Сегодня уже <span id="tips-count-val" class="font-display font-black text-mint">0</span> гостей сказали «спасибо»</span>
+            </div>
           </div>
 
-          <h2 class="font-display text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-tight tracking-tight text-shadow-hard">
-            Понравился кофе? <br>
-            <span class="text-sticker">Поддержи</span> <br>
-            наших бариста 💛
+          <h2 class="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-black uppercase leading-[0.92] tracking-tight text-cream text-shadow-soft">
+            <span class="heartbeat inline-block">❤️</span> Понравился кофе? <br>
+            <span class="gold-text">Скажите спасибо</span> бариста
           </h2>
 
-          <div class="bg-black/60 border border-white/15 rounded-3xl p-5 backdrop-blur-xl flex flex-col gap-2 max-w-xl shadow-2xl">
-            <p class="text-neutral-100 text-sm sm:text-base font-semibold leading-relaxed">
-              Мы вкладываем душу в каждую чашку! Выберите комфортную сумму — на экране сразу сформируется банковский QR-код СБП ☕✨
+          <div class="glass rounded-2xl md:rounded-3xl p-4 md:p-5 flex flex-col gap-1.5 max-w-xl">
+            <p class="text-cream text-sm md:text-base lg:text-lg font-semibold leading-relaxed">
+              Каждая чашка — это труд. Чаевые идут напрямую команде, которая готовит ваш кофе.
             </p>
           </div>
 
           <div class="flex flex-col gap-2">
-            <span class="text-xs uppercase tracking-widest text-neutral-300 font-bold">Выберите сумму чаевых:</span>
-            <div class="flex flex-wrap gap-2.5">
-              <button onclick="selectMagicTip(50, this)" class="magic-tip-btn px-4 py-3 rounded-2xl bg-sticker text-black font-display text-sm font-bold active:scale-95 transition-all sticker-badge">
-                50 ₽ <span class="text-[10px] block font-normal opacity-90 font-sans">на печеньку 🍪</span>
+            <div class="flex items-center justify-between max-w-xl">
+              <span class="text-[11px] md:text-xs uppercase tracking-[0.2em] text-cream/75 font-black">Выберите сумму</span>
+              <span class="text-[10px] text-cream/40 font-bold">💝 мгновенный перевод</span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 max-w-xl">
+              <button onclick="selectMagicTip(50, this)" class="magic-tip-btn btn-coral selected">
+                <span class="block text-xl md:text-2xl font-display font-black">50 ₽</span>
+                <span class="text-[9px] block font-semibold opacity-80 font-sans mt-0.5">🍪 на печеньку</span>
               </button>
-              <button onclick="selectMagicTip(100, this)" class="magic-tip-btn px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-sm font-bold active:scale-95 transition-all border border-white/15">
-                100 ₽ <span class="text-[10px] block font-normal text-neutral-300 font-sans">на бодрость ⚡</span>
+              <button onclick="selectMagicTip(100, this)" class="magic-tip-btn btn-ghost">
+                <span class="block text-xl md:text-2xl font-display font-black">100 ₽</span>
+                <span class="text-[9px] block font-semibold opacity-60 font-sans mt-0.5">⚡ на бодрость</span>
               </button>
-              <button onclick="selectMagicTip(200, this)" class="magic-tip-btn px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-sm font-bold active:scale-95 transition-all border border-white/15">
-                200 ₽ <span class="text-[10px] block font-normal text-neutral-300 font-sans">от души 💛</span>
+              <button onclick="selectMagicTip(200, this)" class="magic-tip-btn btn-ghost">
+                <span class="block text-xl md:text-2xl font-display font-black">200 ₽</span>
+                <span class="text-[9px] block font-semibold opacity-60 font-sans mt-0.5">💛 от души</span>
               </button>
-              <button onclick="selectMagicTip(300, this)" class="magic-tip-btn px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-sm font-bold active:scale-95 transition-all border border-white/15">
-                300 ₽ <span class="text-[10px] block font-normal text-neutral-300 font-sans">лучший гость 👑</span>
+              <button onclick="selectMagicTip(300, this)" class="magic-tip-btn btn-ghost">
+                <span class="block text-xl md:text-2xl font-display font-black">300 ₽</span>
+                <span class="text-[9px] block font-semibold opacity-60 font-sans mt-0.5">👑 вы легенда</span>
               </button>
             </div>
           </div>
 
-          <div class="flex items-center gap-4 pt-2">
-            <button onclick="resetToIdle(false)" class="bg-white/10 hover:bg-white/20 active:scale-95 text-xs text-neutral-200 font-display font-bold uppercase px-5 py-2.5 rounded-xl border border-white/15 transition-all">
-              Вернуться назад ✕
+          <div class="flex items-center gap-3 pt-1 flex-wrap">
+            <button onclick="resetToIdle(false)" class="btn-ghost text-[11px] font-display font-bold uppercase px-4 py-2.5 rounded-xl min-h-[44px]">
+              Назад ✕
             </button>
-            <div class="text-xs text-neutral-300 font-medium flex items-center gap-1.5">
-              <span>Автозакрытие через:</span>
-              <span id="magic-timer-val" class="font-display font-bold text-sticker text-sm">03:00</span>
+            <div class="text-[11px] text-cream/60 font-medium flex items-center gap-1.5">
+              <span>Автовозврат:</span>
+              <span id="magic-timer-val" class="font-display font-bold text-coral text-sm">03:00</span>
             </div>
           </div>
         </div>
 
-        <!-- Правая карточка с QR чаевых или ошибкой «Ой, не сегодня» -->
         <div class="lg:col-span-5 flex flex-col items-center justify-center">
-          <div class="relative bg-white text-black p-6 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col items-center text-center max-w-xs w-full">
-            <div class="stamp-badge bg-sticker text-black font-display font-black text-[9px] px-3 py-1 uppercase -rotate-3 absolute -top-4 shadow">
-              ЧАЕВЫЕ СБП ☕
+          <div class="qr-paper relative text-ink p-5 md:p-6 rounded-[28px] md:rounded-[32px] flex flex-col items-center text-center max-w-[320px] w-full">
+            <div class="stamp-badge bg-gradient-to-br from-coral to-rose text-white font-display font-black text-[9px] px-3 py-1 uppercase -rotate-3 absolute -top-3.5 shadow">
+              ❤️ ЧАЕВЫЕ СБП
             </div>
 
-            <!-- Спиннер генерации QR чаевых -->
-            <div id="magic-qr-loader" class="hidden my-3 min-h-[220px] min-w-[220px] flex-col items-center justify-center gap-3">
-              <div class="w-10 h-10 border-4 border-neutral-200 border-t-black rounded-full animate-spin"></div>
-              <span class="text-xs font-display font-bold text-neutral-600">Создаем QR СБП...</span>
+            <div id="magic-qr-loader" class="hidden my-2 min-h-[220px] min-w-[220px] flex-col items-center justify-center gap-2">
+              <div class="w-10 h-10 border-4 border-neutral-200 border-t-coral rounded-full animate-spin"></div>
+              <span class="text-[11px] font-display font-bold text-neutral-600">Создаем QR...</span>
             </div>
 
-            <!-- ОШИБКА: ОЙ, НЕ СЕГОДНЯ -->
-            <div id="magic-qr-error" class="hidden my-3 min-h-[220px] min-w-[220px] flex-col items-center justify-center p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl text-center">
-              <span class="text-5xl mb-2 animate-bounce">😅</span>
-              <h4 class="font-display font-black text-lg text-rose-600 uppercase leading-tight">
-                Ой, не сегодня!
-              </h4>
-              <p id="magic-error-desc" class="text-[11px] text-neutral-600 font-semibold mt-1.5 leading-snug">
-                Не удалось сгенерировать QR-код чаевых. Проверьте связь с кассой.
-              </p>
-              <button onclick="retryCurrentTipQr()" class="mt-3 bg-black text-white font-display text-[10px] font-bold uppercase px-3.5 py-1.5 rounded-lg active:scale-95">
-                Попробовать снова ↻
+            <div id="magic-qr-error" class="hidden my-2 min-h-[220px] min-w-[220px] flex-col items-center justify-center p-3 bg-rose-50 border-2 border-rose-200 rounded-2xl text-center">
+              <span class="text-3xl mb-1">😅</span>
+              <h4 class="font-display font-black text-sm text-rose-600 uppercase leading-tight">Ой, не сегодня!</h4>
+              <p id="magic-error-desc" class="text-[10px] text-neutral-600 font-semibold mt-1 leading-snug">Не удалось создать QR.</p>
+              <button onclick="retryCurrentTipQr()" class="mt-2 bg-ink text-cream font-display text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg active:scale-95">
+                Попробовать ↻
               </button>
             </div>
 
-            <!-- Холст QR-кода чаевых -->
-            <div id="magic-qr-wrapper" class="bg-white border-2 border-neutral-200 p-2.5 rounded-2xl my-3 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px]">
+            <div id="magic-qr-wrapper" class="relative bg-white border-2 border-neutral-100 p-2 rounded-2xl my-2 shadow-inner flex items-center justify-center min-h-[220px] min-w-[220px] w-[260px] overflow-hidden">
+              <div class="qr-scanline"></div>
               <canvas id="magic-qr-canvas"></canvas>
             </div>
 
-            <p id="magic-tip-display-val" class="font-display font-black text-2xl tracking-tight uppercase text-black">50 ₽</p>
-            <p class="text-[11px] text-neutral-500 font-semibold mt-0.5">Наведите камеру телефона для перевода</p>
+            <p id="magic-tip-display-val" class="font-display font-black text-2xl tracking-tight uppercase text-ink">50 ₽</p>
+            <p class="text-[10px] text-neutral-500 font-semibold mt-0.5">Наведите камеру телефона</p>
           </div>
         </div>
-
       </div>
     </section>
 
-    <!-- 4. ЭКРАН БЛАГОДАРНОСТИ ЗА ЧАЕВЫЕ -->
-    <section id="magic-thanks-screen" class="w-full hidden opacity-0 transition-all duration-700 flex flex-col items-center justify-center text-center max-w-4xl">
-      <div class="stamp-badge bg-sticker text-black font-display font-black text-sm px-6 py-2 uppercase -rotate-3 mb-6 shadow-2xl animate-bounce">
+    <!-- ═════════ 4. MAGIC THANKS ═════════ -->
+    <section id="magic-thanks-screen" class="screen-section text-center max-w-3xl mx-auto">
+      <div class="stamp-badge bg-gradient-to-br from-goldLite to-gold text-ink font-display font-black text-xs px-5 py-2 uppercase -rotate-3 mb-5 shadow-2xl animate-bounce">
         СПАСИБО ОГРОМНОЕ! ☕🎉
       </div>
 
-      <h2 class="font-display text-4xl sm:text-6xl md:text-7xl font-black uppercase leading-tight tracking-tight text-white text-shadow-hard">
+      <h2 class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.9] tracking-tight text-cream text-shadow-soft">
         Благодарим <br>
-        <span class="text-sticker">за вашу щедрость!</span>
+        <span class="gold-text">за щедрость</span>
       </h2>
 
-      <div class="bg-black/70 border border-white/20 p-6 rounded-3xl backdrop-blur-xl mt-6 max-w-2xl text-center shadow-2xl">
-        <p class="text-xl sm:text-2xl text-neutral-100 font-bold leading-relaxed">
-          Команда COFFEEMAN ценит каждого гостя! Пусть этот день принесет вам максимум энергии и отличного настроения ✨
+      <div class="glass rounded-2xl md:rounded-3xl p-5 md:p-6 mt-5 max-w-2xl text-center">
+        <p class="text-base md:text-lg lg:text-xl text-cream font-bold leading-relaxed">
+          Ваши чаевые уже летят к бариста. Хорошего дня и ещё одной вкусной чашки.
         </p>
       </div>
 
-      <div class="mt-8 flex items-center gap-2 text-xs text-neutral-300 font-medium">
-        <span>Возврат в меню через</span>
-        <span id="magic-thanks-timer" class="font-display font-bold text-sticker text-base">8</span>
+      <div class="mt-6 flex items-center gap-2 text-[11px] md:text-xs text-cream/60 font-medium justify-center">
+        <span>Возврат через</span>
+        <span id="magic-thanks-timer" class="font-display font-bold text-gold text-base">8</span>
         <span>сек</span>
       </div>
     </section>
 
-    <!-- 5. ЭКРАН УСПЕШНОЙ ОПЛАТЫ -->
-    <section id="success-screen" class="w-full hidden opacity-0 transition-all duration-700 flex flex-col items-center justify-center text-center">
+    <!-- ═════════ 5. SUCCESS ═════════ -->
+    <section id="success-screen" class="screen-section text-center">
       <div id="success-icon-box" class="flex flex-col items-center justify-center transition-all duration-500">
-        <svg class="w-32 h-32 md:w-40 md:h-40 text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.6)]" viewBox="0 0 100 100" fill="none" stroke="currentColor">
-          <circle cx="50" cy="50" r="44" stroke-width="5" class="checkmark-circle" stroke-linecap="round" />
-          <path d="M28 52 L42 66 L72 34" stroke-width="6" class="checkmark-check" stroke-linecap="round" stroke-linejoin="round" />
+        <svg class="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 text-mint" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+          <circle cx="50" cy="50" r="44" stroke-width="4" class="checkmark-circle" stroke-linecap="round" />
+          <path d="M28 52 L42 66 L72 34" stroke-width="5" class="checkmark-check" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <span class="font-display font-black text-2xl md:text-3xl text-emerald-400 uppercase tracking-tight mt-5 text-shadow-hard">
-          Оплачено успешно
+        <span class="font-display font-black text-3xl md:text-4xl lg:text-5xl text-mint uppercase tracking-tight mt-4 text-shadow-soft">
+          Оплачено
         </span>
       </div>
 
       <div id="success-thanks-box" class="hidden flex-col items-center justify-center max-w-3xl fade-blur-enter">
-        <div class="stamp-badge bg-sticker text-black font-display font-black text-xs px-4 py-1.5 uppercase -rotate-3 mb-5 shadow-lg">
+        <div class="stamp-badge bg-gradient-to-br from-mint to-goldLite text-ink font-display font-black text-[10px] px-4 py-1.5 uppercase -rotate-3 mb-4 shadow-lg">
           ЖДЕМ ВАС СНОВА ☕
         </div>
-        <h2 class="font-display text-4xl sm:text-6xl md:text-7xl font-black uppercase leading-tight tracking-tight text-white text-shadow-hard">
+        <h2 class="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.9] tracking-tight text-cream text-shadow-soft">
           Приятного <br>
-          <span class="text-sticker">кофепития!</span>
+          <span class="gold-text">кофе</span>
         </h2>
-        <p class="mt-4 text-neutral-200 text-lg sm:text-xl font-medium">
-          Спасибо, что выбираете COFFEEMAN • Kyzyl, Tuva 💫
+        <p class="mt-4 text-cream text-base md:text-lg lg:text-xl font-semibold">
+          Спасибо, что вы в COFFEEMAN
         </p>
 
-        <div class="mt-8 flex flex-col items-center gap-3">
-          <button onclick="resetToIdle(true)" class="sticker-badge bg-white/10 hover:bg-white/20 active:scale-95 text-white font-display text-xs font-bold uppercase px-6 py-3 rounded-full border border-white/20 transition-all flex items-center gap-2">
+        <!-- FEEDBACK -->
+        <div class="mt-6 md:mt-8 w-full">
+          <p class="text-[11px] uppercase tracking-[0.2em] text-cream/55 font-black mb-3">Как вам напиток?</p>
+          <div class="flex items-center justify-center gap-2 md:gap-3">
+            <button onclick="sendFeedback('love')" class="feedback-emoji" data-emoji="love" aria-label="Обожаю">😍</button>
+            <button onclick="sendFeedback('good')" class="feedback-emoji" data-emoji="good" aria-label="Вкусно">😋</button>
+            <button onclick="sendFeedback('ok')" class="feedback-emoji" data-emoji="ok" aria-label="Норм">😊</button>
+            <button onclick="sendFeedback('meh')" class="feedback-emoji" data-emoji="meh" aria-label="Так себе">😐</button>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-col items-center gap-2.5">
+          <button onclick="resetToIdle(true)" class="btn-ghost font-display text-xs font-bold uppercase px-6 py-3 rounded-full flex items-center gap-2 min-h-[48px]">
             <span>Закрыть</span>
-            <span class="text-neutral-400 text-[10px]">✕</span>
+            <span class="text-cream/40 text-[10px]">✕</span>
           </button>
           
-          <div class="text-xs text-neutral-300 font-medium flex items-center gap-1.5">
-            <span>Возврат на экран через</span>
-            <span id="countdown-timer" class="font-display font-bold text-sticker text-sm">10</span>
+          <div class="text-[11px] text-cream/55 font-medium flex items-center gap-1.5">
+            <span>Возврат через</span>
+            <span id="countdown-timer" class="font-display font-bold text-mint text-sm">12</span>
             <span>сек</span>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- ═════════ 6. SPECIAL PROMO — WOW! ═════════ -->
+    <section id="special-promo-screen" class="screen-section">
+      <div class="promo-bg-blur" id="promo-bg-blur"></div>
+      <div class="promo-bg-img" id="promo-bg-img"></div>
+
+      <div class="promo-card-hero rounded-[32px] md:rounded-[40px] p-6 md:p-10 lg:p-12 max-w-4xl w-full text-center relative overflow-hidden">
+        <div class="rays"></div>
+        
+        <div class="absolute top-8 left-8 promo-spark" style="animation-delay:0s"></div>
+        <div class="absolute top-16 right-12 promo-spark" style="animation-delay:0.8s"></div>
+        <div class="absolute bottom-12 left-16 promo-spark" style="animation-delay:1.5s"></div>
+        <div class="absolute bottom-20 right-8 promo-spark" style="animation-delay:2.2s"></div>
+
+        <div class="promo-enter relative z-10">
+          <div class="promo-sticker-burst inline-block pill-badge bg-gradient-to-r from-goldLite via-gold to-goldDeep text-ink text-xs md:text-sm px-5 py-2 mb-4 md:mb-5 shadow-2xl">
+            ⚡ ОСОБОЕ ПРЕДЛОЖЕНИЕ ⚡
+          </div>
+
+          <h2 id="promo-title" class="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-[0.95] tracking-tight text-cream mb-4 text-shadow-soft">
+            Название акции
+          </h2>
+
+          <div class="flex items-center justify-center gap-3 my-4">
+            <span class="h-px w-12 md:w-16 bg-gradient-to-r from-transparent to-goldLite"></span>
+            <span class="text-goldLite text-xl md:text-2xl sparkle">✦</span>
+            <span class="h-px w-12 md:w-16 bg-gradient-to-l from-transparent to-goldLite"></span>
+          </div>
+
+          <div id="promo-price" class="promo-price font-display font-black mb-3">0 ₽</div>
+
+          <p id="promo-desc" class="text-sm md:text-lg lg:text-xl text-cream/90 font-semibold max-w-2xl mx-auto leading-relaxed">
+            Описание акции
+          </p>
+
+          <div class="mt-5 md:mt-6 inline-flex items-center gap-2 glass rounded-full px-4 md:px-6 py-2.5 pulse-scale">
+            <span class="text-lg md:text-xl animate-bounce">🎁</span>
+            <span class="gold-text font-display font-black uppercase text-xs md:text-sm tracking-wider">Только сегодня!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 text-[11px] md:text-xs text-cream/50 font-medium flex items-center gap-2">
+        <span>Возврат через</span>
+        <span id="promo-countdown" class="font-display font-bold text-goldLite text-sm">20</span>
+        <span>сек</span>
+      </div>
+    </section>
+
   </main>
 
-  <!-- ================= МОДАЛКА: 3D-ПОЛКА СИРОПОВ С БАРАБАНОМ И ХАРАКТЕРИСТИКАМИ СЛЕВА ================= -->
-  <div id="syrups-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex flex-col justify-center items-center p-4 md:p-8 hidden opacity-0 transition-opacity duration-300">
-    <div class="w-full max-w-6xl bg-neutral-950/95 border border-white/15 rounded-3xl p-5 md:p-8 flex flex-col gap-5 shadow-[0_0_80px_rgba(0,0,0,0.95)] relative overflow-hidden">
+  <!-- ═══════════════════════════════════════════
+       TOAST
+  ═══════════════════════════════════════════ -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ═══════════════════════════════════════════
+       SYRUPS MODAL
+  ═══════════════════════════════════════════ -->
+  <div id="syrups-modal" class="fixed inset-0 z-50 bg-inkDeep/95 backdrop-blur-2xl flex flex-col justify-center items-center p-3 md:p-6 hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-6xl glass-strong rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col gap-4 relative overflow-hidden max-h-[95dvh]">
       
-      <!-- Шапка полки -->
-      <div class="flex justify-between items-center border-b border-white/10 pb-4 z-10">
+      <div class="flex justify-between items-center border-b border-white/10 pb-3 flex-shrink-0">
         <div>
-          <div class="flex items-center gap-2 mb-1">
-            <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-2.5 py-0.5 uppercase -rotate-2">
-              ИНТЕРАКТИВНЫЙ БАР
-            </span>
-            <span class="text-xs text-amber-300 font-bold">Крутите барабан сиропов вправо и влево 👈👉</span>
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="pill-badge bg-gradient-to-r from-goldLite to-gold text-ink">ИНТЕРАКТИВНЫЙ БАР</span>
+            <span class="text-[10px] text-gold font-bold hidden sm:inline">Крутите барабан 👈👉</span>
           </div>
-          <h3 class="font-display text-xl md:text-3xl font-black uppercase text-white">
-            Коллекция вкусов <span class="text-sticker">COFFEEMAN</span>
+          <h3 class="font-display text-base md:text-xl lg:text-2xl font-black uppercase text-cream">
+            Коллекция вкусов <span class="gold-text">COFFEEMAN</span>
           </h3>
         </div>
-        <button onclick="window.toggleSyrupsShelf(false)" class="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-90 flex items-center justify-center font-display font-bold text-lg text-white border border-white/20 transition-all">
+        <button onclick="window.toggleSyrupsShelf(false)" class="w-11 h-11 rounded-xl md:rounded-2xl btn-ghost flex items-center justify-center font-display font-bold text-base">
           ✕
         </button>
       </div>
 
-      <!-- Основной контент: Слева характеристики активного сиропа, Справа 3D-барабан на полке -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center my-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center my-auto overflow-hidden">
         
-        <!-- ЛЕВАЯ ПАНЕЛЬ: ХАРАКТЕРИСТИКИ ВЫБРАННОГО В ЦЕНТРЕ СИРОПА -->
-        <div id="syrup-detail-panel" class="lg:col-span-5 bg-gradient-to-br from-neutral-900 via-neutral-900/90 to-black border border-white/15 rounded-3xl p-6 flex flex-col justify-between gap-4 shadow-2xl relative overflow-hidden min-h-[320px]">
+        <div id="syrup-detail-panel" class="lg:col-span-5 glass rounded-2xl p-4 md:p-5 flex flex-col justify-between gap-3 min-h-[280px]">
           <div class="flex justify-between items-start">
-            <div class="flex items-center gap-3">
-              <div id="detail-icon" class="w-16 h-16 rounded-2xl bg-sticker/10 border border-sticker/30 flex items-center justify-center text-4xl shadow-inner">
+            <div class="flex items-center gap-2.5">
+              <div id="detail-icon" class="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gold/10 border border-gold/25 flex items-center justify-center text-3xl shadow-inner">
                 🍯
               </div>
               <div>
-                <span id="detail-status-badge" class="text-[10px] font-display font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span id="detail-status-badge" class="text-[9px] font-display font-black uppercase px-2 py-0.5 rounded-full bg-mint/15 text-mint border border-mint/30">
                   ● В наличии
                 </span>
-                <h4 id="detail-name" class="font-display text-xl md:text-2xl font-black text-white mt-1 leading-tight">
+                <h4 id="detail-name" class="font-display text-base md:text-lg font-black text-cream mt-1 leading-tight">
                   Солёная карамель
                 </h4>
               </div>
             </div>
           </div>
 
-          <p id="detail-desc" class="text-xs sm:text-sm text-neutral-300 font-medium leading-relaxed bg-black/40 p-3.5 rounded-2xl border border-white/5">
-            Тягучий сливочно-карамельный вкус с легким кристаллом морской соли в послевкусии.
+          <p id="detail-desc" class="text-[11px] md:text-xs text-cream/65 font-medium leading-relaxed bg-black/30 p-2.5 rounded-xl border border-white/5">
+            Тягучий сливочно-карамельный вкус с легким кристаллом морской соли.
           </p>
 
-          <!-- Шкалы характеристик -->
-          <div class="flex flex-col gap-2.5">
+          <div class="flex flex-col gap-2">
             <div>
-              <div class="flex justify-between text-[11px] font-bold mb-1">
-                <span class="text-neutral-400 uppercase">Сладость и плотность</span>
-                <span id="detail-sweet-val" class="text-sticker font-display">5 / 5</span>
+              <div class="flex justify-between text-[10px] font-bold mb-1">
+                <span class="text-cream/45 uppercase">Сладость</span>
+                <span id="detail-sweet-val" class="text-gold font-display">5 / 5</span>
               </div>
-              <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                <div id="detail-sweet-bar" class="h-full bg-sticker rounded-full transition-all duration-300" style="width: 95%"></div>
+              <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div id="detail-sweet-bar" class="h-full bg-gradient-to-r from-goldLite to-gold rounded-full transition-all duration-300" style="width: 95%"></div>
               </div>
             </div>
 
-            <div class="flex justify-between items-center bg-white/5 border border-white/10 px-3.5 py-2.5 rounded-xl text-xs">
-              <span class="text-neutral-400 font-semibold">Идеально в:</span>
-              <span id="detail-pair" class="font-display font-bold text-white text-right">Латте, Капучино, Айс-кофе</span>
+            <div class="flex justify-between items-center bg-white/5 border border-white/10 px-2.5 py-2 rounded-lg text-[10px]">
+              <span class="text-cream/45 font-semibold">Идеально в:</span>
+              <span id="detail-pair" class="font-display font-bold text-cream text-right truncate ml-2">Латте, Капучино</span>
             </div>
           </div>
 
-          <div class="flex justify-between items-center pt-3 border-t border-white/10">
-            <span class="text-xs text-neutral-400 font-medium">Стоимость порции (20 мл):</span>
-            <span id="detail-price" class="font-display text-xl font-black text-sticker">+35 ₽</span>
+          <div class="flex justify-between items-center pt-2 border-t border-white/10">
+            <span class="text-[10px] text-cream/45 font-medium">Порция (20 мл):</span>
+            <span id="detail-price" class="font-display text-base md:text-lg font-black text-gold">+35 ₽</span>
           </div>
         </div>
 
-        <!-- ПРАВАЯ ПАНЕЛЬ: 3D-БАРАБАН БУТЫЛОЧЕК НА ПОЛКЕ -->
         <div class="lg:col-span-7 flex flex-col justify-center relative">
-          
-          <!-- Подсказки навигации -->
-          <div class="flex justify-between items-center px-4 mb-2">
-            <button onclick="scrollSyrupDrum(-1)" class="bg-white/10 hover:bg-white/20 active:scale-90 px-3.5 py-1.5 rounded-xl font-display text-xs font-bold text-sticker border border-white/15">
+          <div class="flex justify-between items-center px-2 mb-2">
+            <button onclick="scrollSyrupDrum(-1)" class="btn-ghost px-3 py-1.5 rounded-lg font-display text-[10px] font-bold text-gold min-h-[36px]">
               ◀ Влево
             </button>
-            <span class="text-[11px] uppercase tracking-widest text-neutral-400 font-bold">Центральный сироп активен</span>
-            <button onclick="scrollSyrupDrum(1)" class="bg-white/10 hover:bg-white/20 active:scale-90 px-3.5 py-1.5 rounded-xl font-display text-xs font-bold text-sticker border border-white/15">
+            <span class="text-[9px] uppercase tracking-widest text-cream/40 font-bold hidden sm:inline">Центральный активен</span>
+            <button onclick="scrollSyrupDrum(1)" class="btn-ghost px-3 py-1.5 rounded-lg font-display text-[10px] font-bold text-gold min-h-[36px]">
               Вправо ▶
             </button>
           </div>
 
-          <!-- Барабан с карточками -->
-          <div id="syrups-drum" class="drum-viewport flex items-center gap-5 py-8 px-[32%] cursor-grab active:cursor-grabbing select-none">
-            <!-- Генерируется скриптом -->
-          </div>
+          <div id="syrups-drum" class="drum-viewport flex items-center gap-4 py-6 px-[32%] cursor-grab active:cursor-grabbing select-none"></div>
 
-          <!-- Деревянная барная полка под сиропами -->
-          <div class="wooden-shelf-plank w-full h-5 rounded-full -mt-4 relative z-0"></div>
-          <div class="w-11/12 mx-auto h-3 bg-black/80 blur-md rounded-full"></div>
-
+          <div class="wooden-shelf-plank w-full h-4 rounded-full -mt-3 relative z-0"></div>
+          <div class="w-11/12 mx-auto h-2 bg-black/80 blur-md rounded-full"></div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- ================= СКРЫТАЯ АДМИН-ПАНЕЛЬ (5 ТАПОВ + ПАРОЛЬ 0506) ================= -->
-  <div id="secret-admin-modal" class="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-2xl hidden items-center justify-center p-4">
-    
-    <!-- Шаг 1: Ввод пароля 0506 -->
-    <div id="secret-pin-box" class="bg-neutral-900 border border-white/20 rounded-3xl max-w-xs w-full p-6 text-center flex flex-col gap-4 shadow-2xl">
-      <div class="text-xs font-display font-black uppercase text-sticker tracking-widest">🔒 Доступ к терминалу</div>
-      <input type="password" id="secret-pin-input" maxlength="4" placeholder="••••" class="w-full bg-black/60 border border-white/20 rounded-2xl py-3 text-center font-display text-3xl tracking-[0.5em] text-white focus:outline-none focus:border-yellow-300" />
-      <p id="secret-pin-error" class="text-xs text-rose-400 font-bold hidden">Неверный пароль!</p>
+  <!-- ═══════════════════════════════════════════
+       SECRET ADMIN
+  ═══════════════════════════════════════════ -->
+  <div id="secret-admin-modal" class="fixed inset-0 z-[1000] bg-inkDeep/95 backdrop-blur-2xl hidden items-center justify-center p-4">
+    <div id="secret-pin-box" class="glass-strong rounded-2xl max-w-xs w-full p-5 text-center flex flex-col gap-3">
+      <div class="text-[11px] font-display font-black uppercase text-gold tracking-widest">🔒 Доступ к терминалу</div>
+      <input type="password" id="secret-pin-input" maxlength="4" placeholder="••••" class="w-full bg-black/40 border border-white/15 rounded-xl py-3 text-center font-display text-2xl tracking-[0.5em] text-cream focus:outline-none focus:border-gold/60" />
+      <p id="secret-pin-error" class="text-[11px] text-rose font-bold hidden">Неверный пароль!</p>
       
       <div class="grid grid-cols-3 gap-2">
-        <button onclick="tapPin('1')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">1</button>
-        <button onclick="tapPin('2')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">2</button>
-        <button onclick="tapPin('3')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">3</button>
-        <button onclick="tapPin('4')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">4</button>
-        <button onclick="tapPin('5')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">5</button>
-        <button onclick="tapPin('6')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">6</button>
-        <button onclick="tapPin('7')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">7</button>
-        <button onclick="tapPin('8')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">8</button>
-        <button onclick="tapPin('9')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">9</button>
-        <button onclick="clearPin()" class="py-3 bg-rose-500/20 text-rose-300 rounded-xl font-display font-bold text-xs uppercase">Сброс</button>
-        <button onclick="tapPin('0')" class="py-3 bg-white/5 hover:bg-white/15 rounded-xl font-display font-bold text-lg">0</button>
-        <button onclick="closeSecretModal()" class="py-3 bg-white/10 text-neutral-400 rounded-xl font-display font-bold text-xs uppercase">Выход</button>
+        <button onclick="tapPin('1')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">1</button>
+        <button onclick="tapPin('2')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">2</button>
+        <button onclick="tapPin('3')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">3</button>
+        <button onclick="tapPin('4')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">4</button>
+        <button onclick="tapPin('5')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">5</button>
+        <button onclick="tapPin('6')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">6</button>
+        <button onclick="tapPin('7')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">7</button>
+        <button onclick="tapPin('8')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">8</button>
+        <button onclick="tapPin('9')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">9</button>
+        <button onclick="clearPin()" class="py-3 bg-rose/20 text-rose rounded-xl font-display font-bold text-[10px] uppercase min-h-[48px]">Сброс</button>
+        <button onclick="tapPin('0')" class="py-3 bg-white/5 hover:bg-white/15 active:scale-95 rounded-xl font-display font-bold text-base min-h-[48px]">0</button>
+        <button onclick="closeSecretModal()" class="py-3 bg-white/10 text-cream/50 rounded-xl font-display font-bold text-[10px] uppercase min-h-[48px]">Выход</button>
       </div>
     </div>
 
-    <!-- Шаг 2: Настройки Cloudflare и ЮKassa -->
-    <div id="secret-config-box" class="hidden bg-neutral-900 border border-white/20 rounded-3xl max-w-md w-full p-6 text-left flex-col gap-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-white/10 pb-3">
+    <div id="secret-config-box" class="hidden glass-strong rounded-2xl max-w-md w-full p-5 text-left flex-col gap-3">
+      <div class="flex justify-between items-center border-b border-white/10 pb-2.5">
         <div>
-          <span class="text-[10px] font-display font-black uppercase bg-sticker text-black px-2 py-0.5 rounded">ADMIN • 0506</span>
-          <h3 class="font-display font-black text-base uppercase text-white mt-1">Настройки экрана и СБП</h3>
+          <span class="pill-badge bg-gradient-to-r from-goldLite to-gold text-ink">ADMIN • 0506</span>
+          <h3 class="font-display font-black text-sm uppercase text-cream mt-1">Настройки экрана и СБП</h3>
         </div>
-        <button onclick="closeSecretModal()" class="text-neutral-400 hover:text-white text-lg">✕</button>
+        <button onclick="closeSecretModal()" class="text-cream/50 hover:text-cream text-lg">✕</button>
       </div>
 
       <div>
-        <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Ссылка на Cloudflare Worker</label>
-        <input type="url" id="adm-cf-url" placeholder="https://coffeeman.workers.dev" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+        <label class="text-[10px] text-cream/50 font-bold uppercase block mb-1">Cloudflare Worker URL</label>
+        <input type="url" id="adm-cf-url" placeholder="https://coffeeman.workers.dev" class="w-full bg-black/40 border border-white/15 rounded-lg px-3 py-2 text-[11px] text-cream font-mono focus:outline-none focus:border-gold/60" />
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-2 gap-2">
         <div>
-          <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Shop ID (ЮKassa)</label>
-          <input type="text" id="adm-shop-id" placeholder="1350725" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+          <label class="text-[10px] text-cream/50 font-bold uppercase block mb-1">Shop ID</label>
+          <input type="text" id="adm-shop-id" placeholder="1350725" class="w-full bg-black/40 border border-white/15 rounded-lg px-3 py-2 text-[11px] text-cream font-mono focus:outline-none focus:border-gold/60" />
         </div>
         <div>
-          <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">ID Терминала</label>
-          <input type="text" id="adm-term-id" value="term_01" class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+          <label class="text-[10px] text-cream/50 font-bold uppercase block mb-1">Terminal ID</label>
+          <input type="text" id="adm-term-id" value="term_01" class="w-full bg-black/40 border border-white/15 rounded-lg px-3 py-2 text-[11px] text-cream font-mono focus:outline-none focus:border-gold/60" />
         </div>
       </div>
 
       <div>
-        <label class="text-[11px] text-neutral-400 font-bold uppercase block mb-1">Секретный ключ (Secret Key)</label>
-        <input type="password" id="adm-secret-key" placeholder="live_... или test_..." class="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-yellow-300" />
+        <label class="text-[10px] text-cream/50 font-bold uppercase block mb-1">Secret Key</label>
+        <input type="password" id="adm-secret-key" placeholder="live_..." class="w-full bg-black/40 border border-white/15 rounded-lg px-3 py-2 text-[11px] text-cream font-mono focus:outline-none focus:border-gold/60" />
       </div>
 
-      <div class="flex gap-2 pt-2">
-        <button onclick="saveSecretAdminConfig()" class="flex-1 bg-sticker text-black font-display font-black text-xs uppercase py-3.5 rounded-xl active:scale-95 transition-all">
-          💾 Сохранить и синхронизировать
-        </button>
-      </div>
+      <button onclick="saveSecretAdminConfig()" class="w-full btn-gold font-display font-black text-[11px] uppercase py-3 rounded-lg">
+        💾 Сохранить
+      </button>
     </div>
-
   </div>
 
-  <!-- ================= ФУТЕР ================= -->
-  <footer class="w-full flex justify-between items-center z-20 pt-6 border-t border-white/10 text-xs text-neutral-400">
-    <div class="flex items-center gap-2">
-      <span class="font-display font-bold text-neutral-200 uppercase tracking-wider">COFFEEMAN</span>
-      <span class="text-neutral-500">•</span>
-      <span>г. Кызыл, Республика Тыва</span>
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
+  <footer class="w-full flex justify-between items-center py-2 border-t border-white/8 text-xs text-cream/40 flex-shrink-0">
+    <div class="flex items-center gap-2.5">
+      <span class="font-display font-black text-cream uppercase tracking-[0.15em] text-[11px]">COFFEEMAN</span>
+      <span class="text-gold">•</span>
+      <span class="font-semibold text-[11px]">Кызыл, Тыва</span>
     </div>
-    <div class="text-[11px] text-neutral-400">Customer Display v4.0 • 3D Drum & Live SBP</div>
+    <div class="text-[10px] md:text-[11px] text-cream/40 font-medium tracking-wide">Экран гостя</div>
   </footer>
 
-  <!-- ================= СКРИПТЫ FIREBASE, БАРАБАНА И ОПЛАТЫ ================= -->
+  <!-- ═══════════════════════════════════════════
+       SCRIPT
+  ═══════════════════════════════════════════ -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -681,14 +1619,121 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Глобальные настройки подключения (берутся из localStorage или прилетают из Firebase)
     let terminalId = localStorage.getItem('yk_term_id') || 'term_01';
     let globalShopId = localStorage.getItem('yk_shop_id') || '';
     let globalSecretKey = localStorage.getItem('yk_secret_key') || '';
     let globalCfUrl = localStorage.getItem('cf_worker_url') || '';
     let globalProxyMode = localStorage.getItem('cf_proxy_mode') || 'cloudflare';
 
-    // ================= СЕКРЕТНАЯ ПАНЕЛЬ НА 5 НАЖАТИЙ (ПАРОЛЬ 0506) =================
+    /* ═══════════════════════════════════════════
+       WAKE LOCK API — держим экран включённым
+    ═══════════════════════════════════════════ */
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('✅ Wake Lock active');
+          wakeLock.addEventListener('release', () => {
+            console.log('⚠️ Wake Lock released');
+          });
+        }
+      } catch (err) {
+        console.warn('Wake Lock error:', err);
+      }
+    }
+    document.addEventListener('visibilitychange', async () => {
+      if (wakeLock !== null && document.visibilityState === 'visible') {
+        await requestWakeLock();
+      }
+    });
+    requestWakeLock();
+
+    /* ═══════════════════════════════════════════
+       TOAST NOTIFICATIONS
+    ═══════════════════════════════════════════ */
+    let toastTimer = null;
+    window.showToast = function(message, duration = 2800) {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    };
+
+    /* ═══════════════════════════════════════════
+       ANIMATE NUMBER (smooth counter)
+    ═══════════════════════════════════════════ */
+    window.animateNumber = function(el, from, to, duration = 800) {
+      if (!el) return;
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = Math.round(from + (to - from) * eased);
+        el.textContent = value;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    };
+
+    /* ═══════════════════════════════════════════
+       PARTICLE SPAWN
+    ═══════════════════════════════════════════ */
+    function spawnParticles() {
+      const layer = document.getElementById('particle-layer');
+      if (!layer) return;
+      layer.innerHTML = '';
+      for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.bottom = '-10px';
+        p.style.animationDelay = Math.random() * 8 + 's';
+        p.style.animationDuration = (7 + Math.random() * 6) + 's';
+        const colors = ['#F0C978', '#FF8A65', '#FFDFA0', '#6FCF97'];
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.boxShadow = `0 0 10px ${p.style.background}, 0 0 20px ${p.style.background}40`;
+        layer.appendChild(p);
+      }
+    }
+    spawnParticles();
+
+    /* ═══════════════════════════════════════════
+       TIPS STATS (today counter)
+    ═══════════════════════════════════════════ */
+    function getTipStats() {
+      const today = new Date().toISOString().split('T')[0];
+      const stored = localStorage.getItem('tip_stats');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          if (data.date === today) return data;
+        } catch (e) {}
+      }
+      return { date: today, count: 47 + Math.floor(Math.random() * 20) };
+    }
+    function recordTipStat() {
+      const stats = getTipStats();
+      stats.count += 1;
+      localStorage.setItem('tip_stats', JSON.stringify(stats));
+      const countEl = document.getElementById('tips-count-val');
+      if (countEl) {
+        countEl.classList.add('counter-pulse');
+        setTimeout(() => countEl.classList.remove('counter-pulse'), 650);
+        countEl.textContent = stats.count;
+      }
+    }
+    const initialStats = getTipStats();
+    const tipsCountEl = document.getElementById('tips-count-val');
+    if (tipsCountEl) tipsCountEl.textContent = initialStats.count;
+
+    /* ═══════════════════════════════════════════
+       SECRET ADMIN
+    ═══════════════════════════════════════════ */
     let secretTapCount = 0;
     let secretTapTimer = null;
     let enteredPin = "";
@@ -696,15 +1741,8 @@
     window.registerSecretTap = function() {
       secretTapCount++;
       if (secretTapTimer) clearTimeout(secretTapTimer);
-
-      if (secretTapCount >= 5) {
-        secretTapCount = 0;
-        openSecretModal();
-      } else {
-        secretTapTimer = setTimeout(() => {
-          secretTapCount = 0;
-        }, 1800);
-      }
+      if (secretTapCount >= 5) { secretTapCount = 0; openSecretModal(); }
+      else { secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1800); }
     };
 
     function openSecretModal() {
@@ -714,7 +1752,6 @@
       document.getElementById('secret-pin-box').classList.remove('hidden');
       document.getElementById('secret-config-box').classList.add('hidden');
       document.getElementById('secret-config-box').classList.remove('flex');
-      
       const modal = document.getElementById('secret-admin-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -731,9 +1768,7 @@
         enteredPin += digit;
         document.getElementById('secret-pin-input').value = enteredPin;
         document.getElementById('secret-pin-error').classList.add('hidden');
-        if (enteredPin.length === 4) {
-          checkSecretPin();
-        }
+        if (enteredPin.length === 4) checkSecretPin();
       }
     };
 
@@ -754,7 +1789,6 @@
         const cfgBox = document.getElementById('secret-config-box');
         cfgBox.classList.remove('hidden');
         cfgBox.classList.add('flex');
-
         document.getElementById('adm-cf-url').value = globalCfUrl;
         document.getElementById('adm-shop-id').value = globalShopId;
         document.getElementById('adm-secret-key').value = globalSecretKey;
@@ -771,168 +1805,163 @@
       globalShopId = document.getElementById('adm-shop-id').value.trim();
       globalSecretKey = document.getElementById('adm-secret-key').value.trim();
       terminalId = document.getElementById('adm-term-id').value.trim() || 'term_01';
-
       localStorage.setItem('cf_worker_url', globalCfUrl);
       localStorage.setItem('yk_shop_id', globalShopId);
       localStorage.setItem('yk_secret_key', globalSecretKey);
       localStorage.setItem('yk_term_id', terminalId);
-
       try {
         const settingsRef = ref(db, `terminals/${terminalId}/settings`);
         await update(settingsRef, {
-          cfWorkerUrl: globalCfUrl,
-          shopId: globalShopId,
-          secretKey: globalSecretKey,
-          proxyMode: globalCfUrl ? 'cloudflare' : 'corsproxy',
-          updatedAt: Date.now()
+          cfWorkerUrl: globalCfUrl, shopId: globalShopId, secretKey: globalSecretKey,
+          proxyMode: globalCfUrl ? 'cloudflare' : 'corsproxy', updatedAt: Date.now()
         });
-      } catch (e) {
-        console.warn("Firebase sync warning:", e);
-      }
-
+      } catch (e) { console.warn("Firebase sync:", e); }
       closeSecretModal();
+      showToast('✅ Настройки сохранены');
     };
 
-    // ================= РАСШИРЕННЫЕ РАЗНОВИДНОСТИ ЭКРАНОВ ОЖИДАНИЯ =================
+    /* ═══════════════════════════════════════════
+       GREETINGS
+    ═══════════════════════════════════════════ */
     const greetingsList = [
-      { word: "Привет", heading: "Твой идеальный кофе готов", sub: "COFFEEMAN • Готовим с душой каждый день ☕" },
-      { word: "Салют", heading: "Время подзарядиться", sub: "Свежая обжарка и лучший вкус в Кызыле ✨" },
-      { word: "Хей", heading: "Отличный день для кофе", sub: "Возьми любимый напиток с собой 💫" },
-      { word: "Добро пожаловать", heading: "Согреваем вкусом и уютом", sub: "100% отборная арабика и натуральное молоко 🥛" }
+      { word: "Привет", heading: "Твой идеальный кофе готов", sub: "COFFEEMAN • Готовим с душой ☕" },
+      { word: "Салют", heading: "Время подзарядиться", sub: "Свежая обжарка • Кызыл ✨" },
+      { word: "Хей", heading: "Отличный день для кофе", sub: "Возьми с собой любимый напиток 💫" },
+      { word: "Добро пожаловать", heading: "Согреваем вкусом и уютом", sub: "100% арабика и свежее молоко 🥛" }
     ];
 
     function getRandomGreetingHtml() {
       const g = greetingsList[Math.floor(Math.random() * greetingsList.length)];
       return `
         <div class="flex flex-col items-center">
-          <div class="apple-handwriting text-sticker mb-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
-            <svg width="340" height="120" viewBox="0 0 340 120" fill="none">
-              <text x="50%" y="75%" text-anchor="middle" font-family="'Caveat', cursive" font-size="90" font-weight="700" stroke="currentColor" stroke-width="2.5" fill="none">${g.word}</text>
+          <div class="apple-handwriting text-gold mb-1" style="filter: drop-shadow(0 8px 28px rgba(240,201,120,0.4))">
+            <svg width="400" height="110" viewBox="0 0 400 110" fill="none" class="max-w-full h-auto">
+              <text x="50%" y="72%" text-anchor="middle" font-family="'Caveat', cursive" font-size="96" font-weight="700" stroke="currentColor" stroke-width="2.2" fill="none">${g.word}</text>
             </svg>
           </div>
-          <h1 class="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase leading-tight tracking-tight text-white max-w-3xl text-shadow-hard">
+          <h1 class="gold-text font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-[0.95] tracking-tight max-w-3xl px-4">
             ${g.heading}
           </h1>
-          <div class="mt-6">
-            <span class="inline-flex items-center gap-2 bg-black/60 backdrop-blur-md px-6 py-2.5 rounded-full text-neutral-200 text-sm font-semibold border border-white/15 shadow-xl">
+          <div class="mt-5">
+            <span class="inline-flex items-center gap-2 glass rounded-full px-5 md:px-6 py-2.5 md:py-3 text-cream text-sm md:text-base font-semibold">
               ${g.sub}
             </span>
+          </div>
+          <div class="swipe-hint mt-5 text-[10px] text-gold/60 font-bold uppercase tracking-widest flex items-center gap-1.5">
+            <span>Листайте</span>
+            <span class="text-base">👆</span>
           </div>
         </div>
       `;
     }
 
-    // 1. Акция 9 фишек
+    /* ═══════════════════════════════════════════
+       SLIDES
+    ═══════════════════════════════════════════ */
     const promoNineChipsSlide = {
       type: 'promo_nine_chips',
       duration: 11000,
       html: `
-        <div class="relative w-full max-w-5xl h-[430px] rounded-3xl overflow-hidden border border-yellow-300/40 shadow-2xl flex items-center justify-between p-6 sm:p-10 text-left bg-gradient-to-r from-neutral-950 via-neutral-900 to-black">
+        <div class="relative w-full max-w-5xl h-[340px] md:h-[400px] lg:h-[440px] rounded-[28px] md:rounded-[36px] overflow-hidden gold-border flex items-center justify-between p-5 md:p-8 lg:p-10 text-left bg-gradient-to-br from-ink via-inkDeep to-black">
           <div class="absolute inset-0 z-0 flex items-center justify-end overflow-hidden pointer-events-none">
             <img src="coffeeman-cup.jpg" 
                  onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&auto=format&fit=crop&q=80'"
-                 class="h-full w-full object-cover object-right md:object-contain md:w-1/2 opacity-75 md:opacity-90 transform scale-105" 
+                 class="h-full w-full object-cover object-right md:object-contain md:w-1/2 opacity-80" 
                  alt="COFFEEMAN Cup" />
-            <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-inkDeep via-inkDeep/85 to-transparent"></div>
           </div>
           
-          <div class="relative z-10 flex flex-col justify-between h-full max-w-xl">
-            <div class="backdrop-blur-md bg-black/50 p-5 rounded-3xl border border-white/15 shadow-2xl">
-              <div class="flex items-center gap-2 mb-3">
-                <span class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3 py-1 uppercase -rotate-3">
-                  ПРОГРАММА ЛОЯЛЬНОСТИ
-                </span>
-                <span class="text-xs uppercase tracking-wider text-sticker font-bold animate-pulse">ПОДАРОК ДЛЯ ГОСТЕЙ 🎁</span>
+          <div class="relative z-10 flex flex-col justify-between h-full max-w-lg">
+            <div class="glass rounded-2xl md:rounded-3xl p-4 md:p-5">
+              <div class="flex items-center gap-2 mb-2 flex-wrap">
+                <span class="pill-badge bg-gradient-to-r from-goldLite to-gold text-ink">ЛОЯЛЬНОСТЬ</span>
+                <span class="text-[10px] uppercase tracking-wider text-gold font-bold animate-pulse">ПОДАРОК 🎁</span>
               </div>
-              <h2 class="font-display text-3xl sm:text-5xl font-black uppercase leading-[1.05] tracking-tight text-white text-shadow-hard">
-                Собери <span class="text-sticker">9 фишек</span> <br>
-                и получи кофе <br>
-                <span class="text-emerald-400">БЕСПЛАТНО!</span>
+              <h2 class="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase leading-[0.95] tracking-tight text-cream text-shadow-soft">
+                Собери <span class="gold-text">9 фишек</span> <br>
+                — кофе <span class="text-mint">бесплатно</span>
               </h2>
-              <p class="text-neutral-200 text-xs sm:text-sm font-semibold mt-3 leading-relaxed">
-                Покупай любой напиток, получай отметку и забирай свой 10-й подарочный кофе на кассе.
+              <p class="text-cream/75 text-xs md:text-sm font-semibold mt-2 leading-snug">
+                Любой напиток — отметка. Десятый — забираете на кассе.
               </p>
             </div>
 
             <div class="flex flex-wrap gap-2 items-center pt-2">
-              <div class="sticker-badge bg-white text-black px-4 py-2 rounded-2xl flex items-center gap-2">
-                <span class="text-xs font-display font-black uppercase">VK / IG:</span>
-                <span class="text-xs font-bold text-neutral-800">coffeeman_kzl</span>
+              <div class="bg-cream text-ink px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <span class="text-[10px] font-display font-black uppercase">VK/IG:</span>
+                <span class="text-[10px] font-bold text-ink/80">coffeeman_kzl</span>
               </div>
-              <div class="bg-black/60 border border-white/15 px-3 py-2 rounded-2xl text-[11px] font-bold text-neutral-300">
+              <div class="glass px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-cream/80">
                 Kyzyl, Tuva 📍
               </div>
             </div>
           </div>
 
           <div class="relative z-10 hidden md:flex flex-col justify-between items-end h-full text-right">
-            <div class="sticker-badge bg-sticker text-black font-display text-xl font-black px-5 py-2 rounded-2xl rotate-3 shadow-2xl">
-              10-Й В ПОДАРОК! ☕
+            <div class="shimmer bg-gradient-to-r from-goldLite to-gold text-ink font-display text-lg lg:text-xl font-black px-4 lg:px-5 py-2 lg:py-2.5 rounded-2xl rotate-3 shadow-2xl">
+              10-й в подарок
             </div>
-            <div class="bg-black/80 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl text-right">
-              <p class="text-[11px] text-neutral-400 font-medium">Спроси у бариста:</p>
-              <p class="font-display text-xs font-black text-sticker uppercase mt-0.5">«Карточку для фишек»</p>
+            <div class="glass-strong p-2.5 rounded-xl text-right">
+              <p class="text-[9px] text-cream/50 font-medium">Спроси у бариста:</p>
+              <p class="font-display text-[10px] font-black text-gold uppercase mt-0.5">«Карточку для фишек»</p>
             </div>
           </div>
         </div>
       `
     };
 
-    // 2. Новая разновидность: Витрина авторских напитков
     const signatureMenuSlide = {
       type: 'signature_menu',
       duration: 10000,
       html: `
         <div class="w-full max-w-5xl flex flex-col items-center">
-          <div class="stamp-badge bg-sticker text-black font-display font-black text-[10px] px-3.5 py-1 uppercase -rotate-2 mb-3">
-            ХИТЫ COFFEEMAN 🔥
-          </div>
-          <h2 class="font-display text-3xl sm:text-5xl font-black uppercase text-white text-shadow-hard mb-6">
-            Попробуй наши <span class="text-sticker">бестселлеры</span>
+          <div class="pill-badge bg-gradient-to-r from-goldLite to-gold text-ink mb-2">ХИТЫ COFFEEMAN 🔥</div>
+          <h2 class="gold-text font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase mb-4 md:mb-5 leading-[0.95]">
+            Наши бестселлеры
           </h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full text-left">
-            <div class="bg-neutral-900/90 border border-white/15 p-5 rounded-3xl flex flex-col justify-between shadow-xl">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 w-full text-left">
+            <div class="menu-card p-4 md:p-5 rounded-2xl md:rounded-3xl flex flex-col justify-between min-h-[160px] md:min-h-[180px]">
               <div>
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-3xl">🍯</span>
-                  <span class="text-[10px] font-display font-bold bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded-full">Хит продаж</span>
+                <div class="flex justify-between items-center mb-1.5">
+                  <span class="text-2xl md:text-3xl">🍯</span>
+                  <span class="text-[9px] font-display font-bold bg-gold/15 text-gold px-2 py-0.5 rounded-full">Хит</span>
                 </div>
-                <h3 class="font-display font-black text-lg text-white">Солёно-карамельный Раф</h3>
-                <p class="text-xs text-neutral-400 mt-1">Взбитые сливки, эспрессо и густая карамель с морской солью.</p>
+                <h3 class="font-display font-black text-base md:text-lg text-cream leading-tight">Солёно-карамельный раф</h3>
+                <p class="text-[11px] md:text-xs text-cream/55 mt-1.5 leading-snug">Сливки, эспрессо и карамель с солью.</p>
               </div>
-              <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
-                <span class="text-xs text-neutral-400">350 мл</span>
-                <span class="font-display font-black text-sticker text-lg">250 ₽</span>
+              <div class="mt-2 pt-2 border-t border-white/10 flex justify-between items-center">
+                <span class="text-[10px] md:text-xs text-cream/45">350 мл</span>
+                <span class="font-display font-black text-gold text-lg md:text-xl">250 ₽</span>
               </div>
             </div>
 
-            <div class="bg-neutral-900/90 border border-yellow-300/40 p-5 rounded-3xl flex flex-col justify-between shadow-xl transform md:-translate-y-2">
+            <div class="menu-card menu-card-hot p-4 md:p-5 rounded-2xl md:rounded-3xl flex flex-col justify-between min-h-[160px] md:min-h-[180px] md:-translate-y-2">
               <div>
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-3xl">🌰</span>
-                  <span class="text-[10px] font-display font-bold bg-sticker text-black px-2.5 py-0.5 rounded-full">Выбор бариста</span>
+                <div class="flex justify-between items-center mb-1.5">
+                  <span class="text-2xl md:text-3xl">🌰</span>
+                  <span class="text-[9px] font-display font-bold bg-coral text-ink px-2 py-0.5 rounded-full">Выбор</span>
                 </div>
-                <h3 class="font-display font-black text-lg text-white">Ореховый Флэт Уайт</h3>
-                <p class="text-xs text-neutral-400 mt-1">Двойной ристретто, тонкая молочная микропена и лесной орех.</p>
+                <h3 class="font-display font-black text-base md:text-lg text-cream leading-tight">Ореховый флэт уайт</h3>
+                <p class="text-[11px] md:text-xs text-cream/55 mt-1.5 leading-snug">Двойной ристретто, микропена, орех.</p>
               </div>
-              <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
-                <span class="text-xs text-neutral-400">250 мл</span>
-                <span class="font-display font-black text-sticker text-lg">220 ₽</span>
+              <div class="mt-2 pt-2 border-t border-white/10 flex justify-between items-center">
+                <span class="text-[10px] md:text-xs text-cream/45">250 мл</span>
+                <span class="font-display font-black text-gold text-lg md:text-xl">220 ₽</span>
               </div>
             </div>
 
-            <div class="bg-neutral-900/90 border border-white/15 p-5 rounded-3xl flex flex-col justify-between shadow-xl">
+            <div class="menu-card p-4 md:p-5 rounded-2xl md:rounded-3xl flex flex-col justify-between min-h-[160px] md:min-h-[180px]">
               <div>
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-3xl">🥥</span>
-                  <span class="text-[10px] font-display font-bold bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full">Нежный вкус</span>
+                <div class="flex justify-between items-center mb-1.5">
+                  <span class="text-2xl md:text-3xl">🥥</span>
+                  <span class="text-[9px] font-display font-bold bg-mint/15 text-mint px-2 py-0.5 rounded-full">Нежный</span>
                 </div>
-                <h3 class="font-display font-black text-lg text-white">Кокосовый Латте</h3>
-                <p class="text-xs text-neutral-400 mt-1">Мягкий эспрессо с тропической кокосовой сладостью и воздушной пенкой.</p>
+                <h3 class="font-display font-black text-base md:text-lg text-cream leading-tight">Кокосовый латте</h3>
+                <p class="text-[11px] md:text-xs text-cream/55 mt-1.5 leading-snug">Эспрессо, кокос и воздушная пенка.</p>
               </div>
-              <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center">
-                <span class="text-xs text-neutral-400">400 мл</span>
-                <span class="font-display font-black text-sticker text-lg">240 ₽</span>
+              <div class="mt-2 pt-2 border-t border-white/10 flex justify-between items-center">
+                <span class="text-[10px] md:text-xs text-cream/45">400 мл</span>
+                <span class="font-display font-black text-gold text-lg md:text-xl">240 ₽</span>
               </div>
             </div>
           </div>
@@ -941,37 +1970,21 @@
     };
 
     const factsList = [
-      { 
-        tag: "История & легенда", 
-        title: "Танцующие козы <br><span class='text-sticker'>открыли кофе</span>", 
-        desc: "По легенде, эфиопский пастух Калдим заметил, что его козы не спят по ночам после ягод кофейного дерева 🐐🍒" 
-      },
-      { 
-        tag: "Химия вкуса", 
-        title: "Где больше кофеина: <br><span class='text-sticker'>в светлой обжарке!</span>", 
-        desc: "При долгой темной обжарке часть кофеина разрушается, поэтому светлое зерно бодрит сильнее 🔬⚡" 
-      },
-      { 
-        tag: "Физика эспрессо", 
-        title: "Давление в 9 бар <br><span class='text-sticker'>как на глубине 90 метров</span>", 
-        desc: "Вода пробивает кофейную таблетку за 25 секунд, создавая плотную золотистую пенку «крема» 🌊☕" 
-      },
-      { 
-        tag: "Авторский напиток", 
-        title: "Раф-кофе придумали <br><span class='text-sticker'>для гостя по имени Рафаэль</span>", 
-        desc: "Бариста начал взбивать эспрессо сразу со сливками и ванильным сахаром — так появился самый нежный кофейный напиток 🍨💫" 
-      }
+      { tag: "История", title: "Танцующие козы <br><span class='gold-text'>открыли кофе</span>", desc: "Пастух Калдим заметил, что его козы не спят после ягод кофейного дерева 🐐🍒" },
+      { tag: "Химия", title: "Где больше кофеина: <br><span class='gold-text'>в светлой обжарке!</span>", desc: "При долгой тёмной обжарке кофеин частично разрушается. Светлое зерно бодрит сильнее ⚡" },
+      { tag: "Физика", title: "9 бар — <br><span class='gold-text'>как на глубине 90 м</span>", desc: "Вода пробивает кофейную таблетку за 25 секунд, создавая золотистую пенку 🌊" },
+      { tag: "Напиток", title: "Раф придумали <br><span class='gold-text'>для гостя Рафаэля</span>", desc: "Бариста взбил эспрессо со сливками и ванилью — так появился нежнейший кофе 🍨" }
     ];
 
     function buildFactHtml(fact) {
       return `
-        <div class="flex flex-col items-center max-w-3xl">
-          <span class="text-xs uppercase font-display tracking-widest text-sticker font-bold mb-2 bg-white/5 px-4 py-1 rounded-full border border-white/10">${fact.tag}</span>
-          <h2 class="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase leading-tight tracking-tight text-white text-shadow-hard">
+        <div class="flex flex-col items-center max-w-2xl">
+          <span class="text-[10px] uppercase font-display tracking-widest text-gold font-bold mb-2 glass px-3 py-1 rounded-full">${fact.tag}</span>
+          <h2 class="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase leading-[0.95] tracking-tight text-cream text-shadow-soft">
             ${fact.title}
           </h2>
-          <div class="mt-5 bg-black/50 border border-white/15 px-6 py-4 rounded-3xl backdrop-blur-md max-w-xl shadow-xl">
-            <p class="text-neutral-100 text-base sm:text-lg leading-relaxed font-medium">
+          <div class="mt-4 glass px-5 py-3.5 rounded-2xl md:rounded-3xl max-w-xl">
+            <p class="text-cream text-sm md:text-base lg:text-lg leading-relaxed font-semibold">
               ${fact.desc}
             </p>
           </div>
@@ -979,16 +1992,18 @@
       `;
     }
 
-    // ================= 3D-БАРАБАН СИРОПОВ И ХАРАКТЕРИСТИКИ =================
+    /* ═══════════════════════════════════════════
+       SYRUPS
+    ═══════════════════════════════════════════ */
     const defaultSyrupsMeta = {
-      'Солёная карамель': { sweet: 5, pair: 'Раф, Латте, Капучино, Айс-Латте', desc: 'Тягучий сливочно-карамельный вкус с благородным оттенком морской соли.' },
-      'Французская ваниль': { sweet: 4, pair: 'Классический Раф, Капучино, Какао', desc: 'Тёплый цветочный аромат стручковой бурбонской ванили.' },
+      'Солёная карамель': { sweet: 5, pair: 'Раф, Латте, Капучино', desc: 'Тягучий сливочно-карамельный вкус с благородным оттенком морской соли.' },
+      'Французская ваниль': { sweet: 4, pair: 'Раф, Капучино, Какао', desc: 'Тёплый цветочный аромат стручковой бурбонской ванили.' },
       'Лесной орех': { sweet: 4, pair: 'Флэт Уайт, Американо, Латте', desc: 'Насыщенный профиль обжаренного фундука с шоколадным послевкусием.' },
-      'Кокос': { sweet: 4, pair: 'Латте, Матча, Какао, Айс-кофе', desc: 'Нежная тропическая текстура кокосового молока и мякоти.' },
-      'Лаванда': { sweet: 3, pair: 'Лавандовый Раф, Латте', desc: 'Утонченный травянисто-цветочный букет крымской и прованской лаванды.' },
-      'Попкорн': { sweet: 5, pair: 'Карамельный Латте, Раф, Милкшейк', desc: 'Яркий аромат свежего кинотеатрального попкорна в карамельной глазури.' },
-      'Пряный шоколад': { sweet: 4, pair: 'Моккачино, Капучино, Эспрессо', desc: 'Глубокий вкус темного бельгийского какао с согревающей ноткой корицы.' },
-      'Лесная малина': { sweet: 3, pair: 'Эспрессо-тоник, Чай, Американо', desc: 'Сочная ягодная сладость со свежей лесной кислинкой.' }
+      'Кокос': { sweet: 4, pair: 'Латте, Матча, Какао', desc: 'Нежная тропическая текстура кокосового молока и мякоти.' },
+      'Лаванда': { sweet: 3, pair: 'Раф, Латте', desc: 'Утонченный травянисто-цветочный букет крымской лаванды.' },
+      'Попкорн': { sweet: 5, pair: 'Латте, Раф, Милкшейк', desc: 'Яркий аромат свежего попкорна в карамельной глазури.' },
+      'Пряный шоколад': { sweet: 4, pair: 'Моккачино, Капучино', desc: 'Тёмный бельгийский какао с ноткой корицы.' },
+      'Лесная малина': { sweet: 3, pair: 'Эспрессо-тоник, Чай', desc: 'Сочная ягодная сладость со свежей лесной кислинкой.' }
     };
 
     let syrupsData = [
@@ -1008,46 +2023,35 @@
       const drum = document.getElementById('syrups-drum');
       if (!drum) return;
       drum.innerHTML = '';
-
       syrupsData.forEach((item, index) => {
         const isAvail = (item.available !== false);
         const card = document.createElement('div');
         card.dataset.index = index;
         card.onclick = () => centerDrumCard(index);
-
-        card.className = `drum-card min-w-[175px] sm:min-w-[190px] h-[250px] rounded-3xl p-4 flex flex-col justify-between items-center text-center cursor-pointer select-none border-2 ${
-          isAvail 
-            ? 'bg-gradient-to-b from-neutral-800 via-neutral-900 to-black border-white/15' 
-            : 'bg-neutral-900/40 border-white/5 grayscale opacity-50'
+        card.className = `drum-card min-w-[150px] sm:min-w-[170px] h-[210px] md:h-[230px] rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col justify-between items-center text-center cursor-pointer select-none border-2 ${
+          isAvail ? 'bg-gradient-to-b from-neutral-800/80 via-ink to-black border-white/15' : 'bg-neutral-900/40 border-white/5 grayscale opacity-50'
         }`;
-
         card.innerHTML = `
           <div class="w-full flex justify-between items-center">
-            <span class="text-[9px] font-display font-black uppercase px-2 py-0.5 rounded-full ${isAvail ? 'bg-emerald-500/20 text-emerald-300' : 'bg-neutral-700 text-neutral-400'}">
+            <span class="text-[8px] font-display font-black uppercase px-1.5 py-0.5 rounded-full ${isAvail ? 'bg-mint/15 text-mint' : 'bg-neutral-700 text-neutral-400'}">
               ${isAvail ? 'Активен' : 'Пусто'}
             </span>
-            <span class="text-[10px] font-display font-bold text-neutral-400">#${index + 1}</span>
+            <span class="text-[9px] font-display font-bold text-cream/40">#${index + 1}</span>
           </div>
-
-          <!-- Имитация бутылочки на полке -->
           <div class="my-auto flex flex-col items-center">
-            <div class="w-2.5 h-3 bg-amber-200/80 rounded-t-sm mb-0.5"></div>
-            <div class="w-20 h-24 rounded-2xl bg-gradient-to-b from-white/15 to-white/5 border border-white/20 flex items-center justify-center text-4xl shadow-inner relative">
+            <div class="w-2 h-2.5 bg-gold/60 rounded-t-sm mb-0.5"></div>
+            <div class="w-16 md:w-18 h-20 md:h-22 rounded-xl md:rounded-2xl bg-gradient-to-b from-white/12 to-white/3 border border-white/20 flex items-center justify-center text-3xl md:text-4xl shadow-inner">
               ${item.icon || '🧴'}
             </div>
           </div>
-
           <div class="w-full">
-            <h4 class="font-display font-black text-xs sm:text-sm text-white truncate">${item.name}</h4>
-            <p class="text-[10px] text-sticker font-display font-bold mt-0.5">+${item.price || 35} ₽</p>
+            <h4 class="font-display font-black text-[11px] md:text-xs text-cream truncate">${item.name}</h4>
+            <p class="text-[9px] text-gold font-display font-bold mt-0.5">+${item.price || 35} ₽</p>
           </div>
         `;
         drum.appendChild(card);
       });
-
-      requestAnimationFrame(() => {
-        updateDrum3DEffect();
-      });
+      requestAnimationFrame(() => { updateDrum3DEffect(); });
     }
 
     function updateDrum3DEffect() {
@@ -1058,7 +2062,6 @@
 
       const drumRect = drum.getBoundingClientRect();
       const drumCenter = drumRect.left + drumRect.width / 2;
-
       let closestIndex = 0;
       let minDistance = Infinity;
 
@@ -1067,30 +2070,22 @@
         const cardCenter = rect.left + rect.width / 2;
         const dist = cardCenter - drumCenter;
         const absDist = Math.abs(dist);
-
-        if (absDist < minDistance) {
-          minDistance = absDist;
-          closestIndex = idx;
-        }
-
-        // Расчет 3D-барабана
+        if (absDist < minDistance) { minDistance = absDist; closestIndex = idx; }
         const maxDist = drumRect.width / 1.8;
         const ratio = Math.min(absDist / maxDist, 1);
-        const scale = 1.15 - ratio * 0.35; // Центральный крупнее (1.15), края меньше (0.8)
-        const rotateY = (dist / maxDist) * -38; // Поворот барабана
-        const translateZ = (1 - ratio) * 40;
-        const opacity = 1 - ratio * 0.55;
-
-        card.style.transform = `perspective(900px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
-        card.style.opacity = Math.max(opacity, 0.35);
+        const scale = 1.12 - ratio * 0.32;
+        const rotateY = (dist / maxDist) * -35;
+        const translateZ = (1 - ratio) * 30;
+        const opacity = 1 - ratio * 0.5;
+        card.style.transform = `perspective(1000px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+        card.style.opacity = Math.max(opacity, 0.4);
       });
 
-      // Подсветка центральной карточки
       cards.forEach((card, idx) => {
         const isAvail = syrupsData[idx] && syrupsData[idx].available !== false;
         if (idx === closestIndex) {
-          card.style.borderColor = isAvail ? '#FFF188' : '#737373';
-          card.style.boxShadow = isAvail ? '0 15px 40px rgba(255, 241, 136, 0.3)' : 'none';
+          card.style.borderColor = isAvail ? '#F0C978' : '#737373';
+          card.style.boxShadow = isAvail ? '0 15px 40px rgba(240, 201, 120, 0.3)' : 'none';
         } else {
           card.style.borderColor = 'rgba(255,255,255,0.12)';
           card.style.boxShadow = 'none';
@@ -1108,10 +2103,9 @@
       const isAvail = (syrup.available !== false);
       const meta = defaultSyrupsMeta[syrup.name] || {
         sweet: 4,
-        pair: 'Латте, Капучино, Раф, Айс-кофе',
-        desc: syrup.taste || 'Натуральный ароматический сироп из барной коллекции COFFEEMAN.'
+        pair: 'Латте, Капучино, Раф',
+        desc: syrup.taste || 'Натуральный сироп из барной коллекции COFFEEMAN.'
       };
-
       document.getElementById('detail-icon').innerText = syrup.icon || '🧴';
       document.getElementById('detail-name').innerText = syrup.name || 'Сироп';
       document.getElementById('detail-desc').innerText = meta.desc;
@@ -1119,14 +2113,13 @@
       document.getElementById('detail-price').innerText = `+${syrup.price || 35} ₽`;
       document.getElementById('detail-sweet-val').innerText = `${meta.sweet} / 5`;
       document.getElementById('detail-sweet-bar').style.width = `${(meta.sweet / 5) * 100}%`;
-
       const statusBadge = document.getElementById('detail-status-badge');
       if (isAvail) {
-        statusBadge.innerText = '● В наличии в баре';
-        statusBadge.className = 'text-[10px] font-display font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        statusBadge.innerText = '● В наличии';
+        statusBadge.className = 'text-[9px] font-display font-black uppercase px-2 py-0.5 rounded-full bg-mint/15 text-mint border border-mint/30';
       } else {
-        statusBadge.innerText = '○ Временно закончился';
-        statusBadge.className = 'text-[10px] font-display font-black uppercase px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        statusBadge.innerText = '○ Закончился';
+        statusBadge.className = 'text-[9px] font-display font-black uppercase px-2 py-0.5 rounded-full bg-rose/15 text-rose border border-rose/30';
       }
     }
 
@@ -1143,9 +2136,7 @@
     };
 
     const syrupsDrumEl = document.getElementById('syrups-drum');
-    syrupsDrumEl.addEventListener('scroll', () => {
-      requestAnimationFrame(updateDrum3DEffect);
-    });
+    syrupsDrumEl.addEventListener('scroll', () => { requestAnimationFrame(updateDrum3DEffect); });
     syrupsDrumEl.addEventListener('wheel', (evt) => {
       evt.preventDefault();
       syrupsDrumEl.scrollLeft += evt.deltaY;
@@ -1171,19 +2162,26 @@
 
     window.handleIdleScreenClick = function(e) {
       if (e.target.closest('button')) return;
+      if (isDragging) return;
       window.toggleSyrupsShelf(true);
     };
 
-    // ================= ЛОГИКА ОПЛАТЫ И РАБОЧИХ ЧАЕВЫХ ЧЕРЕЗ ЮKASSA / CLOUDFLARE =================
+    /* ═══════════════════════════════════════════
+       STATE
+    ═══════════════════════════════════════════ */
     let dynamicSlides = [];
     let customAdSlides = [];
     let currentSlide = 0;
     let idleTimeout = null;
+    let slideProgressInterval = null;
+    let slideStartTime = 0;
+    let slideDuration = 8500;
     let baseAmount = 0;
     let selectedTip = 0;
     let currentSelectedMagicTipAmount = 50;
     let isSuccessActive = false;
     let isMagicActive = false;
+    let isPromoActive = false;
     let currentNfcSide = 'right';
 
     let countdownInterval = null;
@@ -1191,6 +2189,7 @@
     let magicCountdownInterval = null;
     let autoMagicTimeout = null;
     let customerScreenPollingInterval = null;
+    let promoInterval = null;
 
     const screenBody = document.getElementById('screen-body');
     const slideContainer = document.getElementById('slide-container');
@@ -1203,12 +2202,35 @@
     const successIconBox = document.getElementById('success-icon-box');
     const successThanksBox = document.getElementById('success-thanks-box');
     const countdownTimer = document.getElementById('countdown-timer');
+    const specialPromoScreen = document.getElementById('special-promo-screen');
+    const slideProgress = document.getElementById('slide-progress');
 
     const nfcGlowLeft = document.getElementById('nfc-glow-left');
     const nfcGlowRight = document.getElementById('nfc-glow-right');
     const cardModeQr = document.getElementById('card-mode-qr');
     const cardModeNfc = document.getElementById('card-mode-nfc');
 
+    /* ═══════════════════════════════════════════
+       SCREEN SWITCHING
+    ═══════════════════════════════════════════ */
+    function showScreen(screenId) {
+      [idleScreen, paymentScreen, magicTipScreen, magicThanksScreen, successScreen, specialPromoScreen].forEach(s => {
+        if (!s) return;
+        s.classList.remove('active');
+      });
+      const target = document.getElementById(screenId);
+      if (target) target.classList.add('active');
+
+      screenBody.classList.remove('state-payment', 'state-tips', 'state-success', 'state-promo');
+      if (screenId === 'payment-screen') screenBody.classList.add('state-payment');
+      else if (screenId === 'magic-tip-screen' || screenId === 'magic-thanks-screen') screenBody.classList.add('state-tips');
+      else if (screenId === 'success-screen') screenBody.classList.add('state-success');
+      else if (screenId === 'special-promo-screen') screenBody.classList.add('state-promo');
+    }
+
+    /* ═══════════════════════════════════════════
+       PAYMENT UTILS
+    ═══════════════════════════════════════════ */
     function generateUUID() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -1225,18 +2247,12 @@
       return `https://corsproxy.io/?url=${encodeURIComponent(targetYookassaUrl)}`;
     }
 
-    // Создание реального платежа СБП в ЮKassa
     async function createLiveYookassaSbpQr(amountRub, descriptionText) {
       const shopId = globalShopId || localStorage.getItem('yk_shop_id') || '';
       const secretKey = globalSecretKey || localStorage.getItem('yk_secret_key') || '';
-
-      if (!shopId || !secretKey) {
-        throw new Error("Не заданы ключи Shop ID / Secret Key");
-      }
-
+      if (!shopId || !secretKey) throw new Error("Не заданы ключи Shop ID / Secret Key");
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const requestUrl = buildGatewayUrl('https://api.yookassa.ru/v3/payments');
-
       const response = await fetch(requestUrl, {
         method: 'POST',
         headers: {
@@ -1252,15 +2268,10 @@
           description: descriptionText
         })
       });
-
       const data = await response.json();
-      if (!response.ok || !data.id) {
-        throw new Error(data.description || 'Ошибка создания QR');
-      }
-
+      if (!response.ok || !data.id) throw new Error(data.description || 'Ошибка создания QR');
       const qrUrl = data.confirmation?.confirmation_data || data.confirmation?.confirmation_url;
       if (!qrUrl) throw new Error("Пустой QR от шлюза");
-
       return { paymentId: data.id, qrUrl };
     }
 
@@ -1269,10 +2280,8 @@
       const shopId = globalShopId || localStorage.getItem('yk_shop_id');
       const secretKey = globalSecretKey || localStorage.getItem('yk_secret_key');
       if (!paymentId || !shopId || !secretKey) return;
-
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${paymentId}`);
-
       customerScreenPollingInterval = setInterval(async () => {
         try {
           const res = await fetch(pollUrl, {
@@ -1284,9 +2293,7 @@
             clearInterval(customerScreenPollingInterval);
             onPaidCallback(data);
           }
-        } catch (e) {
-          console.error("Poll error:", e);
-        }
+        } catch (e) { console.error("Poll error:", e); }
       }, 1600);
     }
 
@@ -1297,55 +2304,44 @@
         new QRious({
           element: canvas,
           value: url.trim(),
-          size: 210,
+          size: 280,
           level: 'H',
-          background: '#ffffff',
-          foreground: '#000000',
+          background: '#FFFCF5',
+          foreground: '#1A0F08',
           padding: 8
         });
         return true;
-      } catch (e) {
-        return false;
-      }
+      } catch (e) { return false; }
     }
 
-    // ================= РАБОЧИЙ ЭКРАН ЧАЕВЫХ С ОШИБКОЙ «ОЙ, НЕ СЕГОДНЯ» =================
+    /* ═══════════════════════════════════════════
+       MAGIC TIPS
+    ═══════════════════════════════════════════ */
     window.triggerMagicTipScreen = function() {
       window.toggleSyrupsShelf(false);
       isMagicActive = true;
+      isPromoActive = false;
       if (idleTimeout) clearTimeout(idleTimeout);
       clearAllTimeouts();
       hideNfcGlow();
-
-      screenBody.classList.remove('success-flash');
-      screenBody.classList.add('magic-flash');
-
-      idleScreen.classList.add('hidden', 'opacity-0');
-      paymentScreen.classList.add('hidden', 'opacity-0');
-      successScreen.classList.add('hidden', 'opacity-0');
-      magicThanksScreen.classList.add('hidden', 'opacity-0');
-
-      magicTipScreen.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        magicTipScreen.classList.remove('opacity-0');
-        magicTipScreen.classList.add('opacity-100');
-      });
-
+      showScreen('magic-tip-screen');
+      
+      // select 50 default
       const firstBtn = document.querySelector('.magic-tip-btn');
+      if (firstBtn) {
+        document.querySelectorAll('.magic-tip-btn').forEach(b => b.classList.remove('selected'));
+        firstBtn.classList.add('selected');
+      }
       window.selectMagicTip(50, firstBtn);
-
+      
       let timeLeft = 180;
       const timerEl = document.getElementById('magic-timer-val');
       timerEl.innerText = formatTime(timeLeft);
-
       if (magicCountdownInterval) clearInterval(magicCountdownInterval);
       magicCountdownInterval = setInterval(() => {
         timeLeft -= 1;
         if (timeLeft >= 0) timerEl.innerText = formatTime(timeLeft);
-        if (timeLeft <= 0) {
-          clearInterval(magicCountdownInterval);
-          resetToIdle(false);
-        }
+        if (timeLeft <= 0) { clearInterval(magicCountdownInterval); resetToIdle(false); }
       }, 1000);
     };
 
@@ -1355,19 +2351,19 @@
 
     window.selectMagicTip = async function(amount, btn) {
       currentSelectedMagicTipAmount = amount;
-      if (btn) {
-        document.querySelectorAll('.magic-tip-btn').forEach(b => {
-          b.className = 'magic-tip-btn px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-display text-sm font-bold active:scale-95 transition-all border border-white/15';
-        });
-        btn.className = 'magic-tip-btn px-4 py-3 rounded-2xl bg-sticker text-black font-display text-sm font-bold active:scale-95 transition-all sticker-badge';
+      
+      document.querySelectorAll('.magic-tip-btn').forEach(b => b.classList.remove('selected'));
+      if (btn) btn.classList.add('selected');
+      
+      const valEl = document.getElementById('magic-tip-display-val');
+      if (valEl) {
+        animateNumber(valEl, currentSelectedMagicTipAmount === amount ? 0 : 0, amount, 400);
+        valEl.innerText = `${amount} ₽`;
       }
-
-      document.getElementById('magic-tip-display-val').innerText = `${amount} ₽`;
-
+      
       const loader = document.getElementById('magic-qr-loader');
       const errorBox = document.getElementById('magic-qr-error');
       const qrWrapper = document.getElementById('magic-qr-wrapper');
-
       qrWrapper.classList.add('hidden');
       errorBox.classList.add('hidden');
       errorBox.classList.remove('flex');
@@ -1378,13 +2374,24 @@
         const { paymentId, qrUrl } = await createLiveYookassaSbpQr(amount, `Чаевые бариста COFFEEMAN (${amount} ₽)`);
         const ok = renderQRCodeToCanvas(qrUrl, 'magic-qr-canvas');
         if (!ok) throw new Error("Ошибка рендера QR");
-
         loader.classList.add('hidden');
         loader.classList.remove('flex');
         qrWrapper.classList.remove('hidden');
-
-        // Следим за оплатой чаевых: как только оплатят — запускаем салют благодарности!
+        
+        // Confetti on QR ready
+        if (window.confetti) {
+          confetti({
+            particleCount: 40,
+            spread: 70,
+            origin: { y: 0.6, x: 0.75 },
+            colors: ['#F0C978', '#FF8A65', '#FFDFA0', '#6FCF97'],
+            scalar: 0.7,
+            startVelocity: 25
+          });
+        }
+        
         startPaymentWatcher(paymentId, () => {
+          recordTipStat();
           window.triggerMagicThanksScreen();
         });
       } catch (err) {
@@ -1396,7 +2403,9 @@
       }
     };
 
-    // ================= ЭКРАН ОПЛАТЫ ЗАКАЗА И ДОБАВЛЕНИЕ ЧАЕВЫХ К СЧЕТУ =================
+    /* ═══════════════════════════════════════════
+       ORDER PAYMENT
+    ═══════════════════════════════════════════ */
     let initialOrderQrUrl = '';
     let initialOrderPaymentId = '';
     let isCurrentOrderCard = false;
@@ -1404,30 +2413,20 @@
     function triggerPayment(orderData) {
       window.toggleSyrupsShelf(false);
       isMagicActive = false;
+      isPromoActive = false;
       if (idleTimeout) clearTimeout(idleTimeout);
       clearAllTimeouts();
 
-      if (orderData.shopId) {
-        globalShopId = orderData.shopId;
-        localStorage.setItem('yk_shop_id', orderData.shopId);
-      }
-      if (orderData.secretKey) {
-        globalSecretKey = orderData.secretKey;
-        localStorage.setItem('yk_secret_key', orderData.secretKey);
-      }
-      if (orderData.cfWorkerUrl) {
-        globalCfUrl = orderData.cfWorkerUrl;
-        localStorage.setItem('cf_worker_url', orderData.cfWorkerUrl);
-      }
+      if (orderData.shopId) { globalShopId = orderData.shopId; localStorage.setItem('yk_shop_id', orderData.shopId); }
+      if (orderData.secretKey) { globalSecretKey = orderData.secretKey; localStorage.setItem('yk_secret_key', orderData.secretKey); }
+      if (orderData.cfWorkerUrl) { globalCfUrl = orderData.cfWorkerUrl; localStorage.setItem('cf_worker_url', orderData.cfWorkerUrl); }
 
       baseAmount = Number(orderData.amount) || 0;
       selectedTip = 0;
       initialOrderQrUrl = orderData.qrUrl || '';
       initialOrderPaymentId = orderData.paymentId || '';
-
       const orderTitleEl = document.getElementById('order-title');
       if (orderTitleEl) orderTitleEl.innerText = orderData.description || 'Заказ в COFFEEMAN';
-
       isCurrentOrderCard = (orderData.method === 'card' || orderData.type === 'card' || orderData.status === 'WAITING_FOR_CARD');
       const side = orderData.nfcSide || currentNfcSide || 'right';
 
@@ -1437,39 +2436,31 @@
       const sideInstruction = document.getElementById('nfc-side-instruction');
       const orderTipsBlock = document.getElementById('order-tips-block');
 
-      // Сброс кнопок чаевых
       const tipBtns = document.querySelectorAll('.tip-btn');
       tipBtns.forEach((b, i) => {
-        b.className = i === 0
-          ? 'tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge'
-          : 'tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white';
+        b.className = i === 0 ? 'tip-btn btn-gold' : 'tip-btn btn-ghost';
       });
 
       if (isCurrentOrderCard) {
         cardModeQr.classList.add('hidden');
         cardModeNfc.classList.remove('hidden');
         if (orderTipsBlock) orderTipsBlock.classList.add('hidden');
-
         badgeTag.innerText = 'Оплата картой 💳';
-        methodBadge.innerText = 'Бесконтактно (NFC)';
-        hintSub.innerText = 'Приложите карту к терминалу';
-        sideInstruction.innerHTML = `Приложите карту или телефон к <strong class="text-sticker font-bold">${side === 'left' ? 'ЛЕВОМУ' : 'ПРАВОМУ'} светящемуся краю</strong> 💫`;
-
+        methodBadge.innerText = 'NFC';
+        hintSub.innerText = 'Приложите карту';
+        sideInstruction.innerHTML = `Приложите к <strong class="text-gold font-bold">${side === 'left' ? 'ЛЕВОМУ' : 'ПРАВОМУ'} краю</strong> 💫`;
         showNfcGlow(side);
       } else {
         hideNfcGlow();
         cardModeNfc.classList.add('hidden');
         cardModeQr.classList.remove('hidden');
         if (orderTipsBlock) orderTipsBlock.classList.remove('hidden');
-
         badgeTag.innerText = 'Оплата заказа ☕';
         methodBadge.innerText = 'СБП / QR';
         hintSub.innerText = 'Любой банк через СБП';
-
         document.getElementById('order-qr-loader').classList.add('hidden');
         document.getElementById('order-qr-error').classList.add('hidden');
         document.getElementById('qr-wrapper').classList.remove('hidden');
-
         if (initialOrderQrUrl) {
           renderQRCodeToCanvas(initialOrderQrUrl, 'qr-canvas');
           if (initialOrderPaymentId) {
@@ -1478,36 +2469,20 @@
             });
           }
         } else {
-          // Если касса прислала только сумму без готового QR — создаем сами
           regenerateOrderQrWithTip(0);
         }
       }
-      
       updateTotal();
-      
-      screenBody.classList.remove('magic-flash', 'success-flash');
-      idleScreen.classList.add('hidden', 'opacity-0');
-      magicTipScreen.classList.add('hidden', 'opacity-0');
-      magicThanksScreen.classList.add('hidden', 'opacity-0');
-      successScreen.classList.add('hidden', 'opacity-0');
-      
-      paymentScreen.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        paymentScreen.classList.remove('opacity-0');
-        paymentScreen.classList.add('opacity-100');
-      });
+      showScreen('payment-screen');
     }
 
     window.setOrderTip = async function(tip, btn) {
       selectedTip = tip;
       document.querySelectorAll('.tip-btn').forEach(b => {
-        b.className = 'tip-btn px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-display text-sm font-bold transition-all active:scale-95 border border-white/15 text-white';
+        b.className = 'tip-btn btn-ghost';
       });
-      if (btn) {
-        btn.className = 'tip-btn px-4 py-2.5 rounded-xl bg-sticker text-black font-display text-sm font-bold transition-all active:scale-95 sticker-badge';
-      }
+      if (btn) btn.className = 'tip-btn btn-gold';
       updateTotal();
-
       if (!isCurrentOrderCard) {
         if (tip === 0 && initialOrderQrUrl) {
           document.getElementById('order-qr-error').classList.add('hidden');
@@ -1528,25 +2503,19 @@
       const loader = document.getElementById('order-qr-loader');
       const errBox = document.getElementById('order-qr-error');
       const qrWrap = document.getElementById('qr-wrapper');
-
       qrWrap.classList.add('hidden');
       errBox.classList.add('hidden');
       loader.classList.remove('hidden');
       loader.classList.add('flex');
-
       try {
         const { paymentId, qrUrl } = await createLiveYookassaSbpQr(
-          total,
-          `Заказ COFFEEMAN ${baseAmount} ₽ + чаевые ${tipAmount} ₽`
+          total, `Заказ COFFEEMAN ${baseAmount} ₽ + чаевые ${tipAmount} ₽`
         );
         renderQRCodeToCanvas(qrUrl, 'qr-canvas');
         loader.classList.add('hidden');
         loader.classList.remove('flex');
         qrWrap.classList.remove('hidden');
-
-        startPaymentWatcher(paymentId, () => {
-          markOrderPaidInFirebase(total);
-        });
+        startPaymentWatcher(paymentId, () => { markOrderPaidInFirebase(total); });
       } catch (e) {
         loader.classList.add('hidden');
         loader.classList.remove('flex');
@@ -1557,38 +2526,77 @@
 
     function markOrderPaidInFirebase(paidTotal) {
       const orderRef = ref(db, `terminals/${terminalId}/current_order`);
-      set(orderRef, {
-        status: 'PAID',
-        amount: paidTotal,
-        timestamp: Date.now()
-      });
+      set(orderRef, { status: 'PAID', amount: paidTotal, timestamp: Date.now() });
       triggerSuccess();
     }
 
-    // ================= РОТАЦИЯ СЛАЙДОВ И СОБЫТИЯ =================
+    /* ═══════════════════════════════════════════
+       SPECIAL PROMO
+    ═══════════════════════════════════════════ */
+    window.showSpecialPromo = function(promo) {
+      if (!promo) return;
+      isPromoActive = true;
+      isMagicActive = false;
+      if (idleTimeout) clearTimeout(idleTimeout);
+      clearAllTimeouts();
+      hideNfcGlow();
+      document.getElementById('promo-title').innerText = promo.title || 'ОСОБАЯ АКЦИЯ';
+      document.getElementById('promo-price').innerText = `${promo.price || 0} ₽`;
+      document.getElementById('promo-desc').innerText = promo.description || '';
+      if (promo.imageUrl) {
+        document.getElementById('promo-bg-blur').style.backgroundImage = `url('${promo.imageUrl}')`;
+        document.getElementById('promo-bg-img').style.backgroundImage = `url('${promo.imageUrl}')`;
+      } else {
+        document.getElementById('promo-bg-blur').style.backgroundImage = '';
+        document.getElementById('promo-bg-img').style.backgroundImage = '';
+      }
+      showScreen('special-promo-screen');
+      
+      // Confetti burst
+      launchConfettiFireworks();
+      
+      let timeLeft = 20;
+      const cd = document.getElementById('promo-countdown');
+      cd.innerText = timeLeft;
+      if (promoInterval) clearInterval(promoInterval);
+      promoInterval = setInterval(() => {
+        timeLeft -= 1;
+        if (timeLeft >= 0) cd.innerText = timeLeft;
+        if (timeLeft <= 0) { clearInterval(promoInterval); resetToIdle(false); }
+      }, 1000);
+    };
+
+    window.hideSpecialPromo = function() {
+      if (!isPromoActive) return;
+      isPromoActive = false;
+      if (promoInterval) clearInterval(promoInterval);
+      resetToIdle(false);
+    };
+
+    /* ═══════════════════════════════════════════
+       SLIDES LOGIC
+    ═══════════════════════════════════════════ */
     function rebuildSlidesPool() {
       const generatedFacts = factsList.map(f => ({ html: buildFactHtml(f), type: 'fact', duration: 8500 }));
-
       const tipsTeaserSlide = {
         type: 'tips_teaser',
         duration: 8500,
         html: `
-          <div class="flex flex-col items-center max-w-3xl cursor-pointer" onclick="event.stopPropagation(); window.triggerMagicTipScreen()">
-            <div class="stamp-badge bg-sticker text-black font-display font-black text-xs px-4 py-1.5 uppercase -rotate-3 mb-4 shadow-xl">
+          <div class="flex flex-col items-center max-w-2xl">
+            <div class="pill-badge bg-gradient-to-r from-coral to-rose text-white mb-3 shadow-xl">
               COFFEEMAN TEAM ☕
             </div>
-            <h2 class="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase leading-tight tracking-tight text-white text-shadow-hard">
-              Понравился кофе? <br><span class="text-sticker">Поблагодари бариста!</span>
+            <h2 class="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase leading-[0.95] tracking-tight text-cream text-shadow-soft text-center">
+              Понравился кофе? <br><span class="gold-text">Скажите спасибо</span>
             </h2>
-            <div class="mt-4 bg-black/60 border border-white/15 px-6 py-3.5 rounded-3xl backdrop-blur-md max-w-lg shadow-xl">
-              <p class="text-neutral-200 text-base font-medium">
-                Нажми сюда, чтобы отправить чаевые через СБП 💛
+            <button onclick="event.stopPropagation(); window.triggerMagicTipScreen()" class="mt-4 btn-coral px-5 md:px-6 py-3 rounded-full active:scale-95 transition-all min-h-[52px] ring-pulse">
+              <p class="text-ink text-sm md:text-base font-bold">
+                ❤️ Поддержать бариста
               </p>
-            </div>
+            </button>
           </div>
         `
       };
-
       dynamicSlides = [
         promoNineChipsSlide,
         { html: getRandomGreetingHtml(), type: 'greeting', duration: 8500 },
@@ -1597,17 +2605,16 @@
         ...customAdSlides,
         ...generatedFacts
       ];
-
       rebuildDots();
     }
 
     function rebuildDots() {
       dotsContainer.innerHTML = '';
       dynamicSlides.forEach((_, i) => {
-        const dot = document.createElement('div');
-        dot.className = (i === currentSlide)
-          ? 'slide-dot w-8 h-1 bg-sticker rounded-full transition-all duration-500 shadow-[0_0_8px_#FFF188]'
-          : 'slide-dot w-2 h-1 bg-white/20 rounded-full transition-all duration-500';
+        const dot = document.createElement('button');
+        dot.className = i === currentSlide ? 'slide-dot active' : 'slide-dot';
+        dot.style.width = i === currentSlide ? '34px' : '8px';
+        dot.onclick = () => { currentSlide = i; renderSlide(); };
         dotsContainer.appendChild(dot);
       });
     }
@@ -1615,36 +2622,44 @@
     function updateDots() {
       const dots = dotsContainer.querySelectorAll('.slide-dot');
       dots.forEach((dot, i) => {
-        dot.className = (i === currentSlide)
-          ? 'slide-dot w-8 h-1 bg-sticker rounded-full transition-all duration-500 shadow-[0_0_8px_#FFF188]'
-          : 'slide-dot w-2 h-1 bg-white/20 rounded-full transition-all duration-500';
+        const active = i === currentSlide;
+        dot.className = active ? 'slide-dot active' : 'slide-dot';
+        dot.style.width = active ? '34px' : '8px';
       });
     }
 
+    function startProgressBar(duration) {
+      if (slideProgressInterval) clearInterval(slideProgressInterval);
+      slideStartTime = Date.now();
+      slideDuration = duration;
+      if (slideProgress) slideProgress.style.width = '0%';
+      slideProgressInterval = setInterval(() => {
+        const elapsed = Date.now() - slideStartTime;
+        const pct = Math.min((elapsed / duration) * 100, 100);
+        if (slideProgress) slideProgress.style.width = pct + '%';
+        if (pct >= 100) clearInterval(slideProgressInterval);
+      }, 80);
+    }
+
     function renderSlide() {
-      slideContainer.className = 'w-full flex flex-col items-center justify-center min-h-[440px] fade-blur-exit';
-      
+      slideContainer.className = 'slide-stage w-full fade-blur-exit';
       setTimeout(() => {
         if (!dynamicSlides[currentSlide]) currentSlide = 0;
         const currentSlideObj = dynamicSlides[currentSlide];
-
         if (currentSlideObj.type === 'greeting') {
           currentSlideObj.html = getRandomGreetingHtml();
         }
-
         slideContainer.innerHTML = currentSlideObj.html;
         updateDots();
-        slideContainer.className = 'w-full flex flex-col items-center justify-center min-h-[440px] fade-blur-enter';
-        
+        slideContainer.className = 'slide-stage w-full fade-blur-enter';
         requestAnimationFrame(() => {
-          slideContainer.className = 'w-full flex flex-col items-center justify-center min-h-[440px] fade-blur-active';
+          slideContainer.className = 'slide-stage w-full fade-blur-active';
         });
-
         if (idleTimeout) clearTimeout(idleTimeout);
         const duration = currentSlideObj.duration || 8500;
+        startProgressBar(duration);
         idleTimeout = setTimeout(nextSlide, duration);
-
-      }, 550);
+      }, 450);
     }
 
     function nextSlide() {
@@ -1652,12 +2667,53 @@
       renderSlide();
     }
 
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + dynamicSlides.length) % dynamicSlides.length;
+      renderSlide();
+    }
+
+    /* ═══════════════════════════════════════════
+       SWIPE
+    ═══════════════════════════════════════════ */
+    let touchStartX = 0, touchStartY = 0, isDragging = false, dragStartX = 0, swipeSetup = false;
+    function setupSwipeNavigation() {
+      if (swipeSetup) return;
+      const stage = document.getElementById('slide-container');
+      if (!stage) return;
+      swipeSetup = true;
+      stage.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+      stage.addEventListener('touchend', (e) => {
+        const diffX = touchStartX - e.changedTouches[0].screenX;
+        const diffY = touchStartY - e.changedTouches[0].screenY;
+        if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0) nextSlide(); else prevSlide();
+        }
+      }, { passive: true });
+      stage.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragStartX = e.clientX;
+        stage.style.cursor = 'grabbing';
+      });
+      window.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        stage.style.cursor = 'grab';
+        const diffX = dragStartX - e.clientX;
+        if (Math.abs(diffX) > 80) { if (diffX > 0) nextSlide(); else prevSlide(); }
+      });
+    }
+
     function startIdleCycle() {
       if (idleTimeout) clearTimeout(idleTimeout);
+      if (slideProgressInterval) clearInterval(slideProgressInterval);
       hideNfcGlow();
       rebuildSlidesPool();
       currentSlide = 0;
       renderSlide();
+      setupSwipeNavigation();
       scheduleNextAutoMagicTip();
     }
 
@@ -1667,7 +2723,6 @@
       if (targetSide === 'left') nfcGlowLeft.classList.remove('hidden');
       else nfcGlowRight.classList.remove('hidden');
     }
-
     function hideNfcGlow() {
       if (nfcGlowLeft) nfcGlowLeft.classList.add('hidden');
       if (nfcGlowRight) nfcGlowRight.classList.add('hidden');
@@ -1675,11 +2730,10 @@
 
     function scheduleNextAutoMagicTip() {
       if (autoMagicTimeout) clearTimeout(autoMagicTimeout);
-      const randomMinutes = Math.floor(Math.random() * (14 - 7 + 1)) + 7;
+      const randomMinutes = Math.floor(Math.random() * 8) + 7;
       const delayMs = randomMinutes * 60 * 1000;
-
       autoMagicTimeout = setTimeout(() => {
-        if (!isSuccessActive && !isMagicActive && paymentScreen.classList.contains('hidden') && syrupsModal.classList.contains('hidden')) {
+        if (!isSuccessActive && !isMagicActive && !isPromoActive && !paymentScreen.classList.contains('active') && syrupsModal.classList.contains('hidden')) {
           window.triggerMagicTipScreen();
         } else {
           scheduleNextAutoMagicTip();
@@ -1693,42 +2747,31 @@
       return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
+    /* ═══════════════════════════════════════════
+       MAGIC THANKS
+    ═══════════════════════════════════════════ */
     window.triggerMagicThanksScreen = function() {
       clearAllTimeouts();
       hideNfcGlow();
-
-      magicTipScreen.classList.add('hidden', 'opacity-0');
-      magicThanksScreen.classList.remove('hidden');
-      
-      requestAnimationFrame(() => {
-        magicThanksScreen.classList.remove('opacity-0');
-        magicThanksScreen.classList.add('opacity-100');
-      });
-
+      showScreen('magic-thanks-screen');
       launchConfettiFireworks();
-
       let timeLeft = 8;
       const thanksTimer = document.getElementById('magic-thanks-timer');
       thanksTimer.innerText = timeLeft;
-
       const tInterval = setInterval(() => {
         timeLeft -= 1;
         if (timeLeft >= 0) thanksTimer.innerText = timeLeft;
-        if (timeLeft <= 0) {
-          clearInterval(tInterval);
-          resetToIdle(false);
-        }
+        if (timeLeft <= 0) { clearInterval(tInterval); resetToIdle(false); }
       }, 1000);
     };
 
     function launchConfettiFireworks() {
       if (!window.confetti) return;
-      const count = 200;
-      const defaults = { origin: { y: 0.7 } };
+      const count = 220;
+      const colors = ['#F0C978', '#FF8A65', '#FFDFA0', '#6FCF97', '#E85D75'];
+      const defaults = { origin: { y: 0.7 }, colors };
       function fire(particleRatio, opts) {
-        confetti(Object.assign({}, defaults, opts, {
-          particleCount: Math.floor(count * particleRatio)
-        }));
+        confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(count * particleRatio) }));
       }
       fire(0.25, { spread: 26, startVelocity: 55 });
       fire(0.2, { spread: 60 });
@@ -1737,109 +2780,98 @@
       fire(0.1, { spread: 120, startVelocity: 45 });
     }
 
+    /* ═══════════════════════════════════════════
+       SUCCESS
+    ═══════════════════════════════════════════ */
     function triggerSuccess() {
       if (isSuccessActive) return;
       isSuccessActive = true;
       isMagicActive = false;
-
+      isPromoActive = false;
       if (idleTimeout) clearTimeout(idleTimeout);
       clearAllTimeouts();
       hideNfcGlow();
 
-      screenBody.classList.remove('magic-flash');
-      screenBody.classList.add('success-flash');
-      paymentScreen.classList.remove('opacity-100');
-      paymentScreen.classList.add('opacity-0');
-
       setTimeout(() => {
-        paymentScreen.classList.add('hidden');
         successIconBox.classList.remove('hidden');
         successIconBox.style.opacity = '1';
         successIconBox.style.transform = 'scale(1)';
         successThanksBox.classList.add('hidden');
         successThanksBox.className = 'hidden flex-col items-center justify-center max-w-3xl fade-blur-enter';
-
-        successScreen.classList.remove('hidden');
-        requestAnimationFrame(() => {
-          successScreen.classList.remove('opacity-0');
-          successScreen.classList.add('opacity-100');
-        });
-
+        showScreen('success-screen');
         launchConfettiFireworks();
 
         setTimeout(() => {
           successIconBox.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
           successIconBox.style.opacity = '0';
           successIconBox.style.transform = 'scale(0.85)';
-
           setTimeout(() => {
             successIconBox.classList.add('hidden');
             successThanksBox.classList.remove('hidden');
             successThanksBox.classList.add('flex');
-
             requestAnimationFrame(() => {
               successThanksBox.className = 'flex flex-col items-center justify-center max-w-3xl fade-blur-active';
             });
-
-            let timeLeft = 10;
+            let timeLeft = 12;
             countdownTimer.innerText = timeLeft;
-
             countdownInterval = setInterval(() => {
               timeLeft -= 1;
               if (timeLeft >= 0) countdownTimer.innerText = timeLeft;
               if (timeLeft <= 0) clearInterval(countdownInterval);
             }, 1000);
-
-            returnTimeout = setTimeout(() => {
-              resetToIdle(true);
-            }, 10000);
-
+            returnTimeout = setTimeout(() => { resetToIdle(true); }, 12000);
           }, 350);
         }, 1300);
-      }, 400);
+      }, 350);
     }
 
+    /* ═══════════════════════════════════════════
+       FEEDBACK
+    ═══════════════════════════════════════════ */
+    window.sendFeedback = function(emoji) {
+      document.querySelectorAll('.feedback-emoji').forEach(e => e.classList.remove('picked'));
+      const btn = document.querySelector(`[data-emoji="${emoji}"]`);
+      if (btn) btn.classList.add('picked');
+      const messages = {
+        love: '😍 Спасибо! Вы лучший!',
+        good: '😋 Рады что вкусно!',
+        ok: '😊 Спасибо за отзыв!',
+        meh: '🙏 Спасибо, работаем над этим'
+      };
+      showToast(messages[emoji] || 'Спасибо!');
+      
+      // save feedback
+      const orderRef = ref(db, `terminals/${terminalId}/last_feedback`);
+      set(orderRef, { emoji, timestamp: Date.now() }).catch(() => {});
+    };
+
+    /* ═══════════════════════════════════════════
+       RESET
+    ═══════════════════════════════════════════ */
     function clearAllTimeouts() {
       if (countdownInterval) clearInterval(countdownInterval);
       if (returnTimeout) clearTimeout(returnTimeout);
       if (magicCountdownInterval) clearInterval(magicCountdownInterval);
       if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
+      if (promoInterval) clearInterval(promoInterval);
+      if (slideProgressInterval) clearInterval(slideProgressInterval);
     }
 
     window.resetToIdle = function(updateFirebase = false) {
       isSuccessActive = false;
       isMagicActive = false;
+      isPromoActive = false;
+      if (promoInterval) clearInterval(promoInterval);
       clearAllTimeouts();
       hideNfcGlow();
-
-      screenBody.classList.remove('success-flash', 'magic-flash');
-      paymentScreen.classList.remove('opacity-100');
-      paymentScreen.classList.add('opacity-0');
-      magicTipScreen.classList.remove('opacity-100');
-      magicTipScreen.classList.add('opacity-0');
-      magicThanksScreen.classList.remove('opacity-100');
-      magicThanksScreen.classList.add('opacity-0');
-      successScreen.classList.remove('opacity-100');
-      successScreen.classList.add('opacity-0');
-
       setTimeout(() => {
-        paymentScreen.classList.add('hidden');
-        magicTipScreen.classList.add('hidden');
-        magicThanksScreen.classList.add('hidden');
-        successScreen.classList.add('hidden');
-        idleScreen.classList.remove('hidden');
-
-        requestAnimationFrame(() => {
-          idleScreen.classList.remove('opacity-0', 'scale-95');
-          idleScreen.classList.add('opacity-100', 'scale-100');
-          startIdleCycle();
-        });
-
+        showScreen('idle-screen');
+        startIdleCycle();
         if (updateFirebase) {
           const orderRef = ref(db, `terminals/${terminalId}/current_order`);
           set(orderRef, { status: 'IDLE' });
         }
-      }, 450);
+      }, 350);
     };
 
     function updateTotal() {
@@ -1848,24 +2880,17 @@
       if (finalAmountEl) finalAmountEl.innerText = `${total} ₽`;
     }
 
-    // ================= СЛУШАТЕЛИ FIREBASE =================
+    /* ═══════════════════════════════════════════
+       FIREBASE LISTENERS
+    ═══════════════════════════════════════════ */
     const settingsRef = ref(db, `terminals/${terminalId}/settings`);
     onValue(settingsRef, (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
       if (data.nfcSide) currentNfcSide = data.nfcSide;
-      if (data.cfWorkerUrl !== undefined) {
-        globalCfUrl = data.cfWorkerUrl;
-        localStorage.setItem('cf_worker_url', data.cfWorkerUrl);
-      }
-      if (data.shopId) {
-        globalShopId = data.shopId;
-        localStorage.setItem('yk_shop_id', data.shopId);
-      }
-      if (data.secretKey) {
-        globalSecretKey = data.secretKey;
-        localStorage.setItem('yk_secret_key', data.secretKey);
-      }
+      if (data.cfWorkerUrl !== undefined) { globalCfUrl = data.cfWorkerUrl; localStorage.setItem('cf_worker_url', data.cfWorkerUrl); }
+      if (data.shopId) { globalShopId = data.shopId; localStorage.setItem('yk_shop_id', data.shopId); }
+      if (data.secretKey) { globalSecretKey = data.secretKey; localStorage.setItem('yk_secret_key', data.secretKey); }
     });
 
     const syrupsRef = ref(db, `terminals/${terminalId}/syrups`);
@@ -1887,35 +2912,35 @@
         type: 'ad',
         duration: 8500,
         html: `
-          <div class="relative w-full max-w-5xl h-[420px] rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex items-center justify-between p-6 sm:p-10 text-left">
+          <div class="relative w-full max-w-4xl h-[340px] md:h-[400px] rounded-3xl overflow-hidden gold-border flex items-center justify-between p-4 md:p-8 text-left bg-inkDeep">
             <img src="${ad.imgUrl || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200'}" 
                  style="transform: scale(${(ad.scale || 105) / 100}); object-position: ${ad.posX || 50}% ${ad.posY || 50}%;" 
                  class="absolute inset-0 w-full h-full object-cover transition-all duration-300" />
-            <div class="absolute inset-0 bg-gradient-to-r from-black/95 via-black/80 to-black/95"></div>
-            <div class="relative z-10 flex flex-col justify-between h-full max-w-md">
-              <div class="backdrop-blur-sm bg-black/30 p-4 rounded-3xl border border-white/10">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-300">${ad.tag || 'акция:'}</span>
-                  <span class="stamp-badge bg-white text-black font-display font-black text-[9px] px-2 py-0.5 uppercase -rotate-6">${ad.stamp || 'COFFEEMAN'}</span>
+            <div class="absolute inset-0 bg-gradient-to-r from-inkDeep/95 via-inkDeep/80 to-inkDeep/95"></div>
+            <div class="relative z-10 flex flex-col justify-between h-full max-w-sm">
+              <div class="glass rounded-2xl p-3">
+                <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-cream/55">${ad.tag || 'акция:'}</span>
+                  <span class="pill-badge bg-cream text-ink text-[8px]">${ad.stamp || 'COFFEEMAN'}</span>
                 </div>
-                <h2 class="font-display text-4xl sm:text-5xl font-black uppercase leading-[0.95] tracking-tight text-white text-shadow-hard">
+                <h2 class="font-display text-2xl sm:text-3xl md:text-4xl font-black uppercase leading-[0.95] tracking-tight text-cream text-shadow-soft">
                   ${ad.title1 || ''} <br>
-                  <span class="text-sticker">${ad.title2 || ''}</span>
+                  <span class="gold-text">${ad.title2 || ''}</span>
                 </h2>
-                <p class="font-display text-xs uppercase tracking-widest text-neutral-300 mt-2 font-bold">${ad.subtitle || ''}</p>
+                <p class="font-display text-[10px] md:text-xs uppercase tracking-widest text-cream/55 mt-1.5 font-bold">${ad.subtitle || ''}</p>
               </div>
-              <div class="sticker-badge bg-white text-black px-4 py-2 rounded-2xl max-w-xs transform -rotate-1 border border-neutral-200 shadow-xl">
-                <p class="font-display text-[11px] font-black uppercase leading-tight">${ad.badgeLeftTitle || ''}</p>
-                <p class="text-[10px] text-neutral-700 font-bold">${ad.badgeLeftDesc || ''}</p>
+              <div class="bg-cream text-ink px-3 py-1.5 rounded-xl max-w-xs -rotate-1 shadow-xl">
+                <p class="font-display text-[10px] md:text-[11px] font-black uppercase leading-tight">${ad.badgeLeftTitle || ''}</p>
+                <p class="text-[9px] text-ink/60 font-bold">${ad.badgeLeftDesc || ''}</p>
               </div>
             </div>
             <div class="relative z-10 flex flex-col justify-between items-end h-full text-right max-w-xs">
-              <div class="sticker-badge bg-sticker text-black font-display text-xl sm:text-2xl font-black px-5 py-2 rounded-2xl rotate-2 shadow-2xl">
+              <div class="pill-badge bg-gradient-to-r from-goldLite to-gold text-ink text-base md:text-xl !py-1.5 md:!py-2 !px-3 md:!px-4 rotate-2 shadow-2xl">
                 ${ad.badgeRight || ''}
               </div>
-              <div class="bg-black/80 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-right shadow-2xl">
-                <p class="text-xs text-neutral-300 font-medium">На кассе:</p>
-                <p class="font-display text-xs font-black text-sticker uppercase mt-0.5">${ad.ctaRight || ''}</p>
+              <div class="glass-strong p-2.5 md:p-3 rounded-xl text-right shadow-2xl">
+                <p class="text-[10px] text-cream/50 font-medium">На кассе:</p>
+                <p class="font-display text-[10px] font-black text-gold uppercase mt-0.5">${ad.ctaRight || ''}</p>
               </div>
             </div>
           </div>
@@ -1941,14 +2966,24 @@
           window.toggleSyrupsShelf(true);
         } else if (data.status === 'HIDE_SYRUPS') {
           window.toggleSyrupsShelf(false);
+        } else if (data.status === 'SHOW_PROMO' && data.promo) {
+          window.showSpecialPromo(data.promo);
+        } else if (data.status === 'HIDE_PROMO') {
+          if (isPromoActive) {
+            isPromoActive = false;
+            if (promoInterval) clearInterval(promoInterval);
+            resetToIdle(false);
+          }
         } else if ((data.status === 'IDLE' || data.status === 'canceled') && !isSuccessActive && !isMagicActive) {
+          if (isPromoActive) { isPromoActive = false; if (promoInterval) clearInterval(promoInterval); }
           resetToIdle(false);
         }
-      } else if (!isSuccessActive && !isMagicActive) {
+      } else if (!isSuccessActive && !isMagicActive && !isPromoActive) {
         resetToIdle(false);
       }
     });
 
+    // START
     startIdleCycle();
   </script>
 </body>
