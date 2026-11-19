@@ -122,6 +122,7 @@
         <div class="flex items-center gap-2.5">
           <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-latte-100">COFFEEMAN</h1>
           <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-espresso-800 text-amberwarm-500 border border-espresso-700">Audio Deck</span>
+          <span id="liveClock" class="hidden sm:inline-block text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-espresso-850 text-latte-300 border border-espresso-700/80">20:00</span>
         </div>
         <p class="text-xs sm:text-sm text-latte-400">Пульт фоновой музыки и мягких голосовых анонсов</p>
       </div>
@@ -172,7 +173,7 @@
             Загрузите музыку кофейни
           </h2>
           <p id="currentTrackSubtitle" class="text-sm text-latte-400 mt-1">
-            Поддерживаются MP3, WAV, M4A, OGG • Плавный переход 2.5 сек
+            Поддерживаются MP3, WAV, M4A, OGG • Мягкое затухание в конце трека
           </p>
         </div>
 
@@ -228,13 +229,43 @@
           </button>
         </div>
 
-        <!-- Master Music Volume Slider -->
-        <div class="flex items-center gap-4 bg-espresso-900/80 px-4 py-3.5 rounded-2xl border border-espresso-700/60">
-          <svg class="w-5 h-5 text-amberwarm-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-          </svg>
-          <input id="musicVolumeSlider" type="range" min="0" max="100" value="80" class="w-full" />
-          <span id="musicVolumeLabel" class="text-xs font-mono text-latte-300 w-10 text-right">80%</span>
+        <!-- Master Music, Ducking & Voice Volume Controls -->
+        <div class="space-y-3 bg-espresso-900/80 p-4 rounded-2xl border border-espresso-700/60">
+          <!-- Master Music Volume -->
+          <div class="flex items-center gap-3">
+            <div class="w-36 sm:w-44 shrink-0 flex items-center gap-2 text-xs font-medium text-latte-200">
+              <svg class="w-4 h-4 text-amberwarm-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+              </svg>
+              <span class="truncate">Громкость музыки</span>
+            </div>
+            <input id="musicVolumeSlider" type="range" min="0" max="100" value="80" class="w-full" />
+            <span id="musicVolumeLabel" class="text-xs font-mono text-latte-300 w-10 text-right">80%</span>
+          </div>
+
+          <!-- Ducking Level During Announcements -->
+          <div class="flex items-center gap-3 pt-2 border-t border-espresso-700/50">
+            <div class="w-36 sm:w-44 shrink-0 flex items-center gap-2 text-xs font-medium text-amberwarm-400">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+              <span class="truncate">Фон при рекламе</span>
+            </div>
+            <input id="duckingVolumeSlider" type="range" min="0" max="80" value="15" class="w-full" />
+            <span id="duckingVolumeLabel" class="text-xs font-mono text-amberwarm-400 w-10 text-right">15%</span>
+          </div>
+
+          <!-- Announcement Voice Volume -->
+          <div class="flex items-center gap-3 pt-2 border-t border-espresso-700/50">
+            <div class="w-36 sm:w-44 shrink-0 flex items-center gap-2 text-xs font-medium text-latte-200">
+              <svg class="w-4 h-4 text-amberwarm-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+              <span class="truncate">Громкость голоса</span>
+            </div>
+            <input id="voiceVolumeSlider" type="range" min="10" max="120" value="100" class="w-full" />
+            <span id="voiceVolumeLabel" class="text-xs font-mono text-latte-300 w-10 text-right">100%</span>
+          </div>
         </div>
       </div>
 
@@ -266,30 +297,42 @@
     <!-- RIGHT COLUMN: Announcements & Quick Gestures Deck (5 cols on lg) -->
     <section class="lg:col-span-5 flex flex-col gap-5">
       
-      <!-- Live Announcement Control & Emergency Soft Stop -->
-      <div id="announcementDeckCard" class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-6 shadow-xl flex flex-col justify-between gap-5">
-        <div>
-          <div class="flex items-center justify-between gap-2 mb-1">
-            <h2 class="text-lg font-bold text-latte-100">Голосовые объявления</h2>
-            <span id="duckingBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-espresso-800 text-latte-400 border border-espresso-700">
-              Авто-приглушение: 15%
-            </span>
+      <!-- Live Announcement Control & Dynamic Announcement List -->
+      <div id="announcementDeckCard" class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-6 shadow-xl flex flex-col justify-between gap-4">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <h2 class="text-lg font-bold text-latte-100">Оповещения и реклама</h2>
+              <span id="duckingBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-espresso-800 text-latte-400 border border-espresso-700">
+                Фон: 15%
+              </span>
+            </div>
+            <p class="text-xs text-latte-400">
+              Музыка мягко притихает на время речи и плавно возвращается обратно.
+            </p>
           </div>
-          <p class="text-xs text-latte-400">
-            При запуске музыка плавно уходит на фон, звучит голос, затем музыка мягко возвращается.
-          </p>
+
+          <button id="btnOpenAddModal" class="shrink-0 px-3.5 py-2.5 rounded-xl bg-amberwarm-500 hover:bg-amberwarm-400 active:scale-95 text-espresso-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Добавить</span>
+          </button>
         </div>
 
         <!-- Active Announcement Banner + Soft Stop Button -->
         <div id="activeAnnouncementBar" class="hidden rounded-2xl bg-amberwarm-500/15 border border-amberwarm-500/50 p-4 active-announcement-glow">
           <div class="flex items-center justify-between gap-3">
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
               <div class="text-[11px] font-bold uppercase tracking-wider text-amberwarm-400 flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-amberwarm-400 animate-ping"></span>
-                В эфире объявление
+                В эфире оповещение
               </div>
               <div id="activeAnnouncementTitle" class="text-sm font-semibold text-latte-100 truncate mt-0.5">
                 Акция: 9 стаканчиков
+              </div>
+              <div class="w-full h-1.5 bg-espresso-900/90 rounded-full overflow-hidden mt-2">
+                <div id="voiceProgressFill" class="h-full bg-amberwarm-400 rounded-full transition-all duration-150" style="width: 0%"></div>
               </div>
             </div>
             <button id="btnSoftStopAnnouncement" class="shrink-0 px-4 py-3 rounded-xl bg-red-500/90 hover:bg-red-500 active:scale-95 text-white text-xs font-bold shadow-lg transition">
@@ -298,80 +341,18 @@
           </div>
         </div>
 
-        <!-- Jingle Pad 1: Promo / 9 Cups -->
-        <div class="bg-espresso-900/90 border border-espresso-700/80 rounded-2xl p-4 flex flex-col gap-3">
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <span class="text-[11px] font-semibold uppercase tracking-wider text-amberwarm-500">Анонс 1 • Основной</span>
-              <h3 class="text-base font-bold text-latte-100">Акция: 9 стаканчиков</h3>
-              <p id="promoFileName" class="text-xs text-latte-400 truncate max-w-[210px] mt-0.5">Файл не загружен (доступен тест голоса)</p>
-            </div>
-            <label class="cursor-pointer px-3 py-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs font-medium text-latte-200 transition shrink-0">
-              <span>Загрузить</span>
-              <input id="promoFileInput" type="file" accept="audio/*" class="hidden" />
-            </label>
-          </div>
-
-          <button id="btnTriggerPromo" class="w-full py-3.5 px-4 rounded-xl bg-amberwarm-500 hover:bg-amberwarm-400 active:scale-[0.98] text-espresso-950 font-bold text-sm flex items-center justify-center gap-2 shadow-md transition">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            <span>Мягко запустить рекламу</span>
-          </button>
+        <!-- Dynamic Scrollable Announcements List -->
+        <div id="announcementsListContainer" class="space-y-3 max-h-[430px] overflow-y-auto pr-1">
+          <!-- Rendered dynamically by JS -->
         </div>
-
-        <!-- Jingle Pad 2: Closing Time -->
-        <div class="bg-espresso-900/90 border border-espresso-700/80 rounded-2xl p-4 flex flex-col gap-3">
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <span class="text-[11px] font-semibold uppercase tracking-wider text-latte-400">Анонс 2 • Вечерний</span>
-              <h3 class="text-base font-bold text-latte-100">Закрытие кофейни</h3>
-              <p id="closingFileName" class="text-xs text-latte-400 truncate max-w-[210px] mt-0.5">Файл не загружен (доступен тест голоса)</p>
-            </div>
-            <label class="cursor-pointer px-3 py-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs font-medium text-latte-200 transition shrink-0">
-              <span>Загрузить</span>
-              <input id="closingFileInput" type="file" accept="audio/*" class="hidden" />
-            </label>
-          </div>
-
-          <button id="btnTriggerClosing" class="w-full py-3.5 px-4 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-[0.98] border border-amberwarm-500/40 text-amberwarm-400 font-bold text-sm flex items-center justify-center gap-2 transition">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            <span>Запустить закрытие кафе</span>
-          </button>
-        </div>
-
-        <!-- Jingle Pad 3: Custom / Extra Announcement -->
-        <div class="bg-espresso-900/90 border border-espresso-700/80 rounded-2xl p-4 flex flex-col gap-3">
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <span class="text-[11px] font-semibold uppercase tracking-wider text-latte-400">Анонс 3 • Свободный слот</span>
-              <h3 class="text-base font-bold text-latte-100">Дополнительный анонс</h3>
-              <p id="customFileName" class="text-xs text-latte-400 truncate max-w-[210px] mt-0.5">Например: десерты со скидкой вечером</p>
-            </div>
-            <label class="cursor-pointer px-3 py-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs font-medium text-latte-200 transition shrink-0">
-              <span>Загрузить</span>
-              <input id="customFileInput" type="file" accept="audio/*" class="hidden" />
-            </label>
-          </div>
-
-          <button id="btnTriggerCustom" class="w-full py-3 px-4 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-[0.98] border border-espresso-700 text-latte-200 font-semibold text-sm flex items-center justify-center gap-2 transition">
-            <svg class="w-4 h-4 text-amberwarm-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            <span>Запустить доп. анонс</span>
-          </button>
-        </div>
-
       </div>
 
       <!-- Auto-Scheduler Card -->
       <div class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-5 sm:p-6">
         <div class="flex items-center justify-between gap-3 mb-3">
           <div>
-            <h3 class="text-base font-bold text-latte-100">Авто-повтор рекламы</h3>
-            <p class="text-xs text-latte-400">Автоматически запускать «Анонс 1»</p>
+            <h3 class="text-base font-bold text-latte-100">Авто-повтор оповещения</h3>
+            <p class="text-xs text-latte-400">Запускать выбранный слот по таймеру</p>
           </div>
           <!-- Toggle Switch -->
           <button id="btnToggleAuto" role="switch" aria-checked="false" class="w-14 h-8 rounded-full bg-espresso-700 p-1 transition-colors duration-200 flex items-center">
@@ -379,10 +360,17 @@
           </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mt-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
           <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60">
-            <label for="autoIntervalSelect" class="block text-[11px] text-latte-400 mb-1">Интервал времени</label>
-            <select id="autoIntervalSelect" class="w-full bg-espresso-800 text-latte-100 text-sm font-semibold rounded-xl px-3 py-2 border border-espresso-700 focus:outline-none">
+            <label for="autoTargetSelect" class="block text-[11px] text-latte-400 mb-1">Какое оповещение</label>
+            <select id="autoTargetSelect" class="w-full bg-espresso-800 text-latte-100 text-xs font-semibold rounded-xl px-2.5 py-2 border border-espresso-700 focus:outline-none">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60">
+            <label for="autoIntervalSelect" class="block text-[11px] text-latte-400 mb-1">Интервал</label>
+            <select id="autoIntervalSelect" class="w-full bg-espresso-800 text-latte-100 text-xs font-semibold rounded-xl px-2.5 py-2 border border-espresso-700 focus:outline-none">
               <option value="10">Каждые 10 мин</option>
               <option value="15" selected>Каждые 15 мин</option>
               <option value="20">Каждые 20 мин</option>
@@ -393,13 +381,63 @@
 
           <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60 flex flex-col justify-center">
             <span class="block text-[11px] text-latte-400 mb-1">До следующего эфира</span>
-            <span id="autoCountdownText" class="text-base font-mono font-bold text-amberwarm-400">Выключено</span>
+            <span id="autoCountdownText" class="text-sm font-mono font-bold text-amberwarm-400">Выключено</span>
           </div>
         </div>
       </div>
 
     </section>
   </main>
+
+  <!-- Add / Edit Custom Announcement Modal -->
+  <div id="addAnnouncementModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-espresso-850 border border-espresso-700 rounded-3xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-4 border-b border-espresso-700">
+        <div>
+          <h3 id="modalFormTitle" class="text-lg font-bold text-latte-100">Новое оповещение</h3>
+          <p class="text-xs text-latte-400 mt-0.5">Укажите название и выберите аудиофайл</p>
+        </div>
+        <button id="btnCloseAddModal" class="p-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 text-latte-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="customAnnouncementForm" class="space-y-4 mt-5">
+        <div>
+          <label for="inputAnnouncementName" class="block text-xs font-semibold text-latte-200 mb-1.5">Название оповещения</label>
+          <input id="inputAnnouncementName" type="text" required placeholder="Например: Скидка на десерты или Закрытие 10 мин" class="w-full bg-espresso-900 border border-espresso-700 focus:border-amberwarm-500 rounded-xl px-4 py-3 text-sm text-latte-100 placeholder-latte-400/60 focus:outline-none" />
+        </div>
+
+        <div>
+          <label for="inputAnnouncementCategory" class="block text-xs font-semibold text-latte-200 mb-1.5">Метка / категория</label>
+          <input id="inputAnnouncementCategory" type="text" placeholder="Например: Акция, Закрытие или Инфо" value="Своё оповещение" class="w-full bg-espresso-900 border border-espresso-700 focus:border-amberwarm-500 rounded-xl px-4 py-2.5 text-sm text-latte-100 placeholder-latte-400/60 focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-latte-200 mb-1.5">Аудиофайл озвучки (MP3, WAV, M4A)</label>
+          <label class="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-espresso-700 hover:border-amberwarm-500/60 rounded-2xl bg-espresso-900/80 cursor-pointer transition">
+            <svg class="w-6 h-6 text-amberwarm-500 mb-1.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span id="modalSelectedFileName" class="text-xs font-medium text-latte-200 text-center">Нажмите, чтобы выбрать файл с планшета</span>
+            <span class="text-[11px] text-latte-400 mt-0.5">Необязательно — можно загрузить позже</span>
+            <input id="inputAnnouncementFile" type="file" accept="audio/*" class="hidden" />
+          </label>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-espresso-700/70">
+          <button type="button" id="btnCancelAddModal" class="px-4 py-2.5 rounded-xl bg-espresso-800 hover:bg-espresso-700 text-xs font-semibold text-latte-300 transition">
+            Отмена
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-amberwarm-500 hover:bg-amberwarm-400 active:scale-95 text-espresso-950 text-xs font-bold shadow-md transition">
+            Сохранить оповещение
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Scripts / Voiceover Prompts Modal -->
   <div id="scriptsModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
@@ -416,7 +454,7 @@
         </button>
       </div>
 
-      <div class="space-y-5 mt-5">
+      <div class="space-y-4 mt-5">
         <!-- Script 1: Promo -->
         <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
           <div class="flex items-center justify-between mb-2">
@@ -428,26 +466,48 @@
           <p id="scriptPromoText" class="text-sm text-latte-100 leading-relaxed select-text">Любите кофе с собой? Не выкидывайте стаканчик просто так! На каждом из них есть специальная отрывная фишка. Соберите девять штук — и десятый кофе мы нальём вам абсолютно бесплатно. Акция действует в любой кофейне КОФЕМЭН.</p>
         </div>
 
-        <!-- Script 2: Closing Time (Warm & Polite) -->
+        <!-- Script 2: Closing 1 Hour -->
         <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">2. Закрытие кофейни (за 15 минут)</span>
-            <button data-copy-target="scriptClosingText" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
+            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">2. Закрытие: за 1 час</span>
+            <button data-copy-target="scriptClose60Text" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
               Скопировать
             </button>
           </div>
-          <p id="scriptClosingText" class="text-sm text-latte-100 leading-relaxed select-text">Дорогие гости, наш день в кофейне КОФЕМЭН постепенно подходит к концу — через пятнадцать минут мы закрываемся. Если вы хотите взять горячий кофе или десерт с собой, бариста с радостью приготовит его прямо сейчас. Спасибо, что провели этот день с нами, и ждём вас завтра утром!</p>
+          <p id="scriptClose60Text" class="text-sm text-latte-100 leading-relaxed select-text">Друзья, до закрытия кофейни КОФЕМЭН остаётся ровно один час. Если вы планировали заказать ещё один кофе или захватить что-то вкусное с собой — самое время заглянуть на кассу. Проведите этот вечер уютно!</p>
         </div>
 
-        <!-- Script 3: Evening Pastry / Extra -->
+        <!-- Script 3: Closing 30 Min -->
         <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">3. Вечерняя скидка на выпечку (доп. слот)</span>
-            <button data-copy-target="scriptExtraText" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
+            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">3. Закрытие: за 30 минут</span>
+            <button data-copy-target="scriptClose30Text" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
               Скопировать
             </button>
           </div>
-          <p id="scriptExtraText" class="text-sm text-latte-100 leading-relaxed select-text">Вечер — идеальное время для маленького десерта. В кофейне КОФЕМЭН прямо сейчас действует приятная скидка на свежую выпечку с витрины. Спросите бариста, что осталось к вашему любимому кофе!</p>
+          <p id="scriptClose30Text" class="text-sm text-latte-100 leading-relaxed select-text">Напоминаем, что через тридцать минут наша кофейня КОФЕМЭН завершает свою работу. Если у вас остался неоплаченный счёт или вы хотите сделать финальный заказ — будем рады видеть вас у кассы. Спасибо, что проводите этот вечер с нами!</p>
+        </div>
+
+        <!-- Script 4: Closing 15 Min -->
+        <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">4. Закрытие: за 15 минут</span>
+            <button data-copy-target="scriptClose15Text" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
+              Скопировать
+            </button>
+          </div>
+          <p id="scriptClose15Text" class="text-sm text-latte-100 leading-relaxed select-text">Внимание, гости кофейни КОФЕМЭН! До закрытия остаётся пятнадцать минут. Пожалуйста, не спеша завершайте свои дела, собирайте вещи и загляните на кассу, если ещё не закрыли счёт. Будем ждать вас снова завтра с самого утра!</p>
+        </div>
+
+        <!-- Script 5: Closing 5 Min -->
+        <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">5. Закрытие: за 5 минут (финал)</span>
+            <button data-copy-target="scriptClose5Text" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
+              Скопировать
+            </button>
+          </div>
+          <p id="scriptClose5Text" class="text-sm text-latte-100 leading-relaxed select-text">Друзья, до закрытия кофейни КОФЕМЭН остаётся всего пять минут. Пожалуйста, оплатите открытые счета на кассе и начинайте собираться. Спасибо за прекрасный вечер, до встречи завтра!</p>
         </div>
       </div>
     </div>
@@ -456,28 +516,68 @@
   <script>
     /**
      * COFFEEMAN Audio Deck Engine
-     * Handles seamless background music playback, smooth crossfade transitions,
-     * automatic volume ducking during voice announcements, soft fade-out stops,
+     * Handles seamless background music playback, automatic track-end dipping & crossfade rise,
+     * dynamic custom announcements, adjustable ducking volume, soft fade-out stops,
      * touch swipe gestures, and built-in Web Audio / Speech synthesis fallbacks.
      */
     (function () {
       // --- State Management ---
       const state = {
-        playlist: [], // { name, url, duration }
+        playlist: [], // { name, url }
         currentIndex: -1,
         isPlayingMusic: false,
         isShuffle: false,
         isRepeat: true,
-        masterMusicVolume: 0.80, // 0.0 to 1.0
-        duckedMultiplier: 0.14,  // Drops music to 14% during announcements
+        masterMusicVolume: 0.80,   // 0.0 to 1.0
+        duckedTargetRatio: 0.15,   // 0.0 to 0.80 (target background level during announcements)
+        voiceVolume: 1.0,          // 0.1 to 1.2 (boost up to 120% via Web Audio GainNode)
         isDucked: false,
-        activeAnnouncementType: null, // 'promo' | 'closing' | 'custom' | null
-        announcements: {
-          promo: { name: null, url: null, title: 'Акция: 9 стаканчиков', fallbackText: 'Любите кофе с собой? Не выкидывайте стаканчик просто так! Соберите девять отрывных фишек — и десятый кофе мы нальём вам бесплатно в любой кофейне Кофемен.' },
-          closing: { name: null, url: null, title: 'Закрытие кофейни', fallbackText: 'Дорогие гости, через пятнадцать минут кофейня Кофемен закрывается. Успейте взять любимый кофе с собой. Ждём вас снова завтра утром!' },
-          custom: { name: null, url: null, title: 'Дополнительный анонс', fallbackText: 'В кофейне Кофемен прямо сейчас действует вечерняя скидка на свежую выпечку. Спросите бариста!' }
-        },
+        isTrackEndingDip: false,   // True during the last 4 seconds of a song before auto-switch
+        activeAnnouncementId: null,
+        announcements: [
+          {
+            id: 'promo-9',
+            tag: 'Реклама • Основная',
+            title: 'Акция: 9 стаканчиков',
+            fileName: null,
+            url: null,
+            fallbackText: 'Любите кофе с собой? Не выкидывайте стаканчик просто так! Соберите девять отрывных фишек — и десятый кофе мы нальём вам бесплатно в любой кофейне Кофемен.'
+          },
+          {
+            id: 'close-60',
+            tag: 'Закрытие • Этап 1',
+            title: 'До закрытия: 1 час',
+            fileName: null,
+            url: null,
+            fallbackText: 'Друзья, до закрытия кофейни Кофемен остаётся ровно один час. Если вы планировали заказать ещё один кофе или захватить что-то вкусное с собой — самое время заглянуть на кассу.'
+          },
+          {
+            id: 'close-30',
+            tag: 'Закрытие • Этап 2',
+            title: 'До закрытия: 30 минут',
+            fileName: null,
+            url: null,
+            fallbackText: 'Напоминаем, что через тридцать минут кофейня Кофемен завершает свою работу. Если у вас остался неоплаченный счёт или вы хотите сделать финальный заказ — будем рады видеть вас у кассы.'
+          },
+          {
+            id: 'close-15',
+            tag: 'Закрытие • Этап 3',
+            title: 'До закрытия: 15 минут',
+            fileName: null,
+            url: null,
+            fallbackText: 'Внимание, гости кофейни Кофемен! До закрытия остаётся пятнадцать минут. Пожалуйста, не спеша завершайте свои дела, собирайте вещи и загляните на кассу, если ещё не закрыли счёт.'
+          },
+          {
+            id: 'close-5',
+            tag: 'Закрытие • Финал',
+            title: 'До закрытия: 5 минут',
+            fileName: null,
+            url: null,
+            fallbackText: 'Друзья, до закрытия кофейни Кофемен остаётся всего пять минут. Пожалуйста, оплатите открытые счета на кассе и начинайте собираться. Спасибо за прекрасный вечер, до встречи завтра!'
+          }
+        ],
         autoScheduleEnabled: false,
+        autoTargetId: 'promo-9',
         autoIntervalMinutes: 15,
         autoSecondsRemaining: 15 * 60,
         demoAmbientActive: false
@@ -492,13 +592,17 @@
       let musicFadeInterval = null;
       let voiceFadeInterval = null;
       let currentMusicGain = state.masterMusicVolume;
+      let currentVoiceGain = 1.0;
 
-      // Web Audio API Ambient Pad Generator (so user can test smooth ducking right away)
+      // Web Audio API Context (for ambient demo pad + voice gain boost > 100%)
       let audioCtx = null;
       let ambientNodes = null;
       let ambientGainNode = null;
+      let voiceGainNode = null;
+      let voiceSourceConnected = false;
 
       // --- DOM Elements ---
+      const liveClockEl = document.getElementById('liveClock');
       const toastEl = document.getElementById('toast');
       const toastTextEl = document.getElementById('toastText');
       let toastTimeout = null;
@@ -520,8 +624,13 @@
       const btnNext = document.getElementById('btnNext');
       const btnShuffle = document.getElementById('btnShuffle');
       const btnRepeat = document.getElementById('btnRepeat');
+
       const musicVolumeSlider = document.getElementById('musicVolumeSlider');
       const musicVolumeLabel = document.getElementById('musicVolumeLabel');
+      const duckingVolumeSlider = document.getElementById('duckingVolumeSlider');
+      const duckingVolumeLabel = document.getElementById('duckingVolumeLabel');
+      const voiceVolumeSlider = document.getElementById('voiceVolumeSlider');
+      const voiceVolumeLabel = document.getElementById('voiceVolumeLabel');
 
       const musicFileInput = document.getElementById('musicFileInput');
       const playlistContainer = document.getElementById('playlistContainer');
@@ -529,19 +638,27 @@
 
       const activeAnnouncementBar = document.getElementById('activeAnnouncementBar');
       const activeAnnouncementTitle = document.getElementById('activeAnnouncementTitle');
+      const voiceProgressFill = document.getElementById('voiceProgressFill');
       const btnSoftStopAnnouncement = document.getElementById('btnSoftStopAnnouncement');
       const duckingBadge = document.getElementById('duckingBadge');
+      const announcementsListContainer = document.getElementById('announcementsListContainer');
 
-      const promoFileInput = document.getElementById('promoFileInput');
-      const closingFileInput = document.getElementById('closingFileInput');
-      const customFileInput = document.getElementById('customFileInput');
+      // Custom Add Modal Elements
+      const btnOpenAddModal = document.getElementById('btnOpenAddModal');
+      const addAnnouncementModal = document.getElementById('addAnnouncementModal');
+      const btnCloseAddModal = document.getElementById('btnCloseAddModal');
+      const btnCancelAddModal = document.getElementById('btnCancelAddModal');
+      const customAnnouncementForm = document.getElementById('customAnnouncementForm');
+      const inputAnnouncementName = document.getElementById('inputAnnouncementName');
+      const inputAnnouncementCategory = document.getElementById('inputAnnouncementCategory');
+      const inputAnnouncementFile = document.getElementById('inputAnnouncementFile');
+      const modalSelectedFileName = document.getElementById('modalSelectedFileName');
+      let pendingModalFile = null;
 
-      const btnTriggerPromo = document.getElementById('btnTriggerPromo');
-      const btnTriggerClosing = document.getElementById('btnTriggerClosing');
-      const btnTriggerCustom = document.getElementById('btnTriggerCustom');
-
+      // Auto-Scheduler Elements
       const btnToggleAuto = document.getElementById('btnToggleAuto');
       const autoToggleKnob = document.getElementById('autoToggleKnob');
+      const autoTargetSelect = document.getElementById('autoTargetSelect');
       const autoIntervalSelect = document.getElementById('autoIntervalSelect');
       const autoCountdownText = document.getElementById('autoCountdownText');
 
@@ -551,6 +668,16 @@
       const scriptsModal = document.getElementById('scriptsModal');
       const btnOpenScripts = document.getElementById('btnOpenScripts');
       const btnCloseScripts = document.getElementById('btnCloseScripts');
+
+      // --- Live Clock ---
+      function updateClock() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        if (liveClockEl) liveClockEl.textContent = `${hh}:${mm}`;
+      }
+      updateClock();
+      setInterval(updateClock, 10000);
 
       // --- Utility Functions ---
       function showToast(message) {
@@ -571,18 +698,59 @@
         return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       }
 
+      function ensureAudioContext() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        if (!voiceSourceConnected) {
+          try {
+            const src = audioCtx.createMediaElementSource(voiceAudio);
+            voiceGainNode = audioCtx.createGain();
+            voiceGainNode.gain.value = state.voiceVolume;
+            src.connect(voiceGainNode);
+            voiceGainNode.connect(audioCtx.destination);
+            voiceSourceConnected = true;
+          } catch (_) {
+            // Fallback to standard element volume if CORS/media restriction applies
+          }
+        }
+      }
+
+      function setVoiceActualVolume(normalizedLevel) {
+        currentVoiceGain = normalizedLevel;
+        if (voiceGainNode && audioCtx) {
+          voiceGainNode.gain.setTargetAtTime(normalizedLevel * state.voiceVolume, audioCtx.currentTime, 0.03);
+          voiceAudio.volume = 1.0;
+        } else {
+          voiceAudio.volume = Math.max(0, Math.min(1, normalizedLevel * state.voiceVolume));
+        }
+      }
+
+      /**
+       * Computes target music gain based on master volume, active announcement ducking,
+       * and automatic track-ending dip.
+       */
       function getTargetMusicGain() {
-        return state.isDucked
-          ? state.masterMusicVolume * state.duckedMultiplier
-          : state.masterMusicVolume;
+        let base = state.masterMusicVolume;
+        if (state.isDucked) {
+          // Duck down to user-selected ducking percentage (scaled cleanly relative to master)
+          base = Math.min(state.masterMusicVolume, state.duckedTargetRatio);
+        }
+        if (state.isTrackEndingDip) {
+          base = Math.min(base, 0.06);
+        }
+        return Math.max(0, Math.min(1, base));
       }
 
       /**
        * Smoothly interpolates background music gain (both HTML5 Audio & Demo Synth)
        */
-      function fadeMusicTo(targetGain, durationMs = 1500, onComplete = null) {
+      function fadeMusicTo(targetGain, durationMs = 1400, onComplete = null) {
         clearInterval(musicFadeInterval);
-        const steps = Math.max(10, Math.floor(durationMs / 30));
+        const steps = Math.max(8, Math.floor(durationMs / 30));
         const startGain = currentMusicGain;
         const delta = (targetGain - startGain) / steps;
         let currentStep = 0;
@@ -593,7 +761,7 @@
           musicAudio.volume = currentMusicGain;
 
           if (ambientGainNode && audioCtx) {
-            ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.05);
+            ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.04);
           }
 
           if (currentStep >= steps) {
@@ -605,7 +773,7 @@
         }, 30);
       }
 
-      // --- Demo Warm Lo-Fi Chord Generator (for instant testing without MP3s) ---
+      // --- Demo Warm Lo-Fi Chord Generator ---
       function toggleDemoAmbient() {
         if (state.demoAmbientActive) {
           stopDemoAmbient();
@@ -614,12 +782,7 @@
         }
 
         try {
-          if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          }
-          if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-          }
+          ensureAudioContext();
 
           ambientGainNode = audioCtx.createGain();
           ambientGainNode.gain.value = getTargetMusicGain() * 0.25;
@@ -628,7 +791,6 @@
           filter.type = 'lowpass';
           filter.frequency.value = 420;
 
-          // Warm Fmaj9 coffeehouse chord frequencies
           const freqs = [174.61, 220.00, 261.63, 329.63, 392.00];
           const oscs = freqs.map((f, idx) => {
             const osc = audioCtx.createOscillator();
@@ -648,7 +810,7 @@
           demoAmbientLabel.textContent = 'Стоп тест-фон';
           btnDemoAmbient.classList.add('border-amberwarm-500', 'text-amberwarm-400');
           updateMusicStatusUI();
-          showToast('Включён мягкий тест-фон — попробуйте запустить рекламу!');
+          showToast('Включён мягкий тест-фон — попробуйте запустить оповещение!');
         } catch (e) {
           showToast('Не удалось запустить аудиодвижок');
         }
@@ -667,7 +829,7 @@
         updateMusicStatusUI();
       }
 
-      // --- Music Playlist & Smooth Switching ---
+      // --- Music Playlist & Smooth Transitions ---
       function renderPlaylist() {
         playlistCountLabel.textContent = `${state.playlist.length} трек(ов) • ${state.isRepeat ? 'Повтор включён' : 'Без повтора'}`;
 
@@ -704,7 +866,6 @@
           `;
         }).join('');
 
-        // Attach item click handlers
         document.querySelectorAll('.playlist-item').forEach(el => {
           el.addEventListener('click', (e) => {
             if (e.target.closest('.remove-track-btn')) return;
@@ -730,8 +891,9 @@
           musicAudio.src = '';
           state.currentIndex = -1;
           state.isPlayingMusic = false;
+          state.isTrackEndingDip = false;
           currentTrackTitle.textContent = 'Загрузите музыку кофейни';
-          currentTrackSubtitle.textContent = 'Поддерживаются MP3, WAV, M4A, OGG • Плавный переход 2.5 сек';
+          currentTrackSubtitle.textContent = 'Поддерживаются MP3, WAV, M4A, OGG • Мягкое затухание в конце трека';
           updateMusicStatusUI();
         } else if (idx === state.currentIndex) {
           const nextIdx = idx % state.playlist.length;
@@ -742,11 +904,16 @@
         renderPlaylist();
       }
 
-      function smoothSwitchToTrack(index, autoPlay = true) {
+      /**
+       * Smoothly dips current song down, loads next track, and swells volume back up
+       * (respecting active announcement ducking if a voiceover is currently speaking)
+       */
+      function smoothSwitchToTrack(index, autoPlay = true, skipFadeOut = false) {
         if (index < 0 || index >= state.playlist.length) return;
         const track = state.playlist[index];
 
-        const loadAndStart = () => {
+        const loadAndRise = () => {
+          state.isTrackEndingDip = false;
           state.currentIndex = index;
           musicAudio.src = track.url;
           currentTrackTitle.textContent = track.name;
@@ -759,7 +926,8 @@
             musicAudio.play().then(() => {
               state.isPlayingMusic = true;
               updateMusicStatusUI();
-              fadeMusicTo(getTargetMusicGain(), 1400);
+              // Rise smoothly back up to master volume (or ducked level if announcement is on air)
+              fadeMusicTo(getTargetMusicGain(), 2200);
             }).catch(() => {
               state.isPlayingMusic = false;
               updateMusicStatusUI();
@@ -767,15 +935,14 @@
           }
         };
 
-        if (state.isPlayingMusic && !musicAudio.paused) {
-          // Smoothly fade out current song before starting next
-          fadeMusicTo(0.01, 700, loadAndStart);
+        if (!skipFadeOut && state.isPlayingMusic && !musicAudio.paused && currentMusicGain > 0.05) {
+          fadeMusicTo(0.02, 1100, loadAndRise);
         } else {
-          loadAndStart();
+          loadAndRise();
         }
       }
 
-      function playNextTrack() {
+      function playNextTrack(fromNaturalEnd = false) {
         if (state.playlist.length === 0) {
           showToast('Сначала загрузите музыку в плейлист');
           return;
@@ -792,12 +959,14 @@
               nextIdx = 0;
             } else {
               state.isPlayingMusic = false;
+              state.isTrackEndingDip = false;
               updateMusicStatusUI();
               return;
             }
           }
         }
-        smoothSwitchToTrack(nextIdx, true);
+        // If ended naturally, volume already dipped in the final 4 seconds, so rise smoothly right away
+        smoothSwitchToTrack(nextIdx, true, fromNaturalEnd);
       }
 
       function playPrevTrack() {
@@ -806,12 +975,15 @@
           return;
         }
         if (musicAudio.currentTime > 4) {
-          musicAudio.currentTime = 0;
+          fadeMusicTo(0.03, 500, () => {
+            musicAudio.currentTime = 0;
+            fadeMusicTo(getTargetMusicGain(), 1200);
+          });
           return;
         }
         let prevIdx = state.currentIndex - 1;
         if (prevIdx < 0) prevIdx = state.playlist.length - 1;
-        smoothSwitchToTrack(prevIdx, true);
+        smoothSwitchToTrack(prevIdx, true, false);
       }
 
       function togglePlayPause() {
@@ -820,19 +992,19 @@
           return;
         }
         if (state.currentIndex === -1) {
-          smoothSwitchToTrack(0, true);
+          smoothSwitchToTrack(0, true, true);
           return;
         }
         if (musicAudio.paused) {
-          currentMusicGain = 0.05;
+          currentMusicGain = 0.03;
           musicAudio.volume = currentMusicGain;
           musicAudio.play().then(() => {
             state.isPlayingMusic = true;
             updateMusicStatusUI();
-            fadeMusicTo(getTargetMusicGain(), 900);
+            fadeMusicTo(getTargetMusicGain(), 1200);
           });
         } else {
-          fadeMusicTo(0.01, 600, () => {
+          fadeMusicTo(0.01, 700, () => {
             musicAudio.pause();
             state.isPlayingMusic = false;
             updateMusicStatusUI();
@@ -850,9 +1022,14 @@
           iconPause.classList.add('hidden');
         }
 
+        const duckPct = Math.round(state.duckedTargetRatio * 100);
         if (state.isDucked) {
           musicStatusDot.className = 'w-2.5 h-2.5 rounded-full bg-amberwarm-400 animate-pulse';
-          musicStatusText.textContent = 'Приглушено под голос (15%)';
+          musicStatusText.textContent = `Приглушено под голос (${duckPct}%)`;
+          musicStatusText.className = 'text-xs font-semibold uppercase tracking-wider text-amberwarm-400';
+        } else if (state.isTrackEndingDip) {
+          musicStatusDot.className = 'w-2.5 h-2.5 rounded-full bg-amberwarm-400';
+          musicStatusText.textContent = 'Плавный переход трека...';
           musicStatusText.className = 'text-xs font-semibold uppercase tracking-wider text-amberwarm-400';
         } else if (active) {
           musicStatusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
@@ -865,52 +1042,153 @@
         }
       }
 
+      // --- Dynamic Announcements Rendering & Management ---
+      function renderAnnouncements() {
+        const duckPct = Math.round(state.duckedTargetRatio * 100);
+        duckingBadge.textContent = state.isDucked ? `Приглушено до ${duckPct}%` : `Фон: ${duckPct}%`;
+
+        announcementsListContainer.innerHTML = state.announcements.map((item, idx) => {
+          const isPlayingThis = state.activeAnnouncementId === item.id;
+          const isPrimary = idx === 0;
+          return `
+            <div class="bg-espresso-900/90 border ${isPlayingThis ? 'border-amberwarm-500/70 bg-amberwarm-500/10' : 'border-espresso-700/80'} rounded-2xl p-4 flex flex-col gap-3 transition">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <span class="text-[11px] font-semibold uppercase tracking-wider ${isPrimary ? 'text-amberwarm-500' : 'text-latte-400'}">${item.tag}</span>
+                  <h3 class="text-base font-bold text-latte-100 truncate">${item.title}</h3>
+                  <p class="text-xs ${item.fileName ? 'text-emerald-400' : 'text-latte-400'} truncate mt-0.5">
+                    ${item.fileName ? `Файл: ${item.fileName}` : 'Файл не загружен (доступен тест голоса)'}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <label class="cursor-pointer px-3 py-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs font-medium text-latte-200 transition">
+                    <span>${item.fileName ? 'Заменить' : 'Загрузить'}</span>
+                    <input data-upload-id="${item.id}" type="file" accept="audio/*" class="announcement-file-input hidden" />
+                  </label>
+
+                  ${state.announcements.length > 1 ? `
+                    <button data-delete-id="${item.id}" title="Удалить оповещение" class="delete-announcement-btn p-2 rounded-xl bg-espresso-800 hover:bg-red-500/20 text-latte-400 hover:text-red-400 border border-espresso-700/70 transition">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+
+              <button data-trigger-id="${item.id}" class="trigger-announcement-btn w-full py-3 px-4 rounded-xl ${
+                isPrimary
+                  ? 'bg-amberwarm-500 hover:bg-amberwarm-400 text-espresso-950 font-bold shadow-md'
+                  : 'bg-espresso-800 hover:bg-espresso-700 border border-amberwarm-500/35 text-amberwarm-400 font-bold'
+              } active:scale-[0.98] text-sm flex items-center justify-center gap-2 transition">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                <span>${isPlayingThis ? 'Звучит в эфире...' : 'Мягко запустить'}</span>
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        // Sync Auto-Scheduler Target Dropdown
+        const prevTarget = state.autoTargetId;
+        autoTargetSelect.innerHTML = state.announcements.map(item => `
+          <option value="${item.id}" ${item.id === prevTarget ? 'selected' : ''}>${item.title}</option>
+        `).join('');
+        if (!state.announcements.some(a => a.id === state.autoTargetId) && state.announcements.length > 0) {
+          state.autoTargetId = state.announcements[0].id;
+        }
+
+        // Bind card events
+        document.querySelectorAll('.trigger-announcement-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            triggerAnnouncement(btn.dataset.triggerId);
+          });
+        });
+
+        document.querySelectorAll('.announcement-file-input').forEach(input => {
+          input.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const targetId = input.dataset.uploadId;
+            const slot = state.announcements.find(a => a.id === targetId);
+            if (!slot) return;
+
+            if (slot.url) URL.revokeObjectURL(slot.url);
+            slot.url = URL.createObjectURL(file);
+            slot.fileName = file.name;
+            renderAnnouncements();
+            showToast(`Загружено для «${slot.title}»: ${file.name}`);
+            input.value = '';
+          });
+        });
+
+        document.querySelectorAll('.delete-announcement-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetId = btn.dataset.deleteId;
+            const idx = state.announcements.findIndex(a => a.id === targetId);
+            if (idx === -1) return;
+            if (state.activeAnnouncementId === targetId) {
+              finishAnnouncementSmoothly();
+            }
+            if (state.announcements[idx].url) {
+              URL.revokeObjectURL(state.announcements[idx].url);
+            }
+            const removedTitle = state.announcements[idx].title;
+            state.announcements.splice(idx, 1);
+            renderAnnouncements();
+            showToast(`Удалено: ${removedTitle}`);
+          });
+        });
+      }
+
       // --- Announcements & Smooth Ducking Engine ---
-      function triggerAnnouncement(type) {
-        const slot = state.announcements[type];
+      function triggerAnnouncement(id) {
+        const slot = state.announcements.find(a => a.id === id);
         if (!slot) return;
 
-        // If another announcement is already playing, stop it cleanly first
-        if (state.activeAnnouncementType) {
+        ensureAudioContext();
+
+        if (state.activeAnnouncementId) {
           stopSpeechFallback();
           voiceAudio.pause();
           voiceAudio.currentTime = 0;
         }
 
-        state.activeAnnouncementType = type;
+        state.activeAnnouncementId = id;
         state.isDucked = true;
         updateMusicStatusUI();
+        renderAnnouncements();
 
         // Show Active Announcement Bar
         activeAnnouncementTitle.textContent = slot.title;
+        voiceProgressFill.style.width = '0%';
         activeAnnouncementBar.classList.remove('hidden');
-        duckingBadge.textContent = 'Музыка приглушена';
         duckingBadge.classList.add('text-amberwarm-400', 'border-amberwarm-500/40');
 
-        // Smoothly duck background music over 1.4 seconds
-        fadeMusicTo(getTargetMusicGain(), 1400);
+        // Smoothly duck background music over 1.3 seconds to configured ducking percentage
+        fadeMusicTo(getTargetMusicGain(), 1300);
 
-        // Reset auto-scheduler countdown if promo was triggered
-        if (type === 'promo' && state.autoScheduleEnabled) {
+        if (id === state.autoTargetId && state.autoScheduleEnabled) {
           state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
         }
 
-        // Wait 650ms into the music fade before starting the voice for a natural studio feel
+        // Start voice 600ms into the music fade for a smooth broadcast transition
         setTimeout(() => {
-          if (state.activeAnnouncementType !== type) return;
+          if (state.activeAnnouncementId !== id) return;
 
           if (slot.url) {
             voiceAudio.src = slot.url;
-            voiceAudio.volume = 1.0;
+            setVoiceActualVolume(1.0);
             voiceAudio.play().catch(() => {
               showToast('Нажмите на экран, чтобы разрешить звук');
               finishAnnouncementSmoothly();
             });
           } else {
-            // Built-in Russian Web Speech API fallback so user can test immediately!
-            playSpeechFallback(slot.fallbackText);
+            playSpeechFallback(slot.fallbackText || slot.title);
           }
-        }, 650);
+        }, 600);
       }
 
       function playSpeechFallback(text) {
@@ -923,17 +1201,13 @@
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ru-RU';
         utterance.rate = 0.96;
-        utterance.pitch = 1.0;
+        utterance.volume = Math.min(1, state.voiceVolume);
 
         utterance.onend = () => {
-          if (state.activeAnnouncementType) {
-            finishAnnouncementSmoothly();
-          }
+          if (state.activeAnnouncementId) finishAnnouncementSmoothly();
         };
         utterance.onerror = () => {
-          if (state.activeAnnouncementType) {
-            finishAnnouncementSmoothly();
-          }
+          if (state.activeAnnouncementId) finishAnnouncementSmoothly();
         };
 
         showToast('Тестовая озвучка (загрузите свой MP3 для студийного голоса)');
@@ -948,10 +1222,10 @@
 
       /**
        * Smoothly finishes or interrupts an active announcement:
-       * Fades voice down over 0.9s, then smoothly restores background music over 1.8s
+       * Fades voice down over 0.85s, then smoothly swells background music back up over 1.6s
        */
       function finishAnnouncementSmoothly() {
-        if (!state.activeAnnouncementType) return;
+        if (!state.activeAnnouncementId) return;
 
         clearInterval(voiceFadeInterval);
         stopSpeechFallback();
@@ -959,27 +1233,27 @@
         const restoreMusic = () => {
           voiceAudio.pause();
           voiceAudio.currentTime = 0;
-          voiceAudio.volume = 1.0;
+          setVoiceActualVolume(1.0);
 
-          state.activeAnnouncementType = null;
+          state.activeAnnouncementId = null;
           state.isDucked = false;
           activeAnnouncementBar.classList.add('hidden');
-          duckingBadge.textContent = 'Авто-приглушение: 15%';
           duckingBadge.classList.remove('text-amberwarm-400', 'border-amberwarm-500/40');
           updateMusicStatusUI();
+          renderAnnouncements();
 
-          // Smoothly swell music back up over 1.8 seconds
-          fadeMusicTo(getTargetMusicGain(), 1800);
+          // Smoothly swell music back up over 1.6 seconds
+          fadeMusicTo(getTargetMusicGain(), 1600);
         };
 
-        if (!voiceAudio.paused && voiceAudio.volume > 0.05) {
-          const steps = 18;
-          const startVol = voiceAudio.volume;
+        if (!voiceAudio.paused && currentVoiceGain > 0.05) {
+          const steps = 16;
+          const startVol = currentVoiceGain;
           const stepDelta = startVol / steps;
           let count = 0;
           voiceFadeInterval = setInterval(() => {
             count++;
-            voiceAudio.volume = Math.max(0, startVol - stepDelta * count);
+            setVoiceActualVolume(Math.max(0, startVol - stepDelta * count));
             if (count >= steps) {
               clearInterval(voiceFadeInterval);
               restoreMusic();
@@ -990,17 +1264,25 @@
         }
       }
 
-      // --- Event Listeners ---
-      musicAudio.addEventListener('ended', () => {
-        playNextTrack();
-      });
-
+      // --- Music Track-End Dipping & Progress Monitoring ---
       musicAudio.addEventListener('timeupdate', () => {
         if (!musicAudio.duration) return;
         const pct = (musicAudio.currentTime / musicAudio.duration) * 100;
         progressBarFill.style.width = `${pct}%`;
         timeCurrent.textContent = formatTime(musicAudio.currentTime);
         timeTotal.textContent = formatTime(musicAudio.duration);
+
+        // Automatic Track-End Dipping: in the final 4 seconds of a track, gently dip volume
+        const remaining = musicAudio.duration - musicAudio.currentTime;
+        if (remaining <= 4.0 && remaining > 0.2 && !state.isTrackEndingDip && state.playlist.length > 0) {
+          state.isTrackEndingDip = true;
+          updateMusicStatusUI();
+          fadeMusicTo(getTargetMusicGain(), Math.max(800, remaining * 850));
+        }
+      });
+
+      musicAudio.addEventListener('ended', () => {
+        playNextTrack(true);
       });
 
       progressBarContainer.addEventListener('click', (e) => {
@@ -1008,14 +1290,26 @@
         const rect = progressBarContainer.getBoundingClientRect();
         const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
         musicAudio.currentTime = clickRatio * musicAudio.duration;
+        if (musicAudio.duration - musicAudio.currentTime > 4.5 && state.isTrackEndingDip) {
+          state.isTrackEndingDip = false;
+          updateMusicStatusUI();
+          fadeMusicTo(getTargetMusicGain(), 900);
+        }
+      });
+
+      voiceAudio.addEventListener('timeupdate', () => {
+        if (!voiceAudio.duration) return;
+        const pct = (voiceAudio.currentTime / voiceAudio.duration) * 100;
+        voiceProgressFill.style.width = `${pct}%`;
       });
 
       voiceAudio.addEventListener('ended', () => {
         finishAnnouncementSmoothly();
       });
 
+      // --- Transport & Slider Controls ---
       btnPlayPause.addEventListener('click', togglePlayPause);
-      btnNext.addEventListener('click', playNextTrack);
+      btnNext.addEventListener('click', () => playNextTrack(false));
       btnPrev.addEventListener('click', playPrevTrack);
 
       btnShuffle.addEventListener('click', () => {
@@ -1044,8 +1338,30 @@
         currentMusicGain = getTargetMusicGain();
         musicAudio.volume = currentMusicGain;
         if (ambientGainNode && audioCtx) {
-          ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.05);
+          ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.04);
         }
+      });
+
+      duckingVolumeSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        state.duckedTargetRatio = val / 100;
+        duckingVolumeLabel.textContent = `${val}%`;
+        duckingBadge.textContent = state.isDucked ? `Приглушено до ${val}%` : `Фон: ${val}%`;
+        if (state.isDucked) {
+          currentMusicGain = getTargetMusicGain();
+          musicAudio.volume = currentMusicGain;
+          if (ambientGainNode && audioCtx) {
+            ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.04);
+          }
+          updateMusicStatusUI();
+        }
+      });
+
+      voiceVolumeSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        state.voiceVolume = val / 100;
+        voiceVolumeLabel.textContent = `${val}%`;
+        setVoiceActualVolume(currentVoiceGain);
       });
 
       // Upload Music Files
@@ -1066,44 +1382,73 @@
         showToast(`Добавлено треков: ${files.length}`);
 
         if (wasEmpty) {
-          smoothSwitchToTrack(0, true);
+          smoothSwitchToTrack(0, true, true);
         }
         musicFileInput.value = '';
       });
 
-      // Upload Announcement Audio Slots
-      function bindAnnouncementUpload(inputEl, slotKey, labelEl) {
-        inputEl.addEventListener('change', (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          if (state.announcements[slotKey].url) {
-            URL.revokeObjectURL(state.announcements[slotKey].url);
-          }
-          state.announcements[slotKey].url = URL.createObjectURL(file);
-          state.announcements[slotKey].name = file.name;
-          labelEl.textContent = `Файл: ${file.name}`;
-          labelEl.classList.remove('text-latte-400');
-          labelEl.classList.add('text-emerald-400');
-          showToast(`Аудио загружено: ${file.name}`);
-          inputEl.value = '';
-        });
-      }
-
-      bindAnnouncementUpload(promoFileInput, 'promo', document.getElementById('promoFileName'));
-      bindAnnouncementUpload(closingFileInput, 'closing', document.getElementById('closingFileName'));
-      bindAnnouncementUpload(customFileInput, 'custom', document.getElementById('customFileName'));
-
-      // Announcement Trigger Buttons
-      btnTriggerPromo.addEventListener('click', () => triggerAnnouncement('promo'));
-      btnTriggerClosing.addEventListener('click', () => triggerAnnouncement('closing'));
-      btnTriggerCustom.addEventListener('click', () => triggerAnnouncement('custom'));
       btnSoftStopAnnouncement.addEventListener('click', () => {
         finishAnnouncementSmoothly();
-        showToast('Объявление мягко завершено');
+        showToast('Оповещение мягко завершено');
       });
 
-      // Demo Ambient Toggle
       btnDemoAmbient.addEventListener('click', toggleDemoAmbient);
+
+      // --- Custom Announcement Modal Handlers ---
+      function openAddModal() {
+        inputAnnouncementName.value = '';
+        inputAnnouncementCategory.value = 'Своё оповещение';
+        pendingModalFile = null;
+        modalSelectedFileName.textContent = 'Нажмите, чтобы выбрать файл с планшета';
+        modalSelectedFileName.classList.remove('text-emerald-400');
+        addAnnouncementModal.classList.remove('hidden');
+        addAnnouncementModal.classList.add('flex');
+        setTimeout(() => inputAnnouncementName.focus(), 100);
+      }
+
+      function closeAddModal() {
+        addAnnouncementModal.classList.add('hidden');
+        addAnnouncementModal.classList.remove('flex');
+      }
+
+      btnOpenAddModal.addEventListener('click', openAddModal);
+      btnCloseAddModal.addEventListener('click', closeAddModal);
+      btnCancelAddModal.addEventListener('click', closeAddModal);
+      addAnnouncementModal.addEventListener('click', (e) => {
+        if (e.target === addAnnouncementModal) closeAddModal();
+      });
+
+      inputAnnouncementFile.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        pendingModalFile = file;
+        modalSelectedFileName.textContent = `Выбран файл: ${file.name}`;
+        modalSelectedFileName.classList.add('text-emerald-400');
+        if (!inputAnnouncementName.value.trim()) {
+          inputAnnouncementName.value = file.name.replace(/\.[^/.]+$/, '');
+        }
+      });
+
+      customAnnouncementForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = inputAnnouncementName.value.trim();
+        if (!title) return;
+        const tag = inputAnnouncementCategory.value.trim() || 'Своё оповещение';
+
+        const newItem = {
+          id: 'custom-' + Date.now(),
+          tag,
+          title,
+          fileName: pendingModalFile ? pendingModalFile.name : null,
+          url: pendingModalFile ? URL.createObjectURL(pendingModalFile) : null,
+          fallbackText: title
+        };
+
+        state.announcements.push(newItem);
+        renderAnnouncements();
+        closeAddModal();
+        showToast(`Добавлено оповещение: «${title}»`);
+      });
 
       // --- Touch Swipe Gestures on Music Deck Card ---
       let touchStartX = 0;
@@ -1124,7 +1469,7 @@
 
         if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
           if (dx < 0) {
-            playNextTrack();
+            playNextTrack(false);
             showToast('Жест: следующий трек');
           } else {
             playPrevTrack();
@@ -1144,15 +1489,19 @@
           autoToggleKnob.classList.add('translate-x-6', 'bg-espresso-950');
           autoToggleKnob.classList.remove('bg-latte-300');
           state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
-          showToast(`Авто-повтор рекламы каждые ${state.autoIntervalMinutes} мин`);
+          showToast(`Авто-повтор включён (каждые ${state.autoIntervalMinutes} мин)`);
         } else {
           btnToggleAuto.classList.add('bg-espresso-700');
           btnToggleAuto.classList.remove('bg-amberwarm-500');
           autoToggleKnob.classList.remove('translate-x-6', 'bg-espresso-950');
           autoToggleKnob.classList.add('bg-latte-300');
           autoCountdownText.textContent = 'Выключено';
-          showToast('Авто-повтор рекламы выключен');
+          showToast('Авто-повтор выключен');
         }
+      });
+
+      autoTargetSelect.addEventListener('change', (e) => {
+        state.autoTargetId = e.target.value;
       });
 
       autoIntervalSelect.addEventListener('change', (e) => {
@@ -1165,12 +1514,12 @@
 
       setInterval(() => {
         if (!state.autoScheduleEnabled) return;
-        if (state.activeAnnouncementType) return; // Pause timer while announcement is speaking
+        if (state.activeAnnouncementId) return;
 
         state.autoSecondsRemaining--;
         if (state.autoSecondsRemaining <= 0) {
           state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
-          triggerAnnouncement('promo');
+          triggerAnnouncement(state.autoTargetId);
         }
         autoCountdownText.textContent = formatTime(state.autoSecondsRemaining);
       }, 1000);
@@ -1217,6 +1566,8 @@
         });
       });
 
+      // Initial render
+      renderAnnouncements();
     })();
   </script>
 </body>
