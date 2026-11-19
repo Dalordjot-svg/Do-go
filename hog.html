@@ -122,13 +122,24 @@
         <div class="flex items-center gap-2.5">
           <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-latte-100">COFFEEMAN</h1>
           <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-espresso-800 text-amberwarm-500 border border-espresso-700">Audio Deck</span>
-          <span id="liveClock" class="hidden sm:inline-block text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-espresso-850 text-latte-300 border border-espresso-700/80">20:00</span>
+          <span id="liveClock" class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-espresso-850 text-latte-200 border border-espresso-700/80">20:00:00</span>
         </div>
         <p class="text-xs sm:text-sm text-latte-400">Пульт фоновой музыки и мягких голосовых анонсов</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-2.5">
+    <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Master Automation Toggle Pill -->
+      <div class="flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-espresso-850 border border-espresso-700/90 shadow-sm">
+        <div class="flex flex-col">
+          <span class="text-xs font-bold text-latte-100 leading-tight">Автоматизация</span>
+          <span id="masterAutoSubtitle" class="text-[11px] font-mono text-amberwarm-400 leading-tight mt-0.5">Включена</span>
+        </div>
+        <button id="btnToggleMasterAuto" role="switch" aria-checked="true" title="Общий рубильник автозапуска рекламы и закрытия" class="w-13 h-7 rounded-full bg-amberwarm-500 p-1 transition-colors duration-200 flex items-center shrink-0" style="width: 3.25rem;">
+          <span id="masterAutoKnob" class="w-5 h-5 rounded-full bg-espresso-950 shadow transform translate-x-6 transition-transform duration-200"></span>
+        </button>
+      </div>
+
       <!-- Demo Ambient Generator Button (for immediate testing without uploading files) -->
       <button id="btnDemoAmbient" class="px-4 py-2.5 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs sm:text-sm font-medium text-latte-200 transition flex items-center gap-2">
         <svg class="w-4 h-4 text-amberwarm-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -342,47 +353,98 @@
         </div>
 
         <!-- Dynamic Scrollable Announcements List -->
-        <div id="announcementsListContainer" class="space-y-3 max-h-[430px] overflow-y-auto pr-1">
+        <div id="announcementsListContainer" class="space-y-3 max-h-[340px] overflow-y-auto pr-1">
           <!-- Rendered dynamically by JS -->
         </div>
       </div>
 
-      <!-- Auto-Scheduler Card -->
-      <div class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-5 sm:p-6">
-        <div class="flex items-center justify-between gap-3 mb-3">
-          <div>
-            <h3 class="text-base font-bold text-latte-100">Авто-повтор оповещения</h3>
-            <p class="text-xs text-latte-400">Запускать выбранный слот по таймеру</p>
+      <!-- 1. Independent Auto-Promo Scheduler Card -->
+      <div id="autoPromoCard" class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-5 sm:p-6 transition-opacity duration-200">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-amberwarm-500/15 border border-amberwarm-500/30 flex items-center justify-center text-amberwarm-400 shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-latte-100">Авто-реклама</h3>
+              <p class="text-xs text-latte-400">Повтор рекламных анонсов по интервалу</p>
+            </div>
           </div>
-          <!-- Toggle Switch -->
-          <button id="btnToggleAuto" role="switch" aria-checked="false" class="w-14 h-8 rounded-full bg-espresso-700 p-1 transition-colors duration-200 flex items-center">
-            <span id="autoToggleKnob" class="w-6 h-6 rounded-full bg-latte-300 shadow transform transition-transform duration-200"></span>
+          <!-- Promo Toggle Switch -->
+          <button id="btnToggleAutoPromo" role="switch" aria-checked="false" class="w-14 h-8 rounded-full bg-espresso-700 p-1 transition-colors duration-200 flex items-center shrink-0">
+            <span id="autoPromoKnob" class="w-6 h-6 rounded-full bg-latte-300 shadow transform transition-transform duration-200"></span>
           </button>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
           <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60">
-            <label for="autoTargetSelect" class="block text-[11px] text-latte-400 mb-1">Какое оповещение</label>
-            <select id="autoTargetSelect" class="w-full bg-espresso-800 text-latte-100 text-xs font-semibold rounded-xl px-2.5 py-2 border border-espresso-700 focus:outline-none">
+            <label for="autoPromoTargetSelect" class="block text-[11px] text-latte-400 mb-1">Что запускать</label>
+            <select id="autoPromoTargetSelect" class="w-full bg-espresso-800 text-latte-100 text-xs font-semibold rounded-xl px-2.5 py-2 border border-espresso-700 focus:outline-none">
               <!-- Populated dynamically -->
             </select>
           </div>
 
           <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60">
-            <label for="autoIntervalSelect" class="block text-[11px] text-latte-400 mb-1">Интервал</label>
-            <select id="autoIntervalSelect" class="w-full bg-espresso-800 text-latte-100 text-xs font-semibold rounded-xl px-2.5 py-2 border border-espresso-700 focus:outline-none">
+            <label for="autoPromoIntervalSelect" class="block text-[11px] text-latte-400 mb-1">Интервал</label>
+            <select id="autoPromoIntervalSelect" class="w-full bg-espresso-800 text-latte-100 text-xs font-semibold rounded-xl px-2.5 py-2 border border-espresso-700 focus:outline-none">
               <option value="10">Каждые 10 мин</option>
               <option value="15" selected>Каждые 15 мин</option>
               <option value="20">Каждые 20 мин</option>
               <option value="30">Каждые 30 мин</option>
               <option value="45">Каждые 45 мин</option>
+              <option value="60">Каждый час</option>
             </select>
           </div>
 
-          <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60 flex flex-col justify-center">
-            <span class="block text-[11px] text-latte-400 mb-1">До следующего эфира</span>
-            <span id="autoCountdownText" class="text-sm font-mono font-bold text-amberwarm-400">Выключено</span>
+          <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60 flex items-center justify-between gap-2">
+            <div>
+              <span class="block text-[11px] text-latte-400 mb-0.5">До эфира</span>
+              <span id="autoPromoCountdownText" class="text-sm font-mono font-bold text-amberwarm-400">Выключено</span>
+            </div>
+            <button id="btnResetPromoTimer" title="Сбросить таймер" class="p-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 text-latte-300 border border-espresso-700/70 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
           </div>
+        </div>
+      </div>
+
+      <!-- 2. Independent Auto-Closing Countdown Scheduler Card -->
+      <div id="autoClosingCard" class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-5 sm:p-6 transition-opacity duration-200">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-amberwarm-500/15 border border-amberwarm-500/30 flex items-center justify-center text-amberwarm-400 shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-latte-100">Авто-закрытие кофейни</h3>
+              <p class="text-xs text-latte-400">Автозапуск за 60, 30, 15 и 5 мин до закрытия</p>
+            </div>
+          </div>
+          <!-- Closing Toggle Switch -->
+          <button id="btnToggleAutoClosing" role="switch" aria-checked="false" class="w-14 h-8 rounded-full bg-espresso-700 p-1 transition-colors duration-200 flex items-center shrink-0">
+            <span id="autoClosingKnob" class="w-6 h-6 rounded-full bg-latte-300 shadow transform transition-transform duration-200"></span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-4 bg-espresso-900 p-3.5 rounded-2xl border border-espresso-700/60">
+          <div class="flex items-center gap-3">
+            <label for="closingTimeInput" class="text-xs font-semibold text-latte-200">Время закрытия:</label>
+            <input id="closingTimeInput" type="time" value="22:00" class="bg-espresso-800 border border-espresso-700 focus:border-amberwarm-500 rounded-xl px-3 py-1.5 text-sm font-mono font-bold text-amberwarm-400 focus:outline-none" />
+          </div>
+          <button id="btnResetClosingHistory" class="px-3 py-1.5 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 text-[11px] font-semibold text-latte-300 border border-espresso-700 transition">
+            Сбросить отметки за сегодня
+          </button>
+        </div>
+
+        <!-- 4 Closing Stages Timeline Grid -->
+        <div id="closingScheduleGrid" class="grid grid-cols-2 gap-2.5 mt-3">
+          <!-- Rendered dynamically by JS -->
         </div>
       </div>
 
@@ -518,9 +580,11 @@
      * COFFEEMAN Audio Deck Engine
      * Handles seamless background music playback, automatic track-end dipping & crossfade rise,
      * dynamic custom announcements, adjustable ducking volume, soft fade-out stops,
-     * touch swipe gestures, and built-in Web Audio / Speech synthesis fallbacks.
+     * independent Auto-Promo & Auto-Closing schedulers, and Master Automation override.
      */
     (function () {
+      const STORAGE_KEY = 'coffeeman_audio_deck_v2';
+
       // --- State Management ---
       const state = {
         playlist: [], // { name, url }
@@ -537,6 +601,7 @@
         announcements: [
           {
             id: 'promo-9',
+            kind: 'promo',
             tag: 'Реклама • Основная',
             title: 'Акция: 9 стаканчиков',
             fileName: null,
@@ -545,7 +610,9 @@
           },
           {
             id: 'close-60',
-            tag: 'Закрытие • Этап 1',
+            kind: 'closing',
+            offsetMinutes: 60,
+            tag: 'Закрытие • За 1 час',
             title: 'До закрытия: 1 час',
             fileName: null,
             url: null,
@@ -553,7 +620,9 @@
           },
           {
             id: 'close-30',
-            tag: 'Закрытие • Этап 2',
+            kind: 'closing',
+            offsetMinutes: 30,
+            tag: 'Закрытие • За 30 мин',
             title: 'До закрытия: 30 минут',
             fileName: null,
             url: null,
@@ -561,7 +630,9 @@
           },
           {
             id: 'close-15',
-            tag: 'Закрытие • Этап 3',
+            kind: 'closing',
+            offsetMinutes: 15,
+            tag: 'Закрытие • За 15 мин',
             title: 'До закрытия: 15 минут',
             fileName: null,
             url: null,
@@ -569,6 +640,8 @@
           },
           {
             id: 'close-5',
+            kind: 'closing',
+            offsetMinutes: 5,
             tag: 'Закрытие • Финал',
             title: 'До закрытия: 5 минут',
             fileName: null,
@@ -576,12 +649,85 @@
             fallbackText: 'Друзья, до закрытия кофейни Кофемен остаётся всего пять минут. Пожалуйста, оплатите открытые счета на кассе и начинайте собираться. Спасибо за прекрасный вечер, до встречи завтра!'
           }
         ],
-        autoScheduleEnabled: false,
-        autoTargetId: 'promo-9',
-        autoIntervalMinutes: 15,
-        autoSecondsRemaining: 15 * 60,
+        // Master Automation Switch
+        masterAutoEnabled: true,
+
+        // Independent Auto-Promo Scheduler
+        autoPromoEnabled: false,
+        autoPromoTargetId: 'promo-9', // 'promo-9', 'rotate-promos', or custom id
+        autoPromoIntervalMinutes: 15,
+        autoPromoSecondsRemaining: 15 * 60,
+        promoRotationIndex: 0,
+
+        // Independent Auto-Closing Countdown Scheduler
+        autoClosingEnabled: false,
+        closingTime: '22:00',
+        closingTriggeredToday: {}, // { '2026-11-19_close-60': true }
+
         demoAmbientActive: false
       };
+
+      // Load saved preferences from localStorage
+      function loadSavedSettings() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const saved = JSON.parse(raw);
+          if (typeof saved.masterMusicVolume === 'number') state.masterMusicVolume = saved.masterMusicVolume;
+          if (typeof saved.duckedTargetRatio === 'number') state.duckedTargetRatio = saved.duckedTargetRatio;
+          if (typeof saved.voiceVolume === 'number') state.voiceVolume = saved.voiceVolume;
+          if (typeof saved.masterAutoEnabled === 'boolean') state.masterAutoEnabled = saved.masterAutoEnabled;
+          if (typeof saved.autoPromoEnabled === 'boolean') state.autoPromoEnabled = saved.autoPromoEnabled;
+          if (typeof saved.autoPromoTargetId === 'string') state.autoPromoTargetId = saved.autoPromoTargetId;
+          if (typeof saved.autoPromoIntervalMinutes === 'number') {
+            state.autoPromoIntervalMinutes = saved.autoPromoIntervalMinutes;
+            state.autoPromoSecondsRemaining = saved.autoPromoIntervalMinutes * 60;
+          }
+          if (typeof saved.autoClosingEnabled === 'boolean') state.autoClosingEnabled = saved.autoClosingEnabled;
+          if (typeof saved.closingTime === 'string') state.closingTime = saved.closingTime;
+          if (saved.closingTriggeredToday && typeof saved.closingTriggeredToday === 'object') {
+            state.closingTriggeredToday = saved.closingTriggeredToday;
+          }
+          if (Array.isArray(saved.customAnnouncements)) {
+            saved.customAnnouncements.forEach(item => {
+              if (!state.announcements.some(a => a.id === item.id)) {
+                state.announcements.push({
+                  id: item.id,
+                  kind: 'custom',
+                  tag: item.tag || 'Своё оповещение',
+                  title: item.title,
+                  fileName: null,
+                  url: null,
+                  fallbackText: item.title
+                });
+              }
+            });
+          }
+        } catch (_) {}
+      }
+
+      function saveSettings() {
+        try {
+          const customAnnouncements = state.announcements
+            .filter(a => a.kind === 'custom')
+            .map(a => ({ id: a.id, tag: a.tag, title: a.title }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            masterMusicVolume: state.masterMusicVolume,
+            duckedTargetRatio: state.duckedTargetRatio,
+            voiceVolume: state.voiceVolume,
+            masterAutoEnabled: state.masterAutoEnabled,
+            autoPromoEnabled: state.autoPromoEnabled,
+            autoPromoTargetId: state.autoPromoTargetId,
+            autoPromoIntervalMinutes: state.autoPromoIntervalMinutes,
+            autoClosingEnabled: state.autoClosingEnabled,
+            closingTime: state.closingTime,
+            closingTriggeredToday: state.closingTriggeredToday,
+            customAnnouncements
+          }));
+        } catch (_) {}
+      }
+
+      loadSavedSettings();
 
       // --- Audio Elements & Smooth Fader Handles ---
       const musicAudio = new Audio();
@@ -606,6 +752,11 @@
       const toastEl = document.getElementById('toast');
       const toastTextEl = document.getElementById('toastText');
       let toastTimeout = null;
+
+      // Master Auto Elements
+      const btnToggleMasterAuto = document.getElementById('btnToggleMasterAuto');
+      const masterAutoKnob = document.getElementById('masterAutoKnob');
+      const masterAutoSubtitle = document.getElementById('masterAutoSubtitle');
 
       const musicGestureZone = document.getElementById('musicGestureZone');
       const musicStatusDot = document.getElementById('musicStatusDot');
@@ -655,12 +806,22 @@
       const modalSelectedFileName = document.getElementById('modalSelectedFileName');
       let pendingModalFile = null;
 
-      // Auto-Scheduler Elements
-      const btnToggleAuto = document.getElementById('btnToggleAuto');
-      const autoToggleKnob = document.getElementById('autoToggleKnob');
-      const autoTargetSelect = document.getElementById('autoTargetSelect');
-      const autoIntervalSelect = document.getElementById('autoIntervalSelect');
-      const autoCountdownText = document.getElementById('autoCountdownText');
+      // Auto-Promo Scheduler Elements
+      const autoPromoCard = document.getElementById('autoPromoCard');
+      const btnToggleAutoPromo = document.getElementById('btnToggleAutoPromo');
+      const autoPromoKnob = document.getElementById('autoPromoKnob');
+      const autoPromoTargetSelect = document.getElementById('autoPromoTargetSelect');
+      const autoPromoIntervalSelect = document.getElementById('autoPromoIntervalSelect');
+      const autoPromoCountdownText = document.getElementById('autoPromoCountdownText');
+      const btnResetPromoTimer = document.getElementById('btnResetPromoTimer');
+
+      // Auto-Closing Scheduler Elements
+      const autoClosingCard = document.getElementById('autoClosingCard');
+      const btnToggleAutoClosing = document.getElementById('btnToggleAutoClosing');
+      const autoClosingKnob = document.getElementById('autoClosingKnob');
+      const closingTimeInput = document.getElementById('closingTimeInput');
+      const btnResetClosingHistory = document.getElementById('btnResetClosingHistory');
+      const closingScheduleGrid = document.getElementById('closingScheduleGrid');
 
       const btnDemoAmbient = document.getElementById('btnDemoAmbient');
       const demoAmbientLabel = document.getElementById('demoAmbientLabel');
@@ -669,15 +830,35 @@
       const btnOpenScripts = document.getElementById('btnOpenScripts');
       const btnCloseScripts = document.getElementById('btnCloseScripts');
 
-      // --- Live Clock ---
-      function updateClock() {
+      // --- Date & Time Helpers ---
+      function getTodayDateKey() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      function computeTriggerTimeForOffset(closingTimeStr, offsetMinutes) {
+        const [hStr, mStr] = (closingTimeStr || '22:00').split(':');
+        const closeH = parseInt(hStr, 10) || 0;
+        const closeM = parseInt(mStr, 10) || 0;
+        let totalMinutes = closeH * 60 + closeM - offsetMinutes;
+        while (totalMinutes < 0) totalMinutes += 24 * 60;
+        totalMinutes = totalMinutes % (24 * 60);
+        const trigH = Math.floor(totalMinutes / 60);
+        const trigM = totalMinutes % 60;
+        return `${String(trigH).padStart(2, '0')}:${String(trigM).padStart(2, '0')}`;
+      }
+
+      function updateClockDisplay() {
         const now = new Date();
         const hh = String(now.getHours()).padStart(2, '0');
         const mm = String(now.getMinutes()).padStart(2, '0');
-        if (liveClockEl) liveClockEl.textContent = `${hh}:${mm}`;
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        if (liveClockEl) liveClockEl.textContent = `${hh}:${mm}:${ss}`;
+        return `${hh}:${mm}`;
       }
-      updateClock();
-      setInterval(updateClock, 10000);
 
       // --- Utility Functions ---
       function showToast(message) {
@@ -714,7 +895,7 @@
             voiceGainNode.connect(audioCtx.destination);
             voiceSourceConnected = true;
           } catch (_) {
-            // Fallback to standard element volume if CORS/media restriction applies
+            // Fallback to standard element volume
           }
         }
       }
@@ -729,14 +910,9 @@
         }
       }
 
-      /**
-       * Computes target music gain based on master volume, active announcement ducking,
-       * and automatic track-ending dip.
-       */
       function getTargetMusicGain() {
         let base = state.masterMusicVolume;
         if (state.isDucked) {
-          // Duck down to user-selected ducking percentage (scaled cleanly relative to master)
           base = Math.min(state.masterMusicVolume, state.duckedTargetRatio);
         }
         if (state.isTrackEndingDip) {
@@ -745,9 +921,6 @@
         return Math.max(0, Math.min(1, base));
       }
 
-      /**
-       * Smoothly interpolates background music gain (both HTML5 Audio & Demo Synth)
-       */
       function fadeMusicTo(targetGain, durationMs = 1400, onComplete = null) {
         clearInterval(musicFadeInterval);
         const steps = Math.max(8, Math.floor(durationMs / 30));
@@ -904,10 +1077,6 @@
         renderPlaylist();
       }
 
-      /**
-       * Smoothly dips current song down, loads next track, and swells volume back up
-       * (respecting active announcement ducking if a voiceover is currently speaking)
-       */
       function smoothSwitchToTrack(index, autoPlay = true, skipFadeOut = false) {
         if (index < 0 || index >= state.playlist.length) return;
         const track = state.playlist[index];
@@ -926,7 +1095,6 @@
             musicAudio.play().then(() => {
               state.isPlayingMusic = true;
               updateMusicStatusUI();
-              // Rise smoothly back up to master volume (or ducked level if announcement is on air)
               fadeMusicTo(getTargetMusicGain(), 2200);
             }).catch(() => {
               state.isPlayingMusic = false;
@@ -965,7 +1133,6 @@
             }
           }
         }
-        // If ended naturally, volume already dipped in the final 4 seconds, so rise smoothly right away
         smoothSwitchToTrack(nextIdx, true, fromNaturalEnd);
       }
 
@@ -1042,7 +1209,38 @@
         }
       }
 
-      // --- Dynamic Announcements Rendering & Management ---
+      // --- Dynamic Announcements & Schedules Rendering ---
+      function renderClosingScheduleGrid() {
+        const closingSlots = state.announcements.filter(a => a.kind === 'closing');
+        const todayKey = getTodayDateKey();
+
+        closingScheduleGrid.innerHTML = closingSlots.map(slot => {
+          const triggerTime = computeTriggerTimeForOffset(state.closingTime, slot.offsetMinutes);
+          const triggeredKey = `${todayKey}_${slot.id}`;
+          const alreadyRan = Boolean(state.closingTriggeredToday[triggeredKey]);
+          const hasFile = Boolean(slot.url);
+
+          let statusBadge = '';
+          if (alreadyRan) {
+            statusBadge = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Прозвучало</span>`;
+          } else if (!hasFile) {
+            statusBadge = `<span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-espresso-800 text-latte-400 border border-espresso-700">Тест-голос</span>`;
+          } else {
+            statusBadge = `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amberwarm-500/15 text-amberwarm-400 border border-amberwarm-500/30">Ожидает</span>`;
+          }
+
+          return `
+            <div class="bg-espresso-900/90 border border-espresso-700/70 rounded-2xl p-3 flex flex-col justify-between gap-1.5">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-mono font-bold text-latte-100">В ${triggerTime}</span>
+                ${statusBadge}
+              </div>
+              <div class="text-[11px] text-latte-400 truncate">${slot.title}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
       function renderAnnouncements() {
         const duckPct = Math.round(state.duckedTargetRatio * 100);
         duckingBadge.textContent = state.isDucked ? `Приглушено до ${duckPct}%` : `Фон: ${duckPct}%`;
@@ -1050,11 +1248,15 @@
         announcementsListContainer.innerHTML = state.announcements.map((item, idx) => {
           const isPlayingThis = state.activeAnnouncementId === item.id;
           const isPrimary = idx === 0;
+          const scheduledTag = item.kind === 'closing'
+            ? ` • Авто в ${computeTriggerTimeForOffset(state.closingTime, item.offsetMinutes)}`
+            : '';
+
           return `
             <div class="bg-espresso-900/90 border ${isPlayingThis ? 'border-amberwarm-500/70 bg-amberwarm-500/10' : 'border-espresso-700/80'} rounded-2xl p-4 flex flex-col gap-3 transition">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
-                  <span class="text-[11px] font-semibold uppercase tracking-wider ${isPrimary ? 'text-amberwarm-500' : 'text-latte-400'}">${item.tag}</span>
+                  <span class="text-[11px] font-semibold uppercase tracking-wider ${isPrimary ? 'text-amberwarm-500' : 'text-latte-400'}">${item.tag}${scheduledTag}</span>
                   <h3 class="text-base font-bold text-latte-100 truncate">${item.title}</h3>
                   <p class="text-xs ${item.fileName ? 'text-emerald-400' : 'text-latte-400'} truncate mt-0.5">
                     ${item.fileName ? `Файл: ${item.fileName}` : 'Файл не загружен (доступен тест голоса)'}
@@ -1067,7 +1269,7 @@
                     <input data-upload-id="${item.id}" type="file" accept="audio/*" class="announcement-file-input hidden" />
                   </label>
 
-                  ${state.announcements.length > 1 ? `
+                  ${item.kind === 'custom' ? `
                     <button data-delete-id="${item.id}" title="Удалить оповещение" class="delete-announcement-btn p-2 rounded-xl bg-espresso-800 hover:bg-red-500/20 text-latte-400 hover:text-red-400 border border-espresso-700/70 transition">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1091,14 +1293,20 @@
           `;
         }).join('');
 
-        // Sync Auto-Scheduler Target Dropdown
-        const prevTarget = state.autoTargetId;
-        autoTargetSelect.innerHTML = state.announcements.map(item => `
-          <option value="${item.id}" ${item.id === prevTarget ? 'selected' : ''}>${item.title}</option>
-        `).join('');
-        if (!state.announcements.some(a => a.id === state.autoTargetId) && state.announcements.length > 0) {
-          state.autoTargetId = state.announcements[0].id;
+        // Sync Auto-Promo Target Dropdown (non-closing slots + rotation option)
+        const promoCandidates = state.announcements.filter(a => a.kind !== 'closing');
+        const prevTarget = state.autoPromoTargetId;
+        const optionsHtml = [
+          `<option value="rotate-promos" ${prevTarget === 'rotate-promos' ? 'selected' : ''}>Чередовать все рекламные (${promoCandidates.length})</option>`,
+          ...promoCandidates.map(item => `<option value="${item.id}" ${item.id === prevTarget ? 'selected' : ''}>${item.title}</option>`)
+        ];
+        autoPromoTargetSelect.innerHTML = optionsHtml.join('');
+
+        if (prevTarget !== 'rotate-promos' && !promoCandidates.some(a => a.id === prevTarget) && promoCandidates.length > 0) {
+          state.autoPromoTargetId = promoCandidates[0].id;
         }
+
+        renderClosingScheduleGrid();
 
         // Bind card events
         document.querySelectorAll('.trigger-announcement-btn').forEach(btn => {
@@ -1137,6 +1345,7 @@
             }
             const removedTitle = state.announcements[idx].title;
             state.announcements.splice(idx, 1);
+            saveSettings();
             renderAnnouncements();
             showToast(`Удалено: ${removedTitle}`);
           });
@@ -1161,20 +1370,17 @@
         updateMusicStatusUI();
         renderAnnouncements();
 
-        // Show Active Announcement Bar
         activeAnnouncementTitle.textContent = slot.title;
         voiceProgressFill.style.width = '0%';
         activeAnnouncementBar.classList.remove('hidden');
         duckingBadge.classList.add('text-amberwarm-400', 'border-amberwarm-500/40');
 
-        // Smoothly duck background music over 1.3 seconds to configured ducking percentage
         fadeMusicTo(getTargetMusicGain(), 1300);
 
-        if (id === state.autoTargetId && state.autoScheduleEnabled) {
-          state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
+        if (state.autoPromoEnabled && (id === state.autoPromoTargetId || state.autoPromoTargetId === 'rotate-promos')) {
+          state.autoPromoSecondsRemaining = state.autoPromoIntervalMinutes * 60;
         }
 
-        // Start voice 600ms into the music fade for a smooth broadcast transition
         setTimeout(() => {
           if (state.activeAnnouncementId !== id) return;
 
@@ -1220,10 +1426,6 @@
         }
       }
 
-      /**
-       * Smoothly finishes or interrupts an active announcement:
-       * Fades voice down over 0.85s, then smoothly swells background music back up over 1.6s
-       */
       function finishAnnouncementSmoothly() {
         if (!state.activeAnnouncementId) return;
 
@@ -1242,7 +1444,6 @@
           updateMusicStatusUI();
           renderAnnouncements();
 
-          // Smoothly swell music back up over 1.6 seconds
           fadeMusicTo(getTargetMusicGain(), 1600);
         };
 
@@ -1272,7 +1473,6 @@
         timeCurrent.textContent = formatTime(musicAudio.currentTime);
         timeTotal.textContent = formatTime(musicAudio.duration);
 
-        // Automatic Track-End Dipping: in the final 4 seconds of a track, gently dip volume
         const remaining = musicAudio.duration - musicAudio.currentTime;
         if (remaining <= 4.0 && remaining > 0.2 && !state.isTrackEndingDip && state.playlist.length > 0) {
           state.isTrackEndingDip = true;
@@ -1340,6 +1540,7 @@
         if (ambientGainNode && audioCtx) {
           ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.04);
         }
+        saveSettings();
       });
 
       duckingVolumeSlider.addEventListener('input', (e) => {
@@ -1355,6 +1556,7 @@
           }
           updateMusicStatusUI();
         }
+        saveSettings();
       });
 
       voiceVolumeSlider.addEventListener('input', (e) => {
@@ -1362,6 +1564,7 @@
         state.voiceVolume = val / 100;
         voiceVolumeLabel.textContent = `${val}%`;
         setVoiceActualVolume(currentVoiceGain);
+        saveSettings();
       });
 
       // Upload Music Files
@@ -1437,6 +1640,7 @@
 
         const newItem = {
           id: 'custom-' + Date.now(),
+          kind: 'custom',
           tag,
           title,
           fileName: pendingModalFile ? pendingModalFile.name : null,
@@ -1445,6 +1649,7 @@
         };
 
         state.announcements.push(newItem);
+        saveSettings();
         renderAnnouncements();
         closeAddModal();
         showToast(`Добавлено оповещение: «${title}»`);
@@ -1478,50 +1683,177 @@
         }
       }, { passive: true });
 
-      // --- Auto-Scheduler Logic ---
-      btnToggleAuto.addEventListener('click', () => {
-        state.autoScheduleEnabled = !state.autoScheduleEnabled;
-        btnToggleAuto.setAttribute('aria-checked', String(state.autoScheduleEnabled));
-
-        if (state.autoScheduleEnabled) {
-          btnToggleAuto.classList.remove('bg-espresso-700');
-          btnToggleAuto.classList.add('bg-amberwarm-500');
-          autoToggleKnob.classList.add('translate-x-6', 'bg-espresso-950');
-          autoToggleKnob.classList.remove('bg-latte-300');
-          state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
-          showToast(`Авто-повтор включён (каждые ${state.autoIntervalMinutes} мин)`);
+      // --- Master Automation, Auto-Promo & Auto-Closing UI Sync ---
+      function syncAutomationUI() {
+        // 1. Master Automation Switch
+        btnToggleMasterAuto.setAttribute('aria-checked', String(state.masterAutoEnabled));
+        if (state.masterAutoEnabled) {
+          btnToggleMasterAuto.classList.remove('bg-espresso-700');
+          btnToggleMasterAuto.classList.add('bg-amberwarm-500');
+          masterAutoKnob.classList.add('translate-x-6', 'bg-espresso-950');
+          masterAutoKnob.classList.remove('bg-latte-300');
+          masterAutoSubtitle.textContent = 'Активна';
+          masterAutoSubtitle.className = 'text-[11px] font-mono text-amberwarm-400 leading-tight mt-0.5';
+          autoPromoCard.classList.remove('opacity-55');
+          autoClosingCard.classList.remove('opacity-55');
         } else {
-          btnToggleAuto.classList.add('bg-espresso-700');
-          btnToggleAuto.classList.remove('bg-amberwarm-500');
-          autoToggleKnob.classList.remove('translate-x-6', 'bg-espresso-950');
-          autoToggleKnob.classList.add('bg-latte-300');
-          autoCountdownText.textContent = 'Выключено';
-          showToast('Авто-повтор выключен');
+          btnToggleMasterAuto.classList.add('bg-espresso-700');
+          btnToggleMasterAuto.classList.remove('bg-amberwarm-500');
+          masterAutoKnob.classList.remove('translate-x-6', 'bg-espresso-950');
+          masterAutoKnob.classList.add('bg-latte-300');
+          masterAutoSubtitle.textContent = 'На паузе';
+          masterAutoSubtitle.className = 'text-[11px] font-mono text-latte-400 leading-tight mt-0.5';
+          autoPromoCard.classList.add('opacity-55');
+          autoClosingCard.classList.add('opacity-55');
+        }
+
+        // 2. Auto-Promo Switch
+        btnToggleAutoPromo.setAttribute('aria-checked', String(state.autoPromoEnabled));
+        if (state.autoPromoEnabled) {
+          btnToggleAutoPromo.classList.remove('bg-espresso-700');
+          btnToggleAutoPromo.classList.add('bg-amberwarm-500');
+          autoPromoKnob.classList.add('translate-x-6', 'bg-espresso-950');
+          autoPromoKnob.classList.remove('bg-latte-300');
+          autoPromoCountdownText.textContent = state.masterAutoEnabled
+            ? formatTime(state.autoPromoSecondsRemaining)
+            : 'Пауза (Мастер)';
+        } else {
+          btnToggleAutoPromo.classList.add('bg-espresso-700');
+          btnToggleAutoPromo.classList.remove('bg-amberwarm-500');
+          autoPromoKnob.classList.remove('translate-x-6', 'bg-espresso-950');
+          autoPromoKnob.classList.add('bg-latte-300');
+          autoPromoCountdownText.textContent = 'Выключено';
+        }
+
+        // 3. Auto-Closing Switch
+        btnToggleAutoClosing.setAttribute('aria-checked', String(state.autoClosingEnabled));
+        if (state.autoClosingEnabled) {
+          btnToggleAutoClosing.classList.remove('bg-espresso-700');
+          btnToggleAutoClosing.classList.add('bg-amberwarm-500');
+          autoClosingKnob.classList.add('translate-x-6', 'bg-espresso-950');
+          autoClosingKnob.classList.remove('bg-latte-300');
+        } else {
+          btnToggleAutoClosing.classList.add('bg-espresso-700');
+          btnToggleAutoClosing.classList.remove('bg-amberwarm-500');
+          autoClosingKnob.classList.remove('translate-x-6', 'bg-espresso-950');
+          autoClosingKnob.classList.add('bg-latte-300');
+        }
+      }
+
+      btnToggleMasterAuto.addEventListener('click', () => {
+        state.masterAutoEnabled = !state.masterAutoEnabled;
+        saveSettings();
+        syncAutomationUI();
+        showToast(state.masterAutoEnabled ? 'Общая автоматизация включена' : 'Все авто-таймеры поставлены на паузу');
+      });
+
+      btnToggleAutoPromo.addEventListener('click', () => {
+        state.autoPromoEnabled = !state.autoPromoEnabled;
+        if (state.autoPromoEnabled) {
+          state.autoPromoSecondsRemaining = state.autoPromoIntervalMinutes * 60;
+          showToast(`Авто-реклама включена (каждые ${state.autoPromoIntervalMinutes} мин)`);
+        } else {
+          showToast('Авто-реклама выключена');
+        }
+        saveSettings();
+        syncAutomationUI();
+      });
+
+      autoPromoTargetSelect.addEventListener('change', (e) => {
+        state.autoPromoTargetId = e.target.value;
+        saveSettings();
+      });
+
+      autoPromoIntervalSelect.addEventListener('change', (e) => {
+        state.autoPromoIntervalMinutes = parseInt(e.target.value, 10);
+        state.autoPromoSecondsRemaining = state.autoPromoIntervalMinutes * 60;
+        saveSettings();
+        syncAutomationUI();
+        if (state.autoPromoEnabled) {
+          showToast(`Интервал рекламы: каждые ${state.autoPromoIntervalMinutes} мин`);
         }
       });
 
-      autoTargetSelect.addEventListener('change', (e) => {
-        state.autoTargetId = e.target.value;
+      btnResetPromoTimer.addEventListener('click', () => {
+        state.autoPromoSecondsRemaining = state.autoPromoIntervalMinutes * 60;
+        syncAutomationUI();
+        showToast('Таймер рекламы сброшен');
       });
 
-      autoIntervalSelect.addEventListener('change', (e) => {
-        state.autoIntervalMinutes = parseInt(e.target.value, 10);
-        state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
-        if (state.autoScheduleEnabled) {
-          showToast(`Интервал обновлён: каждые ${state.autoIntervalMinutes} мин`);
+      btnToggleAutoClosing.addEventListener('click', () => {
+        state.autoClosingEnabled = !state.autoClosingEnabled;
+        saveSettings();
+        syncAutomationUI();
+        showToast(state.autoClosingEnabled
+          ? `Авто-закрытие включено (закрытие в ${state.closingTime})`
+          : 'Авто-закрытие выключено');
+      });
+
+      closingTimeInput.addEventListener('change', (e) => {
+        if (!e.target.value) return;
+        state.closingTime = e.target.value;
+        saveSettings();
+        renderAnnouncements();
+        showToast(`Время закрытия обновлено: ${state.closingTime}`);
+      });
+
+      btnResetClosingHistory.addEventListener('click', () => {
+        state.closingTriggeredToday = {};
+        saveSettings();
+        renderClosingScheduleGrid();
+        showToast('Отметки о срабатывании за сегодня очищены');
+      });
+
+      function pickPromoIdToRun() {
+        if (state.autoPromoTargetId !== 'rotate-promos') {
+          return state.autoPromoTargetId;
         }
-      });
+        const candidates = state.announcements.filter(a => a.kind !== 'closing');
+        if (candidates.length === 0) return 'promo-9';
+        const chosen = candidates[state.promoRotationIndex % candidates.length];
+        state.promoRotationIndex++;
+        return chosen.id;
+      }
 
+      // Master 1-second Clock & Automation Ticker
       setInterval(() => {
-        if (!state.autoScheduleEnabled) return;
-        if (state.activeAnnouncementId) return;
+        const currentHHMM = updateClockDisplay();
+        const todayKey = getTodayDateKey();
 
-        state.autoSecondsRemaining--;
-        if (state.autoSecondsRemaining <= 0) {
-          state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
-          triggerAnnouncement(state.autoTargetId);
+        if (!state.masterAutoEnabled) {
+          if (state.autoPromoEnabled) {
+            autoPromoCountdownText.textContent = 'Пауза (Мастер)';
+          }
+          return;
         }
-        autoCountdownText.textContent = formatTime(state.autoSecondsRemaining);
+
+        // 1. Check Closing Countdown Schedule (priority over regular promo)
+        if (state.autoClosingEnabled && !state.activeAnnouncementId) {
+          const closingSlots = state.announcements.filter(a => a.kind === 'closing');
+          for (const slot of closingSlots) {
+            const targetHHMM = computeTriggerTimeForOffset(state.closingTime, slot.offsetMinutes);
+            const triggerKey = `${todayKey}_${slot.id}`;
+            if (currentHHMM === targetHHMM && !state.closingTriggeredToday[triggerKey]) {
+              state.closingTriggeredToday[triggerKey] = true;
+              saveSettings();
+              renderClosingScheduleGrid();
+              showToast(`Авто-закрытие (${targetHHMM}): ${slot.title}`);
+              triggerAnnouncement(slot.id);
+              break;
+            }
+          }
+        }
+
+        // 2. Tick Auto-Promo Interval Timer
+        if (state.autoPromoEnabled && !state.activeAnnouncementId) {
+          state.autoPromoSecondsRemaining--;
+          if (state.autoPromoSecondsRemaining <= 0) {
+            state.autoPromoSecondsRemaining = state.autoPromoIntervalMinutes * 60;
+            const targetId = pickPromoIdToRun();
+            triggerAnnouncement(targetId);
+          }
+          autoPromoCountdownText.textContent = formatTime(state.autoPromoSecondsRemaining);
+        }
       }, 1000);
 
       // --- Scripts Modal & Clipboard ---
@@ -1566,8 +1898,22 @@
         });
       });
 
-      // Initial render
+      // --- Apply Restored Settings to Inputs & Initial Render ---
+      musicVolumeSlider.value = Math.round(state.masterMusicVolume * 100);
+      musicVolumeLabel.textContent = `${Math.round(state.masterMusicVolume * 100)}%`;
+
+      duckingVolumeSlider.value = Math.round(state.duckedTargetRatio * 100);
+      duckingVolumeLabel.textContent = `${Math.round(state.duckedTargetRatio * 100)}%`;
+
+      voiceVolumeSlider.value = Math.round(state.voiceVolume * 100);
+      voiceVolumeLabel.textContent = `${Math.round(state.voiceVolume * 100)}%`;
+
+      autoPromoIntervalSelect.value = String(state.autoPromoIntervalMinutes);
+      closingTimeInput.value = state.closingTime;
+
+      updateClockDisplay();
       renderAnnouncements();
+      syncAutomationUI();
     })();
   </script>
 </body>
