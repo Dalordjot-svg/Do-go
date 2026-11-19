@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>COFFEEMAN — Аудиопульт кофейни</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            espresso: {
+              950: '#0D0B0A',
+              900: '#12100E',
+              850: '#181512',
+              800: '#1F1B17',
+              700: '#2B2520',
+            },
+            latte: {
+              100: '#F5EFEA',
+              200: '#E6DCD3',
+              300: '#C8B8A8',
+              400: '#9E8D7D',
+            },
+            amberwarm: {
+              400: '#E2B485',
+              500: '#D4A373',
+              600: '#B88452',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    body {
+      background-color: #12100E;
+      color: #F5EFEA;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    /* Custom subtle range slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 9999px;
+      background: #2B2520;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #D4A373;
+      margin-top: -7px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]:active::-webkit-slider-thumb {
+      transform: scale(1.18);
+      background: #E2B485;
+    }
+    /* Custom scrollbar for playlist */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #181512;
+      border-radius: 8px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2B2520;
+      border-radius: 8px;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212, 163, 115, 0.35); }
+      50% { box-shadow: 0 0 0 10px rgba(212, 163, 115, 0); }
+    }
+    .active-announcement-glow {
+      animation: pulseGlow 2s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+
+  <!-- Toast Notification Banner -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-3">
+    <div id="toastInner" class="bg-espresso-800 border border-amberwarm-500/40 text-latte-100 px-5 py-3 rounded-2xl shadow-2xl text-sm font-medium flex items-center gap-2.5 backdrop-blur-md">
+      <span class="w-2 h-2 rounded-full bg-amberwarm-500"></span>
+      <span id="toastText">Уведомление</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-espresso-700/70">
+    <div class="flex items-center gap-3.5">
+      <div class="w-11 h-11 rounded-2xl bg-amberwarm-500/15 border border-amberwarm-500/30 flex items-center justify-center text-amberwarm-500">
+        <!-- Coffee Cup SVG -->
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 1v3M10 1v3M14 1v3" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-latte-100">COFFEEMAN</h1>
+          <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-espresso-800 text-amberwarm-500 border border-espresso-700">Audio Deck</span>
+        </div>
+        <p class="text-xs sm:text-sm text-latte-400">Пульт фоновой музыки и мягких голосовых анонсов</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+      <!-- Demo Ambient Generator Button (for immediate testing without uploading files) -->
+      <button id="btnDemoAmbient" class="px-4 py-2.5 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs sm:text-sm font-medium text-latte-200 transition flex items-center gap-2">
+        <svg class="w-4 h-4 text-amberwarm-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+        </svg>
+        <span id="demoAmbientLabel">Тест-фон (Лоу-фай)</span>
+      </button>
+
+      <!-- Scripts Drawer Trigger -->
+      <button id="btnOpenScripts" class="px-4 py-2.5 rounded-xl bg-amberwarm-500/15 hover:bg-amberwarm-500/25 active:scale-95 border border-amberwarm-500/30 text-xs sm:text-sm font-medium text-amberwarm-400 transition flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>Тексты для озвучки</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Grid -->
+  <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 my-6 flex-1">
+
+    <!-- LEFT COLUMN: Gesture-Enabled Music Player & Playlist (7 cols on lg) -->
+    <section class="lg:col-span-7 flex flex-col gap-5">
+      
+      <!-- Touch-Swipe Gesture Music Deck Card -->
+      <div id="musicGestureZone" class="relative bg-espresso-850 border border-espresso-700/80 rounded-3xl p-6 sm:p-7 shadow-xl transition-transform duration-200 overflow-hidden">
+        
+        <!-- Subtle Ducking Status Pill -->
+        <div class="flex items-center justify-between gap-2 mb-5">
+          <div class="flex items-center gap-2">
+            <span id="musicStatusDot" class="w-2.5 h-2.5 rounded-full bg-latte-400"></span>
+            <span id="musicStatusText" class="text-xs font-semibold uppercase tracking-wider text-latte-400">Музыка на паузе</span>
+          </div>
+          <span class="text-[11px] text-latte-400 bg-espresso-800 px-3 py-1 rounded-full border border-espresso-700/70">
+            Свайп влево / вправо — смена трека
+          </span>
+        </div>
+
+        <!-- Current Track Info -->
+        <div class="mb-6">
+          <h2 id="currentTrackTitle" class="text-2xl sm:text-3xl font-bold text-latte-100 truncate">
+            Загрузите музыку кофейни
+          </h2>
+          <p id="currentTrackSubtitle" class="text-sm text-latte-400 mt-1">
+            Поддерживаются MP3, WAV, M4A, OGG • Плавный переход 2.5 сек
+          </p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-6">
+          <div class="w-full h-2.5 bg-espresso-800 rounded-full overflow-hidden cursor-pointer" id="progressBarContainer">
+            <div id="progressBarFill" class="h-full bg-amberwarm-500 rounded-full transition-all duration-150" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-latte-400 mt-2 font-mono">
+            <span id="timeCurrent">00:00</span>
+            <span id="timeTotal">00:00</span>
+          </div>
+        </div>
+
+        <!-- Primary Transport Controls -->
+        <div class="flex items-center justify-between gap-3 sm:gap-5 mb-6">
+          <!-- Shuffle Toggle -->
+          <button id="btnShuffle" title="Перемешать треки" class="p-3.5 rounded-2xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 text-latte-400 border border-espresso-700/60 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+            </svg>
+          </button>
+
+          <!-- Previous Track (Smooth Crossfade) -->
+          <button id="btnPrev" title="Предыдущий трек" class="p-4 rounded-2xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 text-latte-100 border border-espresso-700 transition">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+            </svg>
+          </button>
+
+          <!-- Play / Pause Large Tactile Button -->
+          <button id="btnPlayPause" class="w-20 h-20 rounded-3xl bg-amberwarm-500 hover:bg-amberwarm-400 active:scale-95 text-espresso-950 flex items-center justify-center shadow-lg shadow-amberwarm-500/20 transition">
+            <svg id="iconPlay" class="w-9 h-9 ml-1" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <svg id="iconPause" class="w-9 h-9 hidden" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            </svg>
+          </button>
+
+          <!-- Next Track (Smooth Crossfade) -->
+          <button id="btnNext" title="Следующий трек" class="p-4 rounded-2xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 text-latte-100 border border-espresso-700 transition">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+            </svg>
+          </button>
+
+          <!-- Repeat Playlist Toggle (Active by default) -->
+          <button id="btnRepeat" title="Повтор плейлиста" class="p-3.5 rounded-2xl bg-amberwarm-500/20 text-amberwarm-400 border border-amberwarm-500/40 active:scale-95 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Master Music Volume Slider -->
+        <div class="flex items-center gap-4 bg-espresso-900/80 px-4 py-3.5 rounded-2xl border border-espresso-700/60">
+          <svg class="w-5 h-5 text-amberwarm-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          <input id="musicVolumeSlider" type="range" min="0" max="100" value="80" class="w-full" />
+          <span id="musicVolumeLabel" class="text-xs font-mono text-latte-300 w-10 text-right">80%</span>
+        </div>
+      </div>
+
+      <!-- Music Playlist Manager -->
+      <div class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-5 sm:p-6 flex-1 flex flex-col">
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-base font-semibold text-latte-100">Плейлист кофейни</h3>
+            <p class="text-xs text-latte-400" id="playlistCountLabel">0 треков • Повтор включён</p>
+          </div>
+          <label class="cursor-pointer px-4 py-2.5 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs sm:text-sm font-medium text-amberwarm-400 transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Загрузить музыку</span>
+            <input id="musicFileInput" type="file" accept="audio/*" multiple class="hidden" />
+          </label>
+        </div>
+
+        <div id="playlistContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1 flex-1">
+          <div class="h-32 rounded-2xl border border-dashed border-espresso-700 flex flex-col items-center justify-center text-center p-4 text-latte-400 text-xs sm:text-sm">
+            <p>Список пуст. Нажмите «Загрузить музыку» и выберите треки с планшета.</p>
+            <p class="text-xs text-latte-400/70 mt-1">Или включите «Тест-фон» вверху экрана для проверки переходов.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Announcements & Quick Gestures Deck (5 cols on lg) -->
+    <section class="lg:col-span-5 flex flex-col gap-5">
+      
+      <!-- Live Announcement Control & Emergency Soft Stop -->
+      <div id="announcementDeckCard" class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-6 shadow-xl flex flex-col justify-between gap-5">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <h2 class="text-lg font-bold text-latte-100">Голосовые объявления</h2>
+            <span id="duckingBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-espresso-800 text-latte-400 border border-espresso-700">
+              Авто-приглушение: 15%
+            </span>
+          </div>
+          <p class="text-xs text-latte-400">
+            При запуске музыка плавно уходит на фон, звучит голос, затем музыка мягко возвращается.
+          </p>
+        </div>
+
+        <!-- Active Announcement Banner + Soft Stop Button -->
+        <div id="activeAnnouncementBar" class="hidden rounded-2xl bg-amberwarm-500/15 border border-amberwarm-500/50 p-4 active-announcement-glow">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-amberwarm-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amberwarm-400 animate-ping"></span>
+                В эфире объявление
+              </div>
+              <div id="activeAnnouncementTitle" class="text-sm font-semibold text-latte-100 truncate mt-0.5">
+                Акция: 9 стаканчиков
+              </div>
+            </div>
+            <button id="btnSoftStopAnnouncement" class="shrink-0 px-4 py-3 rounded-xl bg-red-500/90 hover:bg-red-500 active:scale-95 text-white text-xs font-bold shadow-lg transition">
+              Мягко завершить
+            </button>
+          </div>
+        </div>
+
+        <!-- Jingle Pad 1: Promo / 9 Cups -->
+        <div class="bg-espresso-900/90 border border-espresso-700/80 rounded-2xl p-4 flex flex-col gap-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-amberwarm-500">Анонс 1 • Основной</span>
+              <h3 class="text-base font-bold text-latte-100">Акция: 9 стаканчиков</h3>
+              <p id="promoFileName" class="text-xs text-latte-400 truncate max-w-[210px] mt-0.5">Файл не загружен (доступен тест голоса)</p>
+            </div>
+            <label class="cursor-pointer px-3 py-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs font-medium text-latte-200 transition shrink-0">
+              <span>Загрузить</span>
+              <input id="promoFileInput" type="file" accept="audio/*" class="hidden" />
+            </label>
+          </div>
+
+          <button id="btnTriggerPromo" class="w-full py-3.5 px-4 rounded-xl bg-amberwarm-500 hover:bg-amberwarm-400 active:scale-[0.98] text-espresso-950 font-bold text-sm flex items-center justify-center gap-2 shadow-md transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <span>Мягко запустить рекламу</span>
+          </button>
+        </div>
+
+        <!-- Jingle Pad 2: Closing Time -->
+        <div class="bg-espresso-900/90 border border-espresso-700/80 rounded-2xl p-4 flex flex-col gap-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-latte-400">Анонс 2 • Вечерний</span>
+              <h3 class="text-base font-bold text-latte-100">Закрытие кофейни</h3>
+              <p id="closingFileName" class="text-xs text-latte-400 truncate max-w-[210px] mt-0.5">Файл не загружен (доступен тест голоса)</p>
+            </div>
+            <label class="cursor-pointer px-3 py-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs font-medium text-latte-200 transition shrink-0">
+              <span>Загрузить</span>
+              <input id="closingFileInput" type="file" accept="audio/*" class="hidden" />
+            </label>
+          </div>
+
+          <button id="btnTriggerClosing" class="w-full py-3.5 px-4 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-[0.98] border border-amberwarm-500/40 text-amberwarm-400 font-bold text-sm flex items-center justify-center gap-2 transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <span>Запустить закрытие кафе</span>
+          </button>
+        </div>
+
+        <!-- Jingle Pad 3: Custom / Extra Announcement -->
+        <div class="bg-espresso-900/90 border border-espresso-700/80 rounded-2xl p-4 flex flex-col gap-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-latte-400">Анонс 3 • Свободный слот</span>
+              <h3 class="text-base font-bold text-latte-100">Дополнительный анонс</h3>
+              <p id="customFileName" class="text-xs text-latte-400 truncate max-w-[210px] mt-0.5">Например: десерты со скидкой вечером</p>
+            </div>
+            <label class="cursor-pointer px-3 py-2 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-95 border border-espresso-700 text-xs font-medium text-latte-200 transition shrink-0">
+              <span>Загрузить</span>
+              <input id="customFileInput" type="file" accept="audio/*" class="hidden" />
+            </label>
+          </div>
+
+          <button id="btnTriggerCustom" class="w-full py-3 px-4 rounded-xl bg-espresso-800 hover:bg-espresso-700 active:scale-[0.98] border border-espresso-700 text-latte-200 font-semibold text-sm flex items-center justify-center gap-2 transition">
+            <svg class="w-4 h-4 text-amberwarm-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <span>Запустить доп. анонс</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Auto-Scheduler Card -->
+      <div class="bg-espresso-850 border border-espresso-700/80 rounded-3xl p-5 sm:p-6">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <h3 class="text-base font-bold text-latte-100">Авто-повтор рекламы</h3>
+            <p class="text-xs text-latte-400">Автоматически запускать «Анонс 1»</p>
+          </div>
+          <!-- Toggle Switch -->
+          <button id="btnToggleAuto" role="switch" aria-checked="false" class="w-14 h-8 rounded-full bg-espresso-700 p-1 transition-colors duration-200 flex items-center">
+            <span id="autoToggleKnob" class="w-6 h-6 rounded-full bg-latte-300 shadow transform transition-transform duration-200"></span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60">
+            <label for="autoIntervalSelect" class="block text-[11px] text-latte-400 mb-1">Интервал времени</label>
+            <select id="autoIntervalSelect" class="w-full bg-espresso-800 text-latte-100 text-sm font-semibold rounded-xl px-3 py-2 border border-espresso-700 focus:outline-none">
+              <option value="10">Каждые 10 мин</option>
+              <option value="15" selected>Каждые 15 мин</option>
+              <option value="20">Каждые 20 мин</option>
+              <option value="30">Каждые 30 мин</option>
+              <option value="45">Каждые 45 мин</option>
+            </select>
+          </div>
+
+          <div class="bg-espresso-900 p-3 rounded-2xl border border-espresso-700/60 flex flex-col justify-center">
+            <span class="block text-[11px] text-latte-400 mb-1">До следующего эфира</span>
+            <span id="autoCountdownText" class="text-base font-mono font-bold text-amberwarm-400">Выключено</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Scripts / Voiceover Prompts Modal -->
+  <div id="scriptsModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-espresso-850 border border-espresso-700 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-espresso-700">
+        <div>
+          <h3 class="text-xl font-bold text-latte-100">Тексты для озвучки нейросетью</h3>
+          <p class="text-xs text-latte-400 mt-0.5">Адаптированы под естественное произношение (КОФЕМЭН)</p>
+        </div>
+        <button id="btnCloseScripts" class="p-2.5 rounded-xl bg-espresso-800 hover:bg-espresso-700 text-latte-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-5 mt-5">
+        <!-- Script 1: Promo -->
+        <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">1. Акция: 9 стаканчиков</span>
+            <button data-copy-target="scriptPromoText" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
+              Скопировать
+            </button>
+          </div>
+          <p id="scriptPromoText" class="text-sm text-latte-100 leading-relaxed select-text">Любите кофе с собой? Не выкидывайте стаканчик просто так! На каждом из них есть специальная отрывная фишка. Соберите девять штук — и десятый кофе мы нальём вам абсолютно бесплатно. Акция действует в любой кофейне КОФЕМЭН.</p>
+        </div>
+
+        <!-- Script 2: Closing Time (Warm & Polite) -->
+        <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">2. Закрытие кофейни (за 15 минут)</span>
+            <button data-copy-target="scriptClosingText" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
+              Скопировать
+            </button>
+          </div>
+          <p id="scriptClosingText" class="text-sm text-latte-100 leading-relaxed select-text">Дорогие гости, наш день в кофейне КОФЕМЭН постепенно подходит к концу — через пятнадцать минут мы закрываемся. Если вы хотите взять горячий кофе или десерт с собой, бариста с радостью приготовит его прямо сейчас. Спасибо, что провели этот день с нами, и ждём вас завтра утром!</p>
+        </div>
+
+        <!-- Script 3: Evening Pastry / Extra -->
+        <div class="bg-espresso-900 border border-espresso-700/80 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-amberwarm-500">3. Вечерняя скидка на выпечку (доп. слот)</span>
+            <button data-copy-target="scriptExtraText" class="copy-script-btn px-3 py-1.5 rounded-lg bg-espresso-800 hover:bg-espresso-700 text-xs font-medium text-latte-200 transition">
+              Скопировать
+            </button>
+          </div>
+          <p id="scriptExtraText" class="text-sm text-latte-100 leading-relaxed select-text">Вечер — идеальное время для маленького десерта. В кофейне КОФЕМЭН прямо сейчас действует приятная скидка на свежую выпечку с витрины. Спросите бариста, что осталось к вашему любимому кофе!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * COFFEEMAN Audio Deck Engine
+     * Handles seamless background music playback, smooth crossfade transitions,
+     * automatic volume ducking during voice announcements, soft fade-out stops,
+     * touch swipe gestures, and built-in Web Audio / Speech synthesis fallbacks.
+     */
+    (function () {
+      // --- State Management ---
+      const state = {
+        playlist: [], // { name, url, duration }
+        currentIndex: -1,
+        isPlayingMusic: false,
+        isShuffle: false,
+        isRepeat: true,
+        masterMusicVolume: 0.80, // 0.0 to 1.0
+        duckedMultiplier: 0.14,  // Drops music to 14% during announcements
+        isDucked: false,
+        activeAnnouncementType: null, // 'promo' | 'closing' | 'custom' | null
+        announcements: {
+          promo: { name: null, url: null, title: 'Акция: 9 стаканчиков', fallbackText: 'Любите кофе с собой? Не выкидывайте стаканчик просто так! Соберите девять отрывных фишек — и десятый кофе мы нальём вам бесплатно в любой кофейне Кофемен.' },
+          closing: { name: null, url: null, title: 'Закрытие кофейни', fallbackText: 'Дорогие гости, через пятнадцать минут кофейня Кофемен закрывается. Успейте взять любимый кофе с собой. Ждём вас снова завтра утром!' },
+          custom: { name: null, url: null, title: 'Дополнительный анонс', fallbackText: 'В кофейне Кофемен прямо сейчас действует вечерняя скидка на свежую выпечку. Спросите бариста!' }
+        },
+        autoScheduleEnabled: false,
+        autoIntervalMinutes: 15,
+        autoSecondsRemaining: 15 * 60,
+        demoAmbientActive: false
+      };
+
+      // --- Audio Elements & Smooth Fader Handles ---
+      const musicAudio = new Audio();
+      musicAudio.preload = 'auto';
+      const voiceAudio = new Audio();
+      voiceAudio.preload = 'auto';
+
+      let musicFadeInterval = null;
+      let voiceFadeInterval = null;
+      let currentMusicGain = state.masterMusicVolume;
+
+      // Web Audio API Ambient Pad Generator (so user can test smooth ducking right away)
+      let audioCtx = null;
+      let ambientNodes = null;
+      let ambientGainNode = null;
+
+      // --- DOM Elements ---
+      const toastEl = document.getElementById('toast');
+      const toastTextEl = document.getElementById('toastText');
+      let toastTimeout = null;
+
+      const musicGestureZone = document.getElementById('musicGestureZone');
+      const musicStatusDot = document.getElementById('musicStatusDot');
+      const musicStatusText = document.getElementById('musicStatusText');
+      const currentTrackTitle = document.getElementById('currentTrackTitle');
+      const currentTrackSubtitle = document.getElementById('currentTrackSubtitle');
+      const progressBarContainer = document.getElementById('progressBarContainer');
+      const progressBarFill = document.getElementById('progressBarFill');
+      const timeCurrent = document.getElementById('timeCurrent');
+      const timeTotal = document.getElementById('timeTotal');
+
+      const btnPlayPause = document.getElementById('btnPlayPause');
+      const iconPlay = document.getElementById('iconPlay');
+      const iconPause = document.getElementById('iconPause');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnNext = document.getElementById('btnNext');
+      const btnShuffle = document.getElementById('btnShuffle');
+      const btnRepeat = document.getElementById('btnRepeat');
+      const musicVolumeSlider = document.getElementById('musicVolumeSlider');
+      const musicVolumeLabel = document.getElementById('musicVolumeLabel');
+
+      const musicFileInput = document.getElementById('musicFileInput');
+      const playlistContainer = document.getElementById('playlistContainer');
+      const playlistCountLabel = document.getElementById('playlistCountLabel');
+
+      const activeAnnouncementBar = document.getElementById('activeAnnouncementBar');
+      const activeAnnouncementTitle = document.getElementById('activeAnnouncementTitle');
+      const btnSoftStopAnnouncement = document.getElementById('btnSoftStopAnnouncement');
+      const duckingBadge = document.getElementById('duckingBadge');
+
+      const promoFileInput = document.getElementById('promoFileInput');
+      const closingFileInput = document.getElementById('closingFileInput');
+      const customFileInput = document.getElementById('customFileInput');
+
+      const btnTriggerPromo = document.getElementById('btnTriggerPromo');
+      const btnTriggerClosing = document.getElementById('btnTriggerClosing');
+      const btnTriggerCustom = document.getElementById('btnTriggerCustom');
+
+      const btnToggleAuto = document.getElementById('btnToggleAuto');
+      const autoToggleKnob = document.getElementById('autoToggleKnob');
+      const autoIntervalSelect = document.getElementById('autoIntervalSelect');
+      const autoCountdownText = document.getElementById('autoCountdownText');
+
+      const btnDemoAmbient = document.getElementById('btnDemoAmbient');
+      const demoAmbientLabel = document.getElementById('demoAmbientLabel');
+
+      const scriptsModal = document.getElementById('scriptsModal');
+      const btnOpenScripts = document.getElementById('btnOpenScripts');
+      const btnCloseScripts = document.getElementById('btnCloseScripts');
+
+      // --- Utility Functions ---
+      function showToast(message) {
+        toastTextEl.textContent = message;
+        toastEl.classList.remove('opacity-0', '-translate-y-3');
+        toastEl.classList.add('opacity-100', 'translate-y-0');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toastEl.classList.add('opacity-0', '-translate-y-3');
+          toastEl.classList.remove('opacity-100', 'translate-y-0');
+        }, 2800);
+      }
+
+      function formatTime(seconds) {
+        if (!isFinite(seconds) || seconds < 0) return '00:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+
+      function getTargetMusicGain() {
+        return state.isDucked
+          ? state.masterMusicVolume * state.duckedMultiplier
+          : state.masterMusicVolume;
+      }
+
+      /**
+       * Smoothly interpolates background music gain (both HTML5 Audio & Demo Synth)
+       */
+      function fadeMusicTo(targetGain, durationMs = 1500, onComplete = null) {
+        clearInterval(musicFadeInterval);
+        const steps = Math.max(10, Math.floor(durationMs / 30));
+        const startGain = currentMusicGain;
+        const delta = (targetGain - startGain) / steps;
+        let currentStep = 0;
+
+        musicFadeInterval = setInterval(() => {
+          currentStep++;
+          currentMusicGain = Math.max(0, Math.min(1, startGain + delta * currentStep));
+          musicAudio.volume = currentMusicGain;
+
+          if (ambientGainNode && audioCtx) {
+            ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.05);
+          }
+
+          if (currentStep >= steps) {
+            clearInterval(musicFadeInterval);
+            currentMusicGain = targetGain;
+            musicAudio.volume = currentMusicGain;
+            if (onComplete) onComplete();
+          }
+        }, 30);
+      }
+
+      // --- Demo Warm Lo-Fi Chord Generator (for instant testing without MP3s) ---
+      function toggleDemoAmbient() {
+        if (state.demoAmbientActive) {
+          stopDemoAmbient();
+          showToast('Тестовый фон выключен');
+          return;
+        }
+
+        try {
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+
+          ambientGainNode = audioCtx.createGain();
+          ambientGainNode.gain.value = getTargetMusicGain() * 0.25;
+
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.value = 420;
+
+          // Warm Fmaj9 coffeehouse chord frequencies
+          const freqs = [174.61, 220.00, 261.63, 329.63, 392.00];
+          const oscs = freqs.map((f, idx) => {
+            const osc = audioCtx.createOscillator();
+            osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+            osc.frequency.value = f;
+            osc.detune.value = (idx - 2) * 4;
+            osc.connect(filter);
+            osc.start();
+            return osc;
+          });
+
+          filter.connect(ambientGainNode);
+          ambientGainNode.connect(audioCtx.destination);
+
+          ambientNodes = oscs;
+          state.demoAmbientActive = true;
+          demoAmbientLabel.textContent = 'Стоп тест-фон';
+          btnDemoAmbient.classList.add('border-amberwarm-500', 'text-amberwarm-400');
+          updateMusicStatusUI();
+          showToast('Включён мягкий тест-фон — попробуйте запустить рекламу!');
+        } catch (e) {
+          showToast('Не удалось запустить аудиодвижок');
+        }
+      }
+
+      function stopDemoAmbient() {
+        if (ambientNodes) {
+          ambientNodes.forEach(osc => {
+            try { osc.stop(); osc.disconnect(); } catch (_) {}
+          });
+          ambientNodes = null;
+        }
+        state.demoAmbientActive = false;
+        demoAmbientLabel.textContent = 'Тест-фон (Лоу-фай)';
+        btnDemoAmbient.classList.remove('border-amberwarm-500', 'text-amberwarm-400');
+        updateMusicStatusUI();
+      }
+
+      // --- Music Playlist & Smooth Switching ---
+      function renderPlaylist() {
+        playlistCountLabel.textContent = `${state.playlist.length} трек(ов) • ${state.isRepeat ? 'Повтор включён' : 'Без повтора'}`;
+
+        if (state.playlist.length === 0) {
+          playlistContainer.innerHTML = `
+            <div class="h-32 rounded-2xl border border-dashed border-espresso-700 flex flex-col items-center justify-center text-center p-4 text-latte-400 text-xs sm:text-sm">
+              <p>Список пуст. Нажмите «Загрузить музыку» и выберите треки с планшета.</p>
+              <p class="text-xs text-latte-400/70 mt-1">Или включите «Тест-фон» вверху экрана для проверки переходов.</p>
+            </div>
+          `;
+          return;
+        }
+
+        playlistContainer.innerHTML = state.playlist.map((track, index) => {
+          const isCurrent = index === state.currentIndex;
+          return `
+            <div data-index="${index}" class="playlist-item flex items-center justify-between gap-3 px-4 py-3 rounded-2xl cursor-pointer transition ${
+              isCurrent
+                ? 'bg-amberwarm-500/20 border border-amberwarm-500/40 text-latte-100'
+                : 'bg-espresso-900/70 hover:bg-espresso-800 border border-transparent text-latte-300'
+            }">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="text-xs font-mono ${isCurrent ? 'text-amberwarm-400 font-bold' : 'text-latte-400'} w-5">
+                  ${isCurrent && state.isPlayingMusic ? '▶' : index + 1}
+                </span>
+                <span class="text-sm font-medium truncate">${track.name}</span>
+              </div>
+              <button data-remove="${index}" class="remove-track-btn p-1.5 rounded-lg text-latte-400 hover:text-red-400 hover:bg-espresso-800 transition" title="Удалить из списка">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        // Attach item click handlers
+        document.querySelectorAll('.playlist-item').forEach(el => {
+          el.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-track-btn')) return;
+            const idx = parseInt(el.dataset.index, 10);
+            smoothSwitchToTrack(idx);
+          });
+        });
+
+        document.querySelectorAll('.remove-track-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.remove, 10);
+            removeTrack(idx);
+          });
+        });
+      }
+
+      function removeTrack(idx) {
+        URL.revokeObjectURL(state.playlist[idx].url);
+        state.playlist.splice(idx, 1);
+        if (state.playlist.length === 0) {
+          musicAudio.pause();
+          musicAudio.src = '';
+          state.currentIndex = -1;
+          state.isPlayingMusic = false;
+          currentTrackTitle.textContent = 'Загрузите музыку кофейни';
+          currentTrackSubtitle.textContent = 'Поддерживаются MP3, WAV, M4A, OGG • Плавный переход 2.5 сек';
+          updateMusicStatusUI();
+        } else if (idx === state.currentIndex) {
+          const nextIdx = idx % state.playlist.length;
+          smoothSwitchToTrack(nextIdx);
+        } else if (idx < state.currentIndex) {
+          state.currentIndex--;
+        }
+        renderPlaylist();
+      }
+
+      function smoothSwitchToTrack(index, autoPlay = true) {
+        if (index < 0 || index >= state.playlist.length) return;
+        const track = state.playlist[index];
+
+        const loadAndStart = () => {
+          state.currentIndex = index;
+          musicAudio.src = track.url;
+          currentTrackTitle.textContent = track.name;
+          currentTrackSubtitle.textContent = `Трек ${index + 1} из ${state.playlist.length} • Плейлист кофейни`;
+          renderPlaylist();
+
+          if (autoPlay) {
+            currentMusicGain = 0.02;
+            musicAudio.volume = currentMusicGain;
+            musicAudio.play().then(() => {
+              state.isPlayingMusic = true;
+              updateMusicStatusUI();
+              fadeMusicTo(getTargetMusicGain(), 1400);
+            }).catch(() => {
+              state.isPlayingMusic = false;
+              updateMusicStatusUI();
+            });
+          }
+        };
+
+        if (state.isPlayingMusic && !musicAudio.paused) {
+          // Smoothly fade out current song before starting next
+          fadeMusicTo(0.01, 700, loadAndStart);
+        } else {
+          loadAndStart();
+        }
+      }
+
+      function playNextTrack() {
+        if (state.playlist.length === 0) {
+          showToast('Сначала загрузите музыку в плейлист');
+          return;
+        }
+        let nextIdx;
+        if (state.isShuffle && state.playlist.length > 1) {
+          do {
+            nextIdx = Math.floor(Math.random() * state.playlist.length);
+          } while (nextIdx === state.currentIndex);
+        } else {
+          nextIdx = state.currentIndex + 1;
+          if (nextIdx >= state.playlist.length) {
+            if (state.isRepeat) {
+              nextIdx = 0;
+            } else {
+              state.isPlayingMusic = false;
+              updateMusicStatusUI();
+              return;
+            }
+          }
+        }
+        smoothSwitchToTrack(nextIdx, true);
+      }
+
+      function playPrevTrack() {
+        if (state.playlist.length === 0) {
+          showToast('Сначала загрузите музыку в плейлист');
+          return;
+        }
+        if (musicAudio.currentTime > 4) {
+          musicAudio.currentTime = 0;
+          return;
+        }
+        let prevIdx = state.currentIndex - 1;
+        if (prevIdx < 0) prevIdx = state.playlist.length - 1;
+        smoothSwitchToTrack(prevIdx, true);
+      }
+
+      function togglePlayPause() {
+        if (state.playlist.length === 0) {
+          showToast('Загрузите аудиофайлы или нажмите «Тест-фон»');
+          return;
+        }
+        if (state.currentIndex === -1) {
+          smoothSwitchToTrack(0, true);
+          return;
+        }
+        if (musicAudio.paused) {
+          currentMusicGain = 0.05;
+          musicAudio.volume = currentMusicGain;
+          musicAudio.play().then(() => {
+            state.isPlayingMusic = true;
+            updateMusicStatusUI();
+            fadeMusicTo(getTargetMusicGain(), 900);
+          });
+        } else {
+          fadeMusicTo(0.01, 600, () => {
+            musicAudio.pause();
+            state.isPlayingMusic = false;
+            updateMusicStatusUI();
+          });
+        }
+      }
+
+      function updateMusicStatusUI() {
+        const active = state.isPlayingMusic || state.demoAmbientActive;
+        if (state.isPlayingMusic) {
+          iconPlay.classList.add('hidden');
+          iconPause.classList.remove('hidden');
+        } else {
+          iconPlay.classList.remove('hidden');
+          iconPause.classList.add('hidden');
+        }
+
+        if (state.isDucked) {
+          musicStatusDot.className = 'w-2.5 h-2.5 rounded-full bg-amberwarm-400 animate-pulse';
+          musicStatusText.textContent = 'Приглушено под голос (15%)';
+          musicStatusText.className = 'text-xs font-semibold uppercase tracking-wider text-amberwarm-400';
+        } else if (active) {
+          musicStatusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+          musicStatusText.textContent = state.demoAmbientActive && !state.isPlayingMusic ? 'Играет тест-фон' : 'В эфире музыка';
+          musicStatusText.className = 'text-xs font-semibold uppercase tracking-wider text-emerald-400';
+        } else {
+          musicStatusDot.className = 'w-2.5 h-2.5 rounded-full bg-latte-400';
+          musicStatusText.textContent = 'Музыка на паузе';
+          musicStatusText.className = 'text-xs font-semibold uppercase tracking-wider text-latte-400';
+        }
+      }
+
+      // --- Announcements & Smooth Ducking Engine ---
+      function triggerAnnouncement(type) {
+        const slot = state.announcements[type];
+        if (!slot) return;
+
+        // If another announcement is already playing, stop it cleanly first
+        if (state.activeAnnouncementType) {
+          stopSpeechFallback();
+          voiceAudio.pause();
+          voiceAudio.currentTime = 0;
+        }
+
+        state.activeAnnouncementType = type;
+        state.isDucked = true;
+        updateMusicStatusUI();
+
+        // Show Active Announcement Bar
+        activeAnnouncementTitle.textContent = slot.title;
+        activeAnnouncementBar.classList.remove('hidden');
+        duckingBadge.textContent = 'Музыка приглушена';
+        duckingBadge.classList.add('text-amberwarm-400', 'border-amberwarm-500/40');
+
+        // Smoothly duck background music over 1.4 seconds
+        fadeMusicTo(getTargetMusicGain(), 1400);
+
+        // Reset auto-scheduler countdown if promo was triggered
+        if (type === 'promo' && state.autoScheduleEnabled) {
+          state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
+        }
+
+        // Wait 650ms into the music fade before starting the voice for a natural studio feel
+        setTimeout(() => {
+          if (state.activeAnnouncementType !== type) return;
+
+          if (slot.url) {
+            voiceAudio.src = slot.url;
+            voiceAudio.volume = 1.0;
+            voiceAudio.play().catch(() => {
+              showToast('Нажмите на экран, чтобы разрешить звук');
+              finishAnnouncementSmoothly();
+            });
+          } else {
+            // Built-in Russian Web Speech API fallback so user can test immediately!
+            playSpeechFallback(slot.fallbackText);
+          }
+        }, 650);
+      }
+
+      function playSpeechFallback(text) {
+        if (!('speechSynthesis' in window)) {
+          showToast('Загрузите MP3 файл озвучки для воспроизведения');
+          setTimeout(finishAnnouncementSmoothly, 2500);
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ru-RU';
+        utterance.rate = 0.96;
+        utterance.pitch = 1.0;
+
+        utterance.onend = () => {
+          if (state.activeAnnouncementType) {
+            finishAnnouncementSmoothly();
+          }
+        };
+        utterance.onerror = () => {
+          if (state.activeAnnouncementType) {
+            finishAnnouncementSmoothly();
+          }
+        };
+
+        showToast('Тестовая озвучка (загрузите свой MP3 для студийного голоса)');
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function stopSpeechFallback() {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      }
+
+      /**
+       * Smoothly finishes or interrupts an active announcement:
+       * Fades voice down over 0.9s, then smoothly restores background music over 1.8s
+       */
+      function finishAnnouncementSmoothly() {
+        if (!state.activeAnnouncementType) return;
+
+        clearInterval(voiceFadeInterval);
+        stopSpeechFallback();
+
+        const restoreMusic = () => {
+          voiceAudio.pause();
+          voiceAudio.currentTime = 0;
+          voiceAudio.volume = 1.0;
+
+          state.activeAnnouncementType = null;
+          state.isDucked = false;
+          activeAnnouncementBar.classList.add('hidden');
+          duckingBadge.textContent = 'Авто-приглушение: 15%';
+          duckingBadge.classList.remove('text-amberwarm-400', 'border-amberwarm-500/40');
+          updateMusicStatusUI();
+
+          // Smoothly swell music back up over 1.8 seconds
+          fadeMusicTo(getTargetMusicGain(), 1800);
+        };
+
+        if (!voiceAudio.paused && voiceAudio.volume > 0.05) {
+          const steps = 18;
+          const startVol = voiceAudio.volume;
+          const stepDelta = startVol / steps;
+          let count = 0;
+          voiceFadeInterval = setInterval(() => {
+            count++;
+            voiceAudio.volume = Math.max(0, startVol - stepDelta * count);
+            if (count >= steps) {
+              clearInterval(voiceFadeInterval);
+              restoreMusic();
+            }
+          }, 45);
+        } else {
+          restoreMusic();
+        }
+      }
+
+      // --- Event Listeners ---
+      musicAudio.addEventListener('ended', () => {
+        playNextTrack();
+      });
+
+      musicAudio.addEventListener('timeupdate', () => {
+        if (!musicAudio.duration) return;
+        const pct = (musicAudio.currentTime / musicAudio.duration) * 100;
+        progressBarFill.style.width = `${pct}%`;
+        timeCurrent.textContent = formatTime(musicAudio.currentTime);
+        timeTotal.textContent = formatTime(musicAudio.duration);
+      });
+
+      progressBarContainer.addEventListener('click', (e) => {
+        if (!musicAudio.duration) return;
+        const rect = progressBarContainer.getBoundingClientRect();
+        const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        musicAudio.currentTime = clickRatio * musicAudio.duration;
+      });
+
+      voiceAudio.addEventListener('ended', () => {
+        finishAnnouncementSmoothly();
+      });
+
+      btnPlayPause.addEventListener('click', togglePlayPause);
+      btnNext.addEventListener('click', playNextTrack);
+      btnPrev.addEventListener('click', playPrevTrack);
+
+      btnShuffle.addEventListener('click', () => {
+        state.isShuffle = !state.isShuffle;
+        btnShuffle.classList.toggle('bg-amberwarm-500/20', state.isShuffle);
+        btnShuffle.classList.toggle('text-amberwarm-400', state.isShuffle);
+        btnShuffle.classList.toggle('border-amberwarm-500/40', state.isShuffle);
+        btnShuffle.classList.toggle('text-latte-400', !state.isShuffle);
+        showToast(state.isShuffle ? 'Случайный порядок включён' : 'Обычный порядок треков');
+      });
+
+      btnRepeat.addEventListener('click', () => {
+        state.isRepeat = !state.isRepeat;
+        btnRepeat.classList.toggle('bg-amberwarm-500/20', state.isRepeat);
+        btnRepeat.classList.toggle('text-amberwarm-400', state.isRepeat);
+        btnRepeat.classList.toggle('border-amberwarm-500/40', state.isRepeat);
+        btnRepeat.classList.toggle('text-latte-400', !state.isRepeat);
+        renderPlaylist();
+        showToast(state.isRepeat ? 'Повтор плейлиста включён' : 'Повтор плейлиста выключен');
+      });
+
+      musicVolumeSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        state.masterMusicVolume = val / 100;
+        musicVolumeLabel.textContent = `${val}%`;
+        currentMusicGain = getTargetMusicGain();
+        musicAudio.volume = currentMusicGain;
+        if (ambientGainNode && audioCtx) {
+          ambientGainNode.gain.setTargetAtTime(currentMusicGain * 0.25, audioCtx.currentTime, 0.05);
+        }
+      });
+
+      // Upload Music Files
+      musicFileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const wasEmpty = state.playlist.length === 0;
+        files.forEach(file => {
+          const cleanName = file.name.replace(/\.[^/.]+$/, '');
+          state.playlist.push({
+            name: cleanName,
+            url: URL.createObjectURL(file)
+          });
+        });
+
+        renderPlaylist();
+        showToast(`Добавлено треков: ${files.length}`);
+
+        if (wasEmpty) {
+          smoothSwitchToTrack(0, true);
+        }
+        musicFileInput.value = '';
+      });
+
+      // Upload Announcement Audio Slots
+      function bindAnnouncementUpload(inputEl, slotKey, labelEl) {
+        inputEl.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          if (state.announcements[slotKey].url) {
+            URL.revokeObjectURL(state.announcements[slotKey].url);
+          }
+          state.announcements[slotKey].url = URL.createObjectURL(file);
+          state.announcements[slotKey].name = file.name;
+          labelEl.textContent = `Файл: ${file.name}`;
+          labelEl.classList.remove('text-latte-400');
+          labelEl.classList.add('text-emerald-400');
+          showToast(`Аудио загружено: ${file.name}`);
+          inputEl.value = '';
+        });
+      }
+
+      bindAnnouncementUpload(promoFileInput, 'promo', document.getElementById('promoFileName'));
+      bindAnnouncementUpload(closingFileInput, 'closing', document.getElementById('closingFileName'));
+      bindAnnouncementUpload(customFileInput, 'custom', document.getElementById('customFileName'));
+
+      // Announcement Trigger Buttons
+      btnTriggerPromo.addEventListener('click', () => triggerAnnouncement('promo'));
+      btnTriggerClosing.addEventListener('click', () => triggerAnnouncement('closing'));
+      btnTriggerCustom.addEventListener('click', () => triggerAnnouncement('custom'));
+      btnSoftStopAnnouncement.addEventListener('click', () => {
+        finishAnnouncementSmoothly();
+        showToast('Объявление мягко завершено');
+      });
+
+      // Demo Ambient Toggle
+      btnDemoAmbient.addEventListener('click', toggleDemoAmbient);
+
+      // --- Touch Swipe Gestures on Music Deck Card ---
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      musicGestureZone.addEventListener('touchstart', (e) => {
+        if (e.target.closest('button') || e.target.closest('input') || e.target.closest('#progressBarContainer')) return;
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      musicGestureZone.addEventListener('touchend', (e) => {
+        if (!touchStartX && !touchStartY) return;
+        const dx = e.changedTouches[0].screenX - touchStartX;
+        const dy = e.changedTouches[0].screenY - touchStartY;
+        touchStartX = 0;
+        touchStartY = 0;
+
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) {
+            playNextTrack();
+            showToast('Жест: следующий трек');
+          } else {
+            playPrevTrack();
+            showToast('Жест: предыдущий трек');
+          }
+        }
+      }, { passive: true });
+
+      // --- Auto-Scheduler Logic ---
+      btnToggleAuto.addEventListener('click', () => {
+        state.autoScheduleEnabled = !state.autoScheduleEnabled;
+        btnToggleAuto.setAttribute('aria-checked', String(state.autoScheduleEnabled));
+
+        if (state.autoScheduleEnabled) {
+          btnToggleAuto.classList.remove('bg-espresso-700');
+          btnToggleAuto.classList.add('bg-amberwarm-500');
+          autoToggleKnob.classList.add('translate-x-6', 'bg-espresso-950');
+          autoToggleKnob.classList.remove('bg-latte-300');
+          state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
+          showToast(`Авто-повтор рекламы каждые ${state.autoIntervalMinutes} мин`);
+        } else {
+          btnToggleAuto.classList.add('bg-espresso-700');
+          btnToggleAuto.classList.remove('bg-amberwarm-500');
+          autoToggleKnob.classList.remove('translate-x-6', 'bg-espresso-950');
+          autoToggleKnob.classList.add('bg-latte-300');
+          autoCountdownText.textContent = 'Выключено';
+          showToast('Авто-повтор рекламы выключен');
+        }
+      });
+
+      autoIntervalSelect.addEventListener('change', (e) => {
+        state.autoIntervalMinutes = parseInt(e.target.value, 10);
+        state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
+        if (state.autoScheduleEnabled) {
+          showToast(`Интервал обновлён: каждые ${state.autoIntervalMinutes} мин`);
+        }
+      });
+
+      setInterval(() => {
+        if (!state.autoScheduleEnabled) return;
+        if (state.activeAnnouncementType) return; // Pause timer while announcement is speaking
+
+        state.autoSecondsRemaining--;
+        if (state.autoSecondsRemaining <= 0) {
+          state.autoSecondsRemaining = state.autoIntervalMinutes * 60;
+          triggerAnnouncement('promo');
+        }
+        autoCountdownText.textContent = formatTime(state.autoSecondsRemaining);
+      }, 1000);
+
+      // --- Scripts Modal & Clipboard ---
+      btnOpenScripts.addEventListener('click', () => {
+        scriptsModal.classList.remove('hidden');
+        scriptsModal.classList.add('flex');
+      });
+
+      btnCloseScripts.addEventListener('click', () => {
+        scriptsModal.classList.add('hidden');
+        scriptsModal.classList.remove('flex');
+      });
+
+      scriptsModal.addEventListener('click', (e) => {
+        if (e.target === scriptsModal) {
+          scriptsModal.classList.add('hidden');
+          scriptsModal.classList.remove('flex');
+        }
+      });
+
+      document.querySelectorAll('.copy-script-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.dataset.copyTarget;
+          const textEl = document.getElementById(targetId);
+          if (!textEl) return;
+
+          const tempInput = document.createElement('textarea');
+          tempInput.value = textEl.textContent.trim();
+          document.body.appendChild(tempInput);
+          tempInput.select();
+          document.execCommand('copy');
+          document.body.removeChild(tempInput);
+
+          const orig = btn.textContent;
+          btn.textContent = 'Скопировано!';
+          btn.classList.add('text-amberwarm-400');
+          showToast('Текст скопирован для вставки в нейросеть');
+          setTimeout(() => {
+            btn.textContent = orig;
+            btn.classList.remove('text-amberwarm-400');
+          }, 1800);
+        });
+      });
+
+    })();
+  </script>
+</body>
+</html>
