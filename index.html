@@ -2347,6 +2347,8 @@
        MAGIC TIPS
     ═══════════════════════════════════════════ */
     window.triggerMagicTipScreen = function() {
+      const recipientText = document.getElementById('magic-tip-recipient-label');
+      if (recipientText) recipientText.textContent = window.permanentTipRecipient === 'waiter' ? '✨ Чаевые официанту' : '☕ Чаевые бариста';
       window.toggleSyrupsShelf(false);
       isMagicActive = true;
       isPromoActive = false;
