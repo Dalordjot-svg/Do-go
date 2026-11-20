@@ -6,8 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#1b1230" />
-  <title>COFFEEMAN • Vice Nights — Касса</title>
+  <meta name="theme-color" content="#f5f5f7" />
+  <title>COFFEEMAN • Simply Good — Касса</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -515,6 +515,27 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 button:not(:disabled){transition:transform .18s ease,filter .18s ease}
 button:not(:disabled):active{transform:scale(.97)}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<style id="coffeeman-cupertino-pos-v2">
+:root{--cm-blue:#0071e3;--cm-text:#1d1d1f;--cm-border:#e5e5e9}
+body.ambient-bg{background:#f5f5f7!important;color:#1d1d1f!important;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif!important}
+body>header{background:#ffffffed!important;border-bottom:1px solid #e5e5e9!important;color:#1d1d1f!important;box-shadow:0 8px 28px #0000000a!important}
+body>header *{text-shadow:none!important}
+#view-pos,#view-history,#view-content,#view-settings{filter:none!important}
+#view-pos>div,#view-pos>section,#view-history>div,#view-content>div,#view-settings>div{border-color:#e4e4e9!important;box-shadow:0 8px 28px #0000000a;border-radius:22px}
+#permanent-tips-control{background:#fff!important;border:1px solid #e5e5e9!important;color:#1d1d1f!important;box-shadow:0 14px 40px #0000000e!important}
+#permanent-tips-control div,#permanent-tips-control p{color:#1d1d1f!important}
+#permanent-tips-control button{background:#0071e3!important;color:#fff!important;box-shadow:0 10px 28px #0071e329!important;border:0!important}
+#permanent-tips-lock{background:#f5f5f7!important;color:#1d1d1f!important}
+#permanent-tips-lock .pt-card{background:#fff!important;border:1px solid #e5e5e9!important;box-shadow:0 25px 80px #00000013!important}
+#permanent-tips-lock h2,#permanent-tips-lock p,#permanent-tips-lock .pt-card div{color:#1d1d1f!important}
+#permanent-tips-lock button{background:#0071e3!important;color:white!important}
+button{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease!important}
+button:not(:disabled):hover{transform:translateY(-2px)}
+button:not(:disabled):active{transform:scale(.97)}
+@keyframes cmPanelIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+#view-pos>div,#view-pos>section{animation:cmPanelIn .65s cubic-bezier(.2,.8,.2,1) both}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body class="ambient-bg text-cream min-h-[100dvh] flex flex-col font-sans selection:bg-gold selection:text-ink pb-24">
