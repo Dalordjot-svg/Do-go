@@ -337,6 +337,45 @@
     window.dbUpdate = update;
     window.dbRemove = remove;
 
+    // Постоянные чаевые: отдельный путь Firebase, независимый от заказов.
+    const permanentTipsTerminal = localStorage.getItem('yk_term_id') || 'term_01';
+    const permanentTipsRef = ref(db, `terminals/${permanentTipsTerminal}/permanent_tips`);
+    let permanentTipsEnabled = false;
+    const permanentTipsLock = document.getElementById('permanent-tips-lock');
+    const permanentTipsStop = document.getElementById('permanent-tips-stop');
+    const permanentTipsError = document.getElementById('permanent-tips-lock-error');
+    onValue(permanentTipsRef, snapshot => {
+      permanentTipsEnabled = snapshot.val()?.enabled === true;
+      permanentTipsLock.classList.toggle('active', permanentTipsEnabled);
+      permanentTipsLock.setAttribute('aria-hidden', String(!permanentTipsEnabled));
+      if (permanentTipsStop) permanentTipsStop.disabled = false;
+      if (permanentTipsError) permanentTipsError.textContent = '';
+    }, error => {
+      if (typeof showToast === 'function') showToast('Не удалось получить режим чаевых: ' + error.message, 'error');
+    });
+    window.enablePermanentTips = async function() {
+      if (permanentTipsEnabled) return;
+      const button = document.querySelector('#permanent-tips-control button');
+      if (button) button.disabled = true;
+      try {
+        await set(permanentTipsRef, { enabled: true, activatedAt: Date.now() });
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('Не удалось включить чаевые: ' + e.message, 'error');
+      } finally { if (button) button.disabled = false; }
+    };
+    window.disablePermanentTips = async function() {
+      if (!permanentTipsEnabled) return;
+      permanentTipsStop.disabled = true;
+      permanentTipsError.textContent = '';
+      try {
+        await set(permanentTipsRef, { enabled: false, deactivatedAt: Date.now() });
+      } catch (e) {
+        permanentTipsError.textContent = 'Не удалось отключить режим: ' + e.message;
+        permanentTipsStop.disabled = false;
+      }
+    };
+
+
     const initialSyrupsSeed = {
       s_caramel: { id: 's_caramel', name: 'Солёная карамель', taste: 'Сладкий, сливочный', price: 35, available: true, icon: '🍯' },
       s_vanilla: { id: 's_vanilla', name: 'Французская ваниль', taste: 'Нежный, классический', price: 35, available: true, icon: '🌼' },
@@ -497,6 +536,13 @@
     <!-- ============ ВКЛАДКА 1: МОБИЛЬНАЯ КАССА ============ -->
     <section id="view-pos" class="w-full max-w-lg mx-auto px-3.5 pt-3 pb-4 flex flex-col gap-3 fade-in">
 
+      
+<div id="permanent-tips-control">
+ <div style="font-size:11px;letter-spacing:.17em;color:#ffd4a5;font-weight:800">НОВЫЙ РЕЖИМ • COFFEEMAN</div>
+ <div style="font-size:20px;font-weight:900;margin-top:5px">☕ Бессрочные чаевые</div>
+ <p style="font-size:12px;color:#dec9c0;margin-top:6px;line-height:1.5">Гостевой экран постоянно показывает QR для чаевых. Касса блокируется до ручного отключения.</p>
+ <button onclick="window.enablePermanentTips()">Активировать бессрочно ↗</button>
+</div>
       <!-- Быстрый пульт экрана гостя (Чаевые / Сиропы / Сброс) -->
       <div class="grid grid-cols-3 gap-2">
         <button onclick="castMagicTips()" class="glass-card hover:border-peach/40 active:scale-95 py-2.5 px-2 rounded-2xl flex items-center justify-center gap-1.5 text-[11px] font-display font-bold text-peach transition-all">
@@ -2353,5 +2399,24 @@
       }
     }
   </script>
+
+<style>
+#permanent-tips-control{border:1px solid rgba(255,199,125,.32);background:linear-gradient(120deg,rgba(255,181,115,.15),rgba(255,120,129,.08));border-radius:22px;padding:17px;color:#fff5e8;box-shadow:0 16px 45px rgba(0,0,0,.12)}
+#permanent-tips-control button{border:1px solid rgba(255,212,145,.55);border-radius:14px;padding:13px 16px;font-weight:850;background:linear-gradient(120deg,#ffe4a4,#ffb88c);color:#301b19;width:100%;margin-top:12px}
+#permanent-tips-lock{display:none;position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 20% 10%,#55382e,#19151b 62%,#0c1016);color:#fff4e6;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:system-ui,sans-serif}
+#permanent-tips-lock.active{display:flex}
+#permanent-tips-lock .pt-card{width:min(100%,480px);border:1px solid rgba(255,209,157,.32);background:rgba(255,255,255,.055);border-radius:32px;padding:clamp(24px,5vw,42px);box-shadow:0 25px 90px #0007}
+#permanent-tips-lock .pt-icon{font-size:66px;margin-bottom:16px}
+#permanent-tips-lock h2{font-size:clamp(26px,5vw,38px);font-weight:900;line-height:1.1;margin:10px 0 16px}
+#permanent-tips-lock p{font-size:15px;color:#e5d1c7;line-height:1.6}
+#permanent-tips-lock button{width:100%;padding:17px;margin-top:30px;border-radius:18px;background:#ffe2ae;color:#33211c;font-size:17px;font-weight:900}
+#permanent-tips-lock button:disabled{opacity:.5}
+</style>
+<div id="permanent-tips-lock" role="dialog" aria-modal="true" aria-label="Режим бессрочных чаевых" aria-hidden="true">
+ <div class="pt-card"><div class="pt-icon">☕</div><div style="color:#ffd9a4;letter-spacing:.18em;font-size:12px;font-weight:800">COFFEEMAN • РЕЖИМ ЧАЕВЫХ</div>
+ <h2>Бессрочные чаевые<br>включены</h2><p>Экран гостя показывает QR-код для чаевых.<br>Остальные функции кассы временно заблокированы.</p>
+ <button id="permanent-tips-stop" onclick="window.disablePermanentTips()">Отключить режим</button>
+ <div id="permanent-tips-lock-error" style="color:#ffc0b4;margin-top:14px;font-size:13px" aria-live="polite"></div></div>
+</div>
 </body>
 </html>
