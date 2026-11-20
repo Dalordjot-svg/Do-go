@@ -1560,6 +1560,19 @@ button:not(:disabled):active{transform:scale(.97)}
       </div>
     </section>
 
+  <section id="order-tip-screen" class="screen-section" aria-labelledby="order-tip-title">
+    <article class="cm-panel guest-tip-panel">
+      <p id="order-tip-order"></p>
+      <h2 id="order-tip-title" tabindex="-1">Хотите оставить чаевые?</h2>
+      <p id="order-tip-message" role="status"></p>
+      <div id="order-tip-actions">
+        <button id="order-tip-yes" class="cm-action primary" type="button">Да</button>
+        <button id="order-tip-no" class="cm-action" type="button">Нет</button>
+      </div>
+      <canvas id="order-tip-qr" width="256" height="256" hidden aria-label="QR-код для оплаты чаевых"></canvas>
+      <button id="order-tip-retry" class="cm-action" type="button" hidden>Повторить</button>
+    </article>
+  </section>
   </main>
 
   <!-- ═══════════════════════════════════════════
@@ -1588,7 +1601,7 @@ button:not(:disabled):active{transform:scale(.97)}
         </button>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center my-auto overflow-hidden">
+      <div class="syrup-layout">
         
         <div id="syrup-detail-panel" class="lg:col-span-5 glass rounded-2xl p-4 md:p-5 flex flex-col justify-between gap-3 min-h-[280px]">
           <div class="flex justify-between items-start">
@@ -1639,7 +1652,7 @@ button:not(:disabled):active{transform:scale(.97)}
             <button onclick="scrollSyrupDrum(-1)" class="btn-ghost px-3 py-1.5 rounded-lg font-display text-[10px] font-bold text-gold min-h-[36px]">
               ◀ Влево
             </button>
-            <span class="text-[9px] uppercase tracking-widest text-cream/40 font-bold hidden sm:inline">Центральный активен</span>
+            <span class="text-[9px] uppercase tracking-widest text-cream/40 font-bold hidden sm:inline">Проведите влево или вправо</span>
             <button onclick="scrollSyrupDrum(1)" class="btn-ghost px-3 py-1.5 rounded-lg font-display text-[10px] font-bold text-gold min-h-[36px]">
               Вправо ▶
             </button>
@@ -1647,8 +1660,6 @@ button:not(:disabled):active{transform:scale(.97)}
 
           <div id="syrups-drum" class="drum-viewport flex items-center gap-4 py-6 px-[32%] cursor-grab active:cursor-grabbing select-none"></div>
 
-          <div class="wooden-shelf-plank w-full h-4 rounded-full -mt-3 relative z-0"></div>
-          <div class="w-11/12 mx-auto h-2 bg-black/80 blur-md rounded-full"></div>
         </div>
       </div>
     </div>
@@ -2146,84 +2157,71 @@ button:not(:disabled):active{transform:scale(.97)}
       { id: 's_raspberry', name: 'Лесная малина', taste: 'Ягодная кислинка', price: 35, available: false, icon: '🫐' }
     ];
 
-    let activeDrumIndex = 0;
+    let drumPosition = 0;
+    let activeDrumIndex = -1;
+    const drum = document.getElementById('syrups-drum');
+    const syrupsModal = document.getElementById('syrups-modal');
+    let shelfIdleTimer;
+    let shelfCloseTimer;
+    let shelfFrame;
+    let drag;
+    let lastWheel = 0;
 
     function renderSyrupsDrum() {
-      const drum = document.getElementById('syrups-drum');
-      if (!drum) return;
-      drum.innerHTML = '';
+      drum.replaceChildren();
+      activeDrumIndex = -1;
+      document.getElementById('syrup-detail-panel').hidden = !syrupsData.length;
+      if (!syrupsData.length) {
+        drum.textContent = 'Сиропов пока нет.';
+        return;
+      }
       syrupsData.forEach((item, index) => {
-        const isAvail = (item.available !== false);
-        const card = document.createElement('div');
-        card.dataset.index = index;
-        card.onclick = () => centerDrumCard(index);
-        card.className = `drum-card min-w-[150px] sm:min-w-[170px] h-[210px] md:h-[230px] rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col justify-between items-center text-center cursor-pointer select-none border-2 ${
-          isAvail ? 'bg-gradient-to-b from-neutral-800/80 via-ink to-black border-white/15' : 'bg-neutral-900/40 border-white/5 grayscale opacity-50'
-        }`;
-        card.innerHTML = `
-          <div class="w-full flex justify-between items-center">
-            <span class="text-[8px] font-display font-black uppercase px-1.5 py-0.5 rounded-full ${isAvail ? 'bg-mint/15 text-mint' : 'bg-neutral-700 text-neutral-400'}">
-              ${isAvail ? 'Активен' : 'Пусто'}
-            </span>
-            <span class="text-[9px] font-display font-bold text-cream/40">#${index + 1}</span>
-          </div>
-          <div class="my-auto flex flex-col items-center">
-            <div class="w-2 h-2.5 bg-gold/60 rounded-t-sm mb-0.5"></div>
-            <div class="w-16 md:w-18 h-20 md:h-22 rounded-xl md:rounded-2xl bg-gradient-to-b from-white/12 to-white/3 border border-white/20 flex items-center justify-center text-3xl md:text-4xl shadow-inner">
-              ${item.icon || '🧴'}
-            </div>
-          </div>
-          <div class="w-full">
-            <h4 class="font-display font-black text-[11px] md:text-xs text-cream truncate">${item.name}</h4>
-            <p class="text-[9px] text-gold font-display font-bold mt-0.5">+${item.price || 35} ₽</p>
-          </div>
-        `;
-        drum.appendChild(card);
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'syrup-card';
+        const icon = document.createElement('span');
+        icon.textContent = item.icon || '🧴';
+        const name = document.createElement('strong');
+        name.textContent = item.name || 'Сироп';
+        card.append(icon, name);
+        card.addEventListener('click', () => {
+          drumPosition += nearestDrumOffset(index);
+          updateDrum3DEffect();
+        });
+        drum.append(card);
       });
-      requestAnimationFrame(() => { updateDrum3DEffect(); });
+      updateDrum3DEffect();
+    }
+
+    function nearestDrumOffset(index) {
+      const count = syrupsData.length;
+      const offset = index - drumPosition;
+      return offset - Math.round(offset / count) * count;
     }
 
     function updateDrum3DEffect() {
-      const drum = document.getElementById('syrups-drum');
-      if (!drum) return;
-      const cards = drum.querySelectorAll('.drum-card');
-      if (!cards.length) return;
-
-      const drumRect = drum.getBoundingClientRect();
-      const drumCenter = drumRect.left + drumRect.width / 2;
-      let closestIndex = 0;
-      let minDistance = Infinity;
-
-      cards.forEach((card, idx) => {
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.left + rect.width / 2;
-        const dist = cardCenter - drumCenter;
-        const absDist = Math.abs(dist);
-        if (absDist < minDistance) { minDistance = absDist; closestIndex = idx; }
-        const maxDist = drumRect.width / 1.8;
-        const ratio = Math.min(absDist / maxDist, 1);
-        const scale = 1.12 - ratio * 0.32;
-        const rotateY = (dist / maxDist) * -35;
-        const translateZ = (1 - ratio) * 30;
-        const opacity = 1 - ratio * 0.5;
-        card.style.transform = `perspective(1000px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
-        card.style.opacity = Math.max(opacity, 0.4);
+      const count = syrupsData.length;
+      if (!count) return;
+      const selected = ((Math.round(drumPosition) % count) + count) % count;
+      const step = Math.min(Math.PI / 2, Math.PI * 2 / count);
+      const radius = Math.min(290, drum.clientWidth * .39);
+      Array.from(drum.children).forEach((card, index) => {
+        const angle = nearestDrumOffset(index) * step;
+        const depth = (Math.cos(angle) + 1) / 2;
+        const x = Math.sin(angle) * radius;
+        const y = (1 - depth) * -36;
+        card.style.transform = 'translate(-50%,-50%) translate(' + x + 'px,' + y + 'px) scale(' + (.54 + .46 * depth) + ')';
+        card.style.zIndex = String(Math.round(depth * 100));
+        const visible = depth > .23;
+        card.style.opacity = visible ? String(.28 + depth * .72) : '0';
+        card.style.pointerEvents = visible ? '' : 'none';
+        card.tabIndex = visible ? 0 : -1;
+        card.setAttribute('aria-current', String(index === selected));
+        card.setAttribute('aria-hidden', String(!visible));
       });
-
-      cards.forEach((card, idx) => {
-        const isAvail = syrupsData[idx] && syrupsData[idx].available !== false;
-        if (idx === closestIndex) {
-          card.style.borderColor = isAvail ? '#F0C978' : '#737373';
-          card.style.boxShadow = isAvail ? '0 15px 40px rgba(240, 201, 120, 0.3)' : 'none';
-        } else {
-          card.style.borderColor = 'rgba(255,255,255,0.12)';
-          card.style.boxShadow = 'none';
-        }
-      });
-
-      if (closestIndex !== activeDrumIndex || document.getElementById('detail-name').innerText !== syrupsData[closestIndex]?.name) {
-        activeDrumIndex = closestIndex;
-        updateLeftSyrupSpecs(syrupsData[closestIndex]);
+      if (selected !== activeDrumIndex) {
+        activeDrumIndex = selected;
+        updateLeftSyrupSpecs(syrupsData[selected]);
       }
     }
 
@@ -2252,46 +2250,84 @@ button:not(:disabled):active{transform:scale(.97)}
       }
     }
 
-    window.centerDrumCard = function(index) {
-      const drum = document.getElementById('syrups-drum');
-      const cards = drum.querySelectorAll('.drum-card');
-      if (!cards[index]) return;
-      cards[index].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    function resetShelfIdle() {
+      clearTimeout(shelfIdleTimer);
+      shelfIdleTimer = setTimeout(() => window.toggleSyrupsShelf(false), 60000);
+    }
+
+    window.scrollSyrupDrum = function(direction) {
+      drumPosition = Math.round(drumPosition) + direction;
+      updateDrum3DEffect();
+      resetShelfIdle();
     };
 
-    window.scrollSyrupDrum = function(dir) {
-      const nextIdx = Math.max(0, Math.min(syrupsData.length - 1, activeDrumIndex + dir));
-      centerDrumCard(nextIdx);
-    };
-
-    const syrupsDrumEl = document.getElementById('syrups-drum');
-    syrupsDrumEl.addEventListener('scroll', () => { requestAnimationFrame(updateDrum3DEffect); });
-    syrupsDrumEl.addEventListener('wheel', (evt) => {
-      evt.preventDefault();
-      syrupsDrumEl.scrollLeft += evt.deltaY;
+    syrupsModal.addEventListener('pointerdown', resetShelfIdle);
+    syrupsModal.addEventListener('keydown', event => {
+      resetShelfIdle();
+      if (event.key === 'Escape') window.toggleSyrupsShelf(false);
+      if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      event.preventDefault();
+      window.scrollSyrupDrum(event.key === 'ArrowLeft' ? -1 : 1);
+    });
+    drum.addEventListener('wheel', event => {
+      event.preventDefault();
+      resetShelfIdle();
+      if (Date.now() - lastWheel < 160 || !(event.deltaX || event.deltaY)) return;
+      lastWheel = Date.now();
+      window.scrollSyrupDrum(Math.sign(event.deltaX || event.deltaY));
+    }, { passive: false });
+    drum.addEventListener('pointerdown', event => {
+      if (event.isPrimary && event.button === 0) {
+        drag = { x: event.clientX, position: drumPosition, pointer: event.pointerId, moved: false };
+      }
+    });
+    drum.addEventListener('pointermove', event => {
+      if (drag?.pointer !== event.pointerId) return;
+      const delta = drag.x - event.clientX;
+      if (!drag.moved && Math.abs(delta) < 8) return;
+      if (!drag.moved) drum.setPointerCapture(event.pointerId);
+      drag.moved = true;
+      resetShelfIdle();
+      drum.classList.add('dragging');
+      drumPosition = drag.position + delta / 95;
+      updateDrum3DEffect();
+    });
+    for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture', 'pointerleave']) {
+      drum.addEventListener(eventName, event => {
+        if (drag?.pointer !== event.pointerId) return;
+        if (eventName === 'pointerleave' && drag.moved) return;
+        drag = null;
+        drum.classList.remove('dragging');
+        drumPosition = Math.round(drumPosition);
+        updateDrum3DEffect();
+      });
+    }
+    window.addEventListener('resize', () => {
+      if (!syrupsModal.classList.contains('hidden')) updateDrum3DEffect();
     });
 
-    const syrupsModal = document.getElementById('syrups-modal');
     window.toggleSyrupsShelf = function(show) {
+      clearTimeout(shelfIdleTimer);
+      clearTimeout(shelfCloseTimer);
+      cancelAnimationFrame(shelfFrame);
       if (show) {
-        renderSyrupsDrum();
         syrupsModal.classList.remove('hidden');
-        requestAnimationFrame(() => {
+        drumPosition = 0;
+        renderSyrupsDrum();
+        shelfFrame = requestAnimationFrame(() => {
           syrupsModal.classList.remove('opacity-0');
           syrupsModal.classList.add('opacity-100');
-          centerDrumCard(0);
-          updateDrum3DEffect();
         });
+        resetShelfIdle();
       } else {
         syrupsModal.classList.remove('opacity-100');
         syrupsModal.classList.add('opacity-0');
-        setTimeout(() => syrupsModal.classList.add('hidden'), 300);
+        shelfCloseTimer = setTimeout(() => syrupsModal.classList.add('hidden'), 300);
       }
     };
 
-    window.handleIdleScreenClick = function(e) {
-      if (e.target.closest('button')) return;
-      if (isDragging) return;
+    window.handleIdleScreenClick = function(event) {
+      if (event.target.closest('button, a') || isDragging) return;
       window.toggleSyrupsShelf(true);
     };
 
@@ -2316,7 +2352,7 @@ button:not(:disabled):active{transform:scale(.97)}
     let countdownInterval = null;
     let returnTimeout = null;
     let magicCountdownInterval = null;
-    let autoMagicTimeout = null;
+
     let customerScreenPollingInterval = null;
     let promoInterval = null;
 
@@ -2343,7 +2379,8 @@ button:not(:disabled):active{transform:scale(.97)}
        SCREEN SWITCHING
     ═══════════════════════════════════════════ */
     function showScreen(screenId) {
-      [idleScreen, paymentScreen, magicTipScreen, magicThanksScreen, successScreen, specialPromoScreen].forEach(s => {
+      if (screenId !== 'order-tip-screen') closeOrderTip();
+      [document.getElementById('order-tip-screen'), idleScreen, paymentScreen, magicTipScreen, magicThanksScreen, successScreen, specialPromoScreen].forEach(s => {
         if (!s) return;
         s.classList.remove('active');
       });
@@ -2360,6 +2397,100 @@ button:not(:disabled):active{transform:scale(.97)}
     /* ═══════════════════════════════════════════
        PAYMENT UTILS
     ═══════════════════════════════════════════ */
+    const orderTipTitle = document.getElementById('order-tip-title');
+    const orderTipOrder = document.getElementById('order-tip-order');
+    const orderTipMessage = document.getElementById('order-tip-message');
+    const orderTipActions = document.getElementById('order-tip-actions');
+    const orderTipQR = document.getElementById('order-tip-qr');
+    const orderTipRetry = document.getElementById('order-tip-retry');
+    const rubles = new Intl.NumberFormat('ru-RU', {style: 'currency', currency: 'RUB', maximumFractionDigits: 2, minimumFractionDigits: 0});
+    let activeTip = null;
+    let orderTipTimer;
+    let previousOffer;
+    let tipPaymentPending = false;
+    let orderTipPaymentKey;
+
+    function closeOrderTip() {
+      clearTimeout(orderTipTimer);
+      activeTip = null;
+      tipPaymentPending = false;
+    }
+
+    function showTipThanks(message) {
+      clearAllTimeouts();
+      orderTipTitle.textContent = 'Спасибо!';
+      orderTipMessage.textContent = message;
+      orderTipActions.hidden = true;
+      orderTipRetry.hidden = true;
+      orderTipQR.hidden = true;
+      clearTimeout(orderTipTimer);
+      orderTipTimer = setTimeout(() => resetToIdle(false), 4500);
+    }
+
+    async function startOrderTipPayment() {
+      const offer = activeTip;
+      if (!offer || tipPaymentPending) return;
+      tipPaymentPending = true;
+      orderTipActions.hidden = true;
+      orderTipRetry.hidden = true;
+      orderTipTitle.textContent = 'Чаевые по СБП';
+      orderTipMessage.textContent = 'Готовим QR-код…';
+      try {
+        const {paymentId, qrUrl} = await createLiveYookassaSbpQr(offer.tipAmount, 'Чаевые COFFEEMAN', orderTipPaymentKey);
+        if (activeTip !== offer) return;
+        if (!renderQRCodeToCanvas(qrUrl, 'order-tip-qr')) throw new Error('QR недоступен');
+        orderTipQR.hidden = false;
+        orderTipMessage.textContent = 'Наведите камеру на QR-код · ' + rubles.format(offer.tipAmount);
+        startPaymentWatcher(paymentId, () => {
+          if (activeTip !== offer) return;
+          recordTipStat();
+          showTipThanks('Спасибо за чаевые!');
+        });
+      } catch (error) {
+        if (activeTip !== offer) return;
+        orderTipMessage.textContent = 'QR-код недоступен. Попробуйте ещё раз.';
+        orderTipRetry.hidden = false;
+        tipPaymentPending = false;
+      }
+    }
+
+    function showOrderTip(offer, automatic = false) {
+      if (!automatic) {
+        const age = Date.now() - offer.timestamp;
+        if (!Number.isFinite(age) || age > 180000 || age < -60000 ||
+            !Number.isFinite(offer.amount) || offer.amount <= 0 ||
+            !Number.isFinite(offer.tipAmount) || offer.tipAmount < 1 || offer.tipAmount > 10000 ||
+            previousOffer === offer.timestamp) return;
+        previousOffer = offer.timestamp;
+      }
+      closeOrderTip();
+      clearTimeout(idleTimeout);
+      clearAllTimeouts();
+      hideNfcGlow();
+      window.toggleSyrupsShelf(false);
+      isMagicActive = true;
+      isPromoActive = false;
+      isSuccessActive = false;
+      activeTip = offer;
+      if (!automatic) orderTipPaymentKey = generateUUID();
+      orderTipTitle.textContent = 'Хотите оставить чаевые?';
+      orderTipOrder.textContent = automatic ? 'COFFEEMAN' : 'Сумма заказа — ' + rubles.format(offer.amount);
+      orderTipMessage.textContent = automatic ? 'Для команды кофейни' : 'Чаевые — ' + rubles.format(offer.tipAmount);
+      orderTipActions.hidden = false;
+      orderTipQR.hidden = true;
+      orderTipRetry.hidden = true;
+      showScreen('order-tip-screen');
+      if (!automatic) orderTipTitle.focus({preventScroll: true});
+      orderTipTimer = setTimeout(() => resetToIdle(false), automatic ? 15000 : 180000);
+    }
+
+    document.getElementById('order-tip-yes').onclick = () => {
+      if (activeTip?.automatic) window.triggerMagicTipScreen();
+      else startOrderTipPayment();
+    };
+    orderTipRetry.onclick = startOrderTipPayment;
+    document.getElementById('order-tip-no').onclick = () => showTipThanks('До встречи в COFFEEMAN!');
+
     function generateUUID() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -2376,7 +2507,7 @@ button:not(:disabled):active{transform:scale(.97)}
       return `https://corsproxy.io/?url=${encodeURIComponent(targetYookassaUrl)}`;
     }
 
-    async function createLiveYookassaSbpQr(amountRub, descriptionText) {
+    async function createLiveYookassaSbpQr(amountRub, descriptionText, idempotenceKey = generateUUID()) {
       const shopId = globalShopId || localStorage.getItem('yk_shop_id') || '';
       const secretKey = globalSecretKey || localStorage.getItem('yk_secret_key') || '';
       if (!shopId || !secretKey) throw new Error("Не заданы ключи Shop ID / Secret Key");
@@ -2386,7 +2517,7 @@ button:not(:disabled):active{transform:scale(.97)}
         method: 'POST',
         headers: {
           'Authorization': authHeader,
-          'Idempotence-Key': generateUUID(),
+          'Idempotence-Key': idempotenceKey,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -2411,19 +2542,21 @@ button:not(:disabled):active{transform:scale(.97)}
       if (!paymentId || !shopId || !secretKey) return;
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${paymentId}`);
-      customerScreenPollingInterval = setInterval(async () => {
+      const watcher = setInterval(async () => {
         try {
           const res = await fetch(pollUrl, {
             method: 'GET',
             headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' }
           });
           const data = await res.json();
-          if (data && (data.status === 'succeeded' || data.paid === true)) {
-            clearInterval(customerScreenPollingInterval);
+          if (customerScreenPollingInterval === watcher && data && (data.status === 'succeeded' || data.paid === true)) {
+            clearInterval(watcher);
+            customerScreenPollingInterval = null;
             onPaidCallback(data);
           }
         } catch (e) { console.error("Poll error:", e); }
       }, 1600);
+      customerScreenPollingInterval = watcher;
     }
 
     function renderQRCodeToCanvas(url, canvasId) {
@@ -2759,6 +2892,7 @@ button:not(:disabled):active{transform:scale(.97)}
       permanentTipActive = enabled;
       permanentTipOverlay.classList.toggle('active', enabled);
       if (enabled) {
+        closeOrderTip();
         clearAllTimeouts();
         window.permanentTipSelect(window.permanentTipAmount);
       } else {
@@ -2980,7 +3114,6 @@ button:not(:disabled):active{transform:scale(.97)}
       currentSlide = 0;
       renderSlide();
       setupSwipeNavigation();
-      scheduleNextAutoMagicTip();
     }
 
     function showNfcGlow(side) {
@@ -2994,18 +3127,12 @@ button:not(:disabled):active{transform:scale(.97)}
       if (nfcGlowRight) nfcGlowRight.classList.add('hidden');
     }
 
-    function scheduleNextAutoMagicTip() {
-      if (autoMagicTimeout) clearTimeout(autoMagicTimeout);
-      const randomMinutes = Math.floor(Math.random() * 8) + 7;
-      const delayMs = randomMinutes * 60 * 1000;
-      autoMagicTimeout = setTimeout(() => {
-        if (!isSuccessActive && !isMagicActive && !isPromoActive && !paymentScreen.classList.contains('active') && syrupsModal.classList.contains('hidden')) {
-          window.triggerMagicTipScreen();
-        } else {
-          scheduleNextAutoMagicTip();
-        }
-      }, delayMs);
-    }
+    setInterval(() => {
+      if (!permanentTipActive && idleScreen.classList.contains('active') &&
+          !isSuccessActive && !isMagicActive && !isPromoActive && syrupsModal.classList.contains('hidden')) {
+        showOrderTip({automatic: true}, true);
+      }
+    }, 60000);
 
     function formatTime(seconds) {
       const m = Math.floor(seconds / 60);
@@ -3119,25 +3246,22 @@ button:not(:disabled):active{transform:scale(.97)}
       if (returnTimeout) clearTimeout(returnTimeout);
       if (magicCountdownInterval) clearInterval(magicCountdownInterval);
       if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
+      customerScreenPollingInterval = null;
       if (promoInterval) clearInterval(promoInterval);
       if (slideProgressInterval) clearInterval(slideProgressInterval);
     }
 
     window.resetToIdle = function(updateFirebase = false) {
+      closeOrderTip();
       isSuccessActive = false;
       isMagicActive = false;
       isPromoActive = false;
       if (promoInterval) clearInterval(promoInterval);
       clearAllTimeouts();
       hideNfcGlow();
-      setTimeout(() => {
-        showScreen('idle-screen');
-        startIdleCycle();
-        if (updateFirebase) {
-          const orderRef = ref(db, `terminals/${terminalId}/current_order`);
-          set(orderRef, { status: 'IDLE' });
-        }
-      }, 350);
+      showScreen('idle-screen');
+      startIdleCycle();
+      if (updateFirebase) set(ref(db, 'terminals/' + terminalId + '/current_order'), {status: 'IDLE'});
     };
 
     function updateTotal() {
@@ -3219,8 +3343,14 @@ button:not(:disabled):active{transform:scale(.97)}
     onValue(orderRef, (snapshot) => {
       const data = snapshot.val();
       if (permanentTipActive) return;
+      if (activeTip && (data?.status === 'IDLE' || data?.status === 'canceled' || !data)) {
+        resetToIdle(false);
+        return;
+      }
       if (data) {
-        if (data.status === 'WAITING_FOR_PAYMENT' || data.status === 'WAITING_FOR_CARD') {
+        if (data.status === 'OFFER_ORDER_TIP') {
+          showOrderTip(data);
+        } else if (data.status === 'WAITING_FOR_PAYMENT' || data.status === 'WAITING_FOR_CARD') {
           isSuccessActive = false;
           triggerPayment(data);
         } else if (data.status === 'PAID' || data.status === 'succeeded' || data.status === 'cash_succeeded') {
@@ -3314,5 +3444,69 @@ button:not(:disabled):active{transform:scale(.97)}
   </div>
  </div>
 </div>
+<style>
+:root{--paper:#f7f5f1;--surface:#fff;--text:#25231f;--muted:#625b52;--line:#e5ded4;--accent:#1e6655;--wash:#e7f1eb;--shadow:0 16px 44px #34261a13;color-scheme:light}
+:root[data-theme=dark]{--paper:#171a19;--surface:#222725;--text:#f4f0e7;--muted:#c1b9ac;--line:#414844;--accent:#236a58;--wash:#2b3b34;--shadow:0 16px 44px #0005;color-scheme:dark}
+html:root,body.ambient-bg,html body{background:var(--paper)!important;color:var(--text)!important}
+html body>header,html body .glass,html body .glass-strong,html body .glass-card{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:var(--shadow)!important}
+html body>header *,html body>footer{color:var(--text)!important}
+html body .btn-gold,html body .btn-coral,html body>header button{background:var(--accent)!important;color:#fff!important}
+html body .btn-ghost{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+.cm-panel{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:clamp(18px,4vw,38px);box-shadow:var(--shadow);animation:cm-arrive .45s ease both}
+.cm-panel h2,.cm-panel h3{font-weight:800;letter-spacing:-.035em;line-height:1.12}
+.cm-panel p{color:var(--muted)}
+.cm-action{border:1px solid var(--line);background:var(--wash);color:var(--text);border-radius:15px;padding:12px 18px;min-height:46px;font-weight:750}
+.cm-action.primary{background:var(--accent);color:#fff;border-color:transparent}
+.cm-action:disabled{opacity:.6;cursor:wait}
+.cm-action:focus-visible,.syrup-card:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+@keyframes cm-arrive{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+<script>
+  function syncCoffeemanTheme() {
+    const hour = new Date().getHours();
+    document.documentElement.dataset.theme = hour >= 17 || hour < 6 ? 'dark' : 'light';
+  }
+  syncCoffeemanTheme();
+  setInterval(syncCoffeemanTheme, 10000);
+  document.addEventListener('visibilitychange', syncCoffeemanTheme);
+</script>
+
+<style>
+html body #idle-screen #slide-container,html body #idle-screen .slide-stage,html body #idle-screen .idle-cta,html body #idle-neon-banner{background:var(--surface)!important;border-color:var(--line)!important;color:var(--text)!important}
+html body #idle-screen .idle-cta *,html body .cm-apple-hero h2,html body .neon-story h2,html body #payment-screen h2,html body #magic-tip-screen h2,html body #magic-thanks-screen h2,html body #success-screen h2{color:var(--text)!important}
+html body .cm-apple-hero,html body .neon-story{background:radial-gradient(circle at 80% 8%,var(--wash),transparent 58%),var(--surface)!important;color:var(--text)!important}
+html body .cm-apple-hero p,html body .neon-story p,html body #payment-screen .glass *,html body #magic-tip-screen .glass *{color:var(--text)!important}
+html body .cm-apple-hero button,html body .neon-story button{background:var(--accent)!important;color:#fff!important}
+:root[data-theme=dark] .cm-apple-hero .cm-orb{opacity:.25}
+html body #permanent-tip-display{background:radial-gradient(ellipse at 20% 8%,var(--wash),var(--paper) 65%)!important;color:var(--text)!important}
+html body #permanent-tip-display :is(.pt-label,h2,h2 span,.pt-desc,.pt-recipient-hint,.pt-fact,.pt-status,.pt-shell>div>p){color:var(--text)!important}
+html body #permanent-tip-display :is(.pt-amounts button,.pt-recipient button,.pt-custom input,.pt-fact,.pt-qr-card){background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body #permanent-tip-display :is(.pt-amounts button.selected,.pt-recipient button.selected,.pt-custom button,.pt-retry){background:var(--accent)!important;color:#fff!important}
+html body #permanent-tip-display .pt-qr-card :is(div,p){color:var(--text)!important}
+html body #permanent-tip-display canvas,#order-tip-qr{background:#fff;padding:10px;border-radius:10px;image-rendering:pixelated}
+#order-tip-screen.active{display:grid;place-items:center;text-align:center;padding:12px}
+.guest-tip-panel{width:min(100%,660px)}
+.guest-tip-panel h2{font-size:clamp(28px,5vw,58px);margin:.35em 0}
+.guest-tip-panel p{font-size:clamp(16px,2.3vw,23px)}
+#order-tip-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+#order-tip-actions button{min-height:70px;font-size:clamp(20px,3vw,30px)}
+#order-tip-qr{margin:16px auto 0;max-width:min(100%,256px);max-height:38dvh;object-fit:contain}
+#order-tip-retry{margin-top:16px}
+#order-tip-screen [hidden],#syrups-modal [hidden]{display:none!important}
+html body #syrups-modal{background:color-mix(in srgb,var(--paper) 93%,transparent)!important}
+#syrups-modal>.glass-strong{max-width:880px;overflow:auto}
+.syrup-layout{display:grid;gap:12px}
+html body #syrup-detail-panel{min-height:0;box-shadow:none!important;background:var(--paper)!important}
+html body #syrups-modal :is(h3,h4,[class*="text-cream"],[class*="text-gold"]){color:var(--text)!important}
+#syrups-modal #detail-desc{background:var(--surface)}
+#syrups-drum{height:clamp(146px,28dvh,245px);position:relative;display:block;padding:0;overflow:hidden;touch-action:pan-y;scroll-snap-type:none}
+#syrups-drum:before{content:'';position:absolute;inset:14% 9%;border-radius:50%;border:1px solid var(--line);background:var(--wash)}
+#syrups-drum .syrup-card{position:absolute;top:52%;left:50%;width:clamp(98px,25vw,165px);min-height:113px;display:grid;place-content:center;gap:6px;padding:10px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);transition:transform .34s cubic-bezier(.2,.7,.2,1),opacity .28s,border-color .28s!important}
+#syrups-drum .syrup-card[aria-current=true]{border:2px solid var(--accent)}
+#syrups-drum.dragging .syrup-card{transition:none!important}
+.syrup-card span{font-size:clamp(23px,5vw,40px)}
+.syrup-card strong{font-size:clamp(11px,2vw,14px);overflow-wrap:anywhere}
+</style>
 </body>
 </html>

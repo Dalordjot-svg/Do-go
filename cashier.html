@@ -313,7 +313,7 @@
   <!-- Firebase Модуль -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, get, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, get, push, update, remove, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB8CBeK8m25rox6BYO8ep6JeBJ7ipmYViQ",
@@ -336,6 +336,76 @@
     window.dbPush = push;
     window.dbUpdate = update;
     window.dbRemove = remove;
+
+    window.sendTipScreenCommand = (order, command) => runTransaction(order, current => {
+      if (['WAITING_FOR_PAYMENT', 'WAITING_FOR_CARD'].includes(current?.status)) return;
+      return command;
+    }, {applyLocally: false});
+
+    const tipForm = document.getElementById('tip-offer-form');
+    const tipCheck = document.getElementById('tip-check');
+    const tipValue = document.getElementById('tip-value');
+    const tipStatus = document.getElementById('tip-offer-status');
+    const tipKeypad = document.getElementById('tip-keypad');
+    for (const key of ['1','2','3','4','5','6','7','8','9','⌫','0','Сброс']) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'cm-action';
+      button.textContent = key;
+      if (key === '⌫') button.setAttribute('aria-label', 'Удалить цифру');
+      button.addEventListener('click', () => {
+        if (key === 'Сброс') tipValue.value = '';
+        else if (key === '⌫') {
+          const shortened = tipValue.value.slice(0, -1).replace(/\.$/, '');
+          tipValue.value = shortened;
+        }
+        else if (tipValue.value.length < 8) tipValue.value = String(Number(tipValue.value + key));
+      });
+      tipKeypad.append(button);
+    }
+    tipForm.querySelectorAll('[data-tip-percent]').forEach(button => {
+      button.addEventListener('click', () => {
+        if (!tipCheck.reportValidity()) return;
+        tipValue.value = (tipCheck.valueAsNumber * Number(button.dataset.tipPercent) / 100).toFixed(2);
+        tipValue.reportValidity();
+      });
+    });
+    document.getElementById('tip-dismiss').addEventListener('click', async event => {
+      const button = event.currentTarget;
+      const terminal = localStorage.getItem('yk_term_id') || 'term_01';
+      button.disabled = true;
+      try {
+        const result = await window.sendTipScreenCommand(ref(db, 'terminals/' + terminal + '/current_order'), {status: 'IDLE'});
+        tipStatus.textContent = result.committed ? 'Экран возвращён в ожидание.' : 'На терминале идёт оплата.';
+      } catch (error) {
+        tipStatus.textContent = 'Не удалось вернуть экран в ожидание.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+    tipForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = tipForm.querySelector('[type=submit]');
+      const terminal = localStorage.getItem('yk_term_id') || 'term_01';
+      const order = ref(db, 'terminals/' + terminal + '/current_order');
+      const timestamp = Date.now();
+      button.disabled = true;
+      tipStatus.textContent = 'Отправляем запрос…';
+      try {
+        const offer = {
+          status: 'OFFER_ORDER_TIP', amount: tipCheck.valueAsNumber,
+          tipAmount: tipValue.valueAsNumber, timestamp
+        };
+        const result = await window.sendTipScreenCommand(order, offer);
+        tipStatus.textContent = result.committed
+          ? 'Запрос отправлен на экран гостя.'
+          : 'Завершите текущую оплату и повторите отправку.';
+      } catch (error) {
+        tipStatus.textContent = 'Не удалось отправить запрос. Проверьте связь с терминалом.';
+      } finally {
+        button.disabled = false;
+      }
+    });
 
     // Постоянные чаевые: отдельный путь Firebase, независимый от заказов.
     const permanentTipsTerminal = localStorage.getItem('yk_term_id') || 'term_01';
@@ -574,18 +644,9 @@ button:not(:disabled):active{transform:scale(.97)}
     <section id="view-pos" class="w-full max-w-lg mx-auto px-3.5 pt-3 pb-4 flex flex-col gap-3 fade-in">
 
       
-<div id="permanent-tips-control">
- <div style="font-size:11px;letter-spacing:.17em;color:#ffd4a5;font-weight:800">НОВЫЙ РЕЖИМ • COFFEEMAN</div>
- <div style="font-size:20px;font-weight:900;margin-top:5px">☕ Бессрочные чаевые</div>
- <p style="font-size:12px;color:#dec9c0;margin-top:6px;line-height:1.5">Гостевой экран постоянно показывает QR для чаевых. Касса блокируется до ручного отключения.</p>
- <button onclick="window.enablePermanentTips()">Активировать бессрочно ↗</button>
-</div>
-      <!-- Быстрый пульт экрана гостя (Чаевые / Сиропы / Сброс) -->
-      <div class="grid grid-cols-3 gap-2">
-        <button onclick="castMagicTips()" class="glass-card hover:border-peach/40 active:scale-95 py-2.5 px-2 rounded-2xl flex items-center justify-center gap-1.5 text-[11px] font-display font-bold text-peach transition-all">
-          <span class="text-sm">☕</span>
-          <span>Чаевые</span>
-        </button>
+
+      <!-- Быстрый пульт экрана гостя -->
+      <div class="grid grid-cols-2 gap-2">
         <button onclick="triggerShowSyrupsOnDisplay()" class="glass-card hover:border-lavender/40 active:scale-95 py-2.5 px-2 rounded-2xl flex items-center justify-center gap-1.5 text-[11px] font-display font-bold text-lavender transition-all">
           <span class="text-sm">🧴</span>
           <span>Сиропы</span>
@@ -1079,6 +1140,36 @@ button:not(:disabled):active{transform:scale(.97)}
       </div>
     </section>
 
+
+    <section id="view-tips" class="hidden w-full max-w-lg mx-auto px-4 py-4 flex-col gap-4">
+      <form id="tip-offer-form" class="cm-panel grid gap-4">
+        <h2 class="text-3xl">Чаевые по чеку</h2>
+        <label for="tip-check" class="grid gap-2 font-semibold">Сумма чека, ₽
+          <input id="tip-check" type="number" min="1" max="1000000" step="0.01" inputmode="decimal" required>
+        </label>
+        <div class="grid grid-cols-3 gap-2" aria-label="Процент от чека">
+          <button class="cm-action" type="button" data-tip-percent="5">5%</button>
+          <button class="cm-action" type="button" data-tip-percent="10">10%</button>
+          <button class="cm-action" type="button" data-tip-percent="15">15%</button>
+        </div>
+        <label for="tip-value" class="grid gap-2 font-semibold">Чаевые, ₽
+          <input id="tip-value" type="number" min="1" max="10000" step="0.01" inputmode="decimal" required>
+        </label>
+        <div id="tip-keypad" class="grid grid-cols-3 gap-2" aria-label="Клавиатура суммы чаевых"></div>
+        <button class="cm-action primary" type="submit">Отправить на экран</button>
+        <p id="tip-offer-status" role="status"></p>
+      </form>
+      <div class="cm-panel grid gap-3">
+        <h3 class="text-xl">Управление экраном</h3>
+        <button class="cm-action" onclick="castMagicTips()">Показать экран чаевых</button>
+        <button class="cm-action" id="tip-dismiss" type="button">Вернуть экран в ожидание</button>
+      </div>
+      <div id="permanent-tips-control" class="cm-panel">
+        <h3 class="text-xl">Бессрочные чаевые</h3>
+        <p>На экране гостя будет QR-код. Касса приостановится до отключения режима.</p>
+        <button onclick="window.enablePermanentTips()">Включить</button>
+      </div>
+    </section>
   </main>
 
   <!-- ================= МОДАЛКА СИРОПА ================= -->
@@ -1223,6 +1314,10 @@ button:not(:disabled):active{transform:scale(.97)}
       <button id="dock-pos" onclick="openView('pos')" class="dock-btn active">
         <span class="dock-icon">⚡</span>
         <span class="dock-text">Касса</span>
+      </button>
+      <button id="dock-tips" onclick="openView('tips')" class="dock-btn">
+        <span class="dock-icon" aria-hidden="true">♡</span>
+        <span class="dock-text">Чаевые</span>
       </button>
       <button id="dock-history" onclick="openView('history')" class="dock-btn">
         <span class="dock-icon">📜</span>
@@ -1391,7 +1486,7 @@ button:not(:disabled):active{transform:scale(.97)}
     // ============ НАВИГАЦИЯ ============
     window.openView = function(view) {
       haptic(10);
-      ['pos', 'history', 'content', 'settings'].forEach(v => {
+      ['pos', 'tips', 'history', 'content', 'settings'].forEach(v => {
         const el = document.getElementById('view-' + v);
         if (el) { el.classList.add('hidden'); el.classList.remove('flex', 'fade-in'); }
         const btn = document.getElementById('dock-' + v);
@@ -1408,6 +1503,10 @@ button:not(:disabled):active{transform:scale(.97)}
       const btn = document.getElementById('dock-' + view);
       if (btn) btn.classList.add('active');
 
+      if (view === 'tips') {
+        const check = document.getElementById('tip-check');
+        if (!check.value && Number(currentInput) > 0) check.value = currentInput;
+      }
       if (view === 'history' && typeof renderHistoryList === 'function') {
         renderHistoryList();
       }
@@ -1666,7 +1765,16 @@ button:not(:disabled):active{transform:scale(.97)}
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       if (window.firebaseDB && window.dbRef && window.dbSet) {
         const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-        await window.dbSet(orderRef, { status: 'TRIGGER_MAGIC_TIPS', timestamp: Date.now() });
+        try {
+          const result = await window.sendTipScreenCommand(orderRef, {status: 'TRIGGER_MAGIC_TIPS', timestamp: Date.now()});
+          if (!result.committed) {
+            showToast('Сначала завершите текущую оплату', 'error');
+            return;
+          }
+        } catch (error) {
+          showToast('Не удалось открыть экран чаевых', 'error');
+          return;
+        }
         document.getElementById('pos-status-text').innerHTML = '<span class="text-peach font-bold">☕ Экран чаевых открыт у гостя</span>';
         showToast('☕ Экран чаевых открыт у гостя', 'info');
       }
@@ -2455,5 +2563,49 @@ button:not(:disabled):active{transform:scale(.97)}
  <button id="permanent-tips-stop" onclick="window.disablePermanentTips()">Отключить режим</button>
  <div id="permanent-tips-lock-error" style="color:#ffc0b4;margin-top:14px;font-size:13px" aria-live="polite"></div></div>
 </div>
+
+<style>
+:root{--paper:#f7f5f1;--surface:#fff;--text:#25231f;--muted:#625b52;--line:#e5ded4;--accent:#1e6655;--wash:#e7f1eb;--shadow:0 16px 44px #34261a13;color-scheme:light}
+:root[data-theme=dark]{--paper:#171a19;--surface:#222725;--text:#f4f0e7;--muted:#c1b9ac;--line:#414844;--accent:#236a58;--wash:#2b3b34;--shadow:0 16px 44px #0005;color-scheme:dark}
+html:root,body.ambient-bg,html body{background:var(--paper)!important;color:var(--text)!important}
+html body>header,html body .glass,html body .glass-strong,html body .glass-card{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:var(--shadow)!important}
+html body>header *,html body>footer{color:var(--text)!important}
+html body .btn-gold,html body .btn-coral,html body>header button{background:var(--accent)!important;color:#fff!important}
+html body .btn-ghost{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+.cm-panel{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:clamp(18px,4vw,38px);box-shadow:var(--shadow);animation:cm-arrive .45s ease both}
+.cm-panel h2,.cm-panel h3{font-weight:800;letter-spacing:-.035em;line-height:1.12}
+.cm-panel p{color:var(--muted)}
+.cm-action{border:1px solid var(--line);background:var(--wash);color:var(--text);border-radius:15px;padding:12px 18px;min-height:46px;font-weight:750}
+.cm-action.primary{background:var(--accent);color:#fff;border-color:transparent}
+.cm-action:disabled{opacity:.6;cursor:wait}
+.cm-action:focus-visible,.syrup-card:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+@keyframes cm-arrive{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+<script>
+  function syncCoffeemanTheme() {
+    const hour = new Date().getHours();
+    document.documentElement.dataset.theme = hour >= 17 || hour < 6 ? 'dark' : 'light';
+  }
+  syncCoffeemanTheme();
+  setInterval(syncCoffeemanTheme, 10000);
+  document.addEventListener('visibilitychange', syncCoffeemanTheme);
+</script>
+<style>
+#view-tips input{border:1px solid var(--line);background:var(--paper);color:var(--text);border-radius:12px;padding:10px 13px;width:100%}
+html body #permanent-tips-control,html body #permanent-tips-lock .pt-card{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
+html body #permanent-tips-control p,html body #permanent-tips-lock h2,html body #permanent-tips-lock p,html body #permanent-tips-lock .pt-card div{color:var(--text)!important}
+html body #permanent-tips-lock{background:var(--paper)!important}
+html body #permanent-tips-control button,html body #permanent-tips-lock button{background:var(--accent)!important;color:white!important}
+html body .bottom-dock{background:var(--surface)!important;border-color:var(--line)!important}
+html body .dock-btn{color:var(--muted)!important;min-width:0}
+html body .dock-btn.active{color:var(--text)!important;background:var(--wash)!important}
+html body .pos-amount-gradient{background:none!important;color:var(--text)!important;-webkit-text-fill-color:var(--text)!important}
+html body [class*="text-cream"],html body [class*="text-peach"],html body [class*="text-gold"],html body [class*="text-lavender"]{color:var(--text)!important}
+html body .dock-text{white-space:nowrap}
+html body .bottom-dock{max-width:calc(100vw - 12px);box-shadow:var(--shadow)}
+html body .dock-btn{padding:10px clamp(6px,1.5vw,18px)}
+@media(max-width:520px){html body .dock-btn{flex-direction:column;gap:4px;letter-spacing:0;font-size:9px}}
+</style>
 </body>
 </html>
