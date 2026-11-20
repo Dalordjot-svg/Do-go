@@ -222,7 +222,21 @@
     .story--image .headline { font-size: clamp(2.65rem, 6.7vw, 7.5rem) }
     .story--image .story-art { width: min(65vw, 1120px) }
     .story--fact .headline { font-size: clamp(2.65rem, 5.9vw, 6.5rem) }
-    .story--fact .story-art img { opacity: .53 }
+    .story--cutout {
+      grid-template-columns: minmax(0, 1.22fr) minmax(0, .78fr);
+      align-items: center;
+      gap: clamp(12px, 3vw, 52px);
+    }
+    .story--cutout .story-content { grid-column: 1; grid-row: 1 }
+    .story-cutout {
+      grid-column: 2;
+      grid-row: 1;
+      margin: 0;
+      height: min(36vw, 52dvh, 440px);
+      pointer-events: none;
+      animation: settle .65s .1s both;
+    }
+    .story-cutout img { display: block; width: 100%; height: 100%; object-fit: contain }
     .story-art img { -webkit-user-drag: none }
     .story-art, .promo-art {
       pointer-events: none;
@@ -367,14 +381,11 @@
     .tip-photo {
       position: relative;
       width: 100%;
-      height: clamp(260px, 57dvh, 620px);
-      overflow: hidden;
-      mask-image: linear-gradient(90deg, transparent, #000 23% 88%, transparent),
-                  linear-gradient(transparent, #000 15% 80%, transparent);
-      mask-composite: intersect;
+      height: clamp(210px, 50dvh, 465px);
+      margin: 0;
       animation: settle .7s .08s both;
     }
-    .tip-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 58% }
+    .tip-photo img { display: block; width: 100%; height: 100%; object-fit: contain }
     #order-tip-title { font-size: clamp(2.5rem, 6vw, 6.1rem) }
     #order-tip-title:focus { outline: none }
     #order-tip-actions { display: grid; gap: 14px; width: min(100%, 510px); margin-top: 5px }
@@ -575,6 +586,9 @@
       .story-art img { opacity: .65 }
       .story-art::after, .promo-art::after { display: none }
       .story--image .headline, .story--ad .headline { font-size: clamp(2.65rem, 10vw, 4rem) }
+      .story--cutout { grid-template-columns: 1fr; padding-top: clamp(20px, 4vh, 42px); align-content: center }
+      .story--cutout .story-content { grid-row: 2 }
+      .story-cutout { grid-column: 1; grid-row: 1; height: clamp(95px, 23dvh, 220px) }
       .story-prompt { font-size: .78rem }
       .story-nav { gap: 4px }
       .idle-controls { gap: 4px 12px }
@@ -1092,19 +1106,20 @@
     ];
 
     const defaultCoffeePhoto = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200';
-    const coffeeShopPhoto = 'barista-tips.webp';
+    const coffeeCutout = 'coffee-cutout.webp';
+    const tipsCutout = 'tips-cutout.webp';
     for (const image of document.querySelectorAll('[data-tip-photo]')) {
-      image.addEventListener('error', () => { image.src = defaultCoffeePhoto; }, {once: true});
-      image.src = coffeeShopPhoto;
+      image.addEventListener('error', () => { image.src = coffeeCutout; }, {once: true});
+      image.src = tipsCutout;
     }
 
-    function storyPhoto(source = defaultCoffeePhoto) {
-      return `<figure class="story-art" aria-hidden="true"><img src="${source}" alt="" draggable="false"></figure>`;
+    function storyPhoto(source = coffeeCutout) {
+      return `<figure class="story-cutout" aria-hidden="true"><img src="${source}" alt="" draggable="false"></figure>`;
     }
     const welcomeSlide = {
       type: 'welcome',
       duration: 11000,
-      html: `<article class="story story--image">
+      html: `<article class="story story--image story--cutout">
         ${storyPhoto()}
         <div class="story-content">
           <p class="eyebrow accent">Кофейня · Кызыл</p>
@@ -1117,7 +1132,7 @@
     const loyaltySlide = {
       type: 'loyalty',
       duration: 10000,
-      html: `<article class="story story--image">${storyPhoto()}<div class="story-content">
+      html: `<article class="story story--image story--cutout">${storyPhoto()}<div class="story-content">
         <p class="eyebrow accent">Карта лояльности</p>
         <h2 class="headline">Десятый кофе — в подарок.</h2>
         <p class="description">Соберите девять отметок. Карту можно взять на кассе.</p>
@@ -1127,7 +1142,7 @@
     const signatureMenuSlide = {
       type: 'menu',
       duration: 11000,
-      html: `<article class="story story--image">${storyPhoto()}<div class="story-content">
+      html: `<article class="story story--image story--cutout">${storyPhoto()}<div class="story-content">
         <h2 class="headline">Любимые напитки</h2>
         <div class="menu-list">
           <div><h3>Солёно-карамельный раф</h3><p>Эспрессо, сливки и карамель · 350 мл</p><strong>250 ₽</strong></div>
@@ -1140,7 +1155,7 @@
     const tipStorySlide = {
       type: 'tips',
       duration: 9500,
-      html: `<article class="story story--image">${storyPhoto()}<div class="story-content">
+      html: `<article class="story story--image story--cutout">${storyPhoto(tipsCutout)}<div class="story-content">
         <h2 class="headline">Скажите спасибо команде.</h2>
         <div class="inline-actions">
           <button class="text-action" type="button" onclick="chooseTipRecipient('barista')">Чаевые бариста</button>
@@ -1152,7 +1167,7 @@
     const factSlides = factsList.map(([topic, title, detail], index) => ({
       type: 'fact-' + index,
       duration: 10000,
-      html: `<article class="story story--image story--fact">${storyPhoto()}<div class="story-content">
+      html: `<article class="story story--image story--cutout story--fact">${storyPhoto()}<div class="story-content">
         <p class="eyebrow accent">${topic}</p>
         <h2 class="headline">${title}</h2>
         <p class="description">${detail}</p>
