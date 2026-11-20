@@ -1044,6 +1044,32 @@
       .slide-stage::before { inset: 8% 4%; }
     }
   </style>
+<style>
+/* COFFEEMAN / neon coastal nightlife inspired waiting experience */
+#idle-screen{position:relative;isolation:isolate}
+#idle-screen:before{content:"";position:absolute;inset:-14px -12px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 12%,#ff62a43a,transparent 42%),radial-gradient(ellipse at 86% 35%,#25e6d83a,transparent 40%);filter:blur(12px)}
+#idle-screen #slide-container{border:1px solid #ffb2cf70!important;border-radius:28px!important;overflow:hidden;box-shadow:0 15px 70px #ff4b9940,0 0 0 1px #4df5f526;background:linear-gradient(135deg,#25132f,#351c45 55%,#11343d)!important}
+#idle-screen .idle-cta{border:1px solid #ffadcd66;background:linear-gradient(100deg,#ff4b9625,#24d9d525)!important}
+#idle-screen .slide-progress-track{background:#ffb7ce35!important}
+#idle-screen .slide-progress-bar{background:linear-gradient(90deg,#ff68b2,#ffe3a0,#59f1df)!important}
+.neon-story{width:100%;height:100%;min-height:330px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:clamp(20px,5vw,55px);position:relative;overflow:hidden;background:radial-gradient(circle at 20% 80%,#ff658c44,transparent 42%),radial-gradient(circle at 80% 12%,#3df6e333,transparent 42%),linear-gradient(135deg,#281336,#18283e)}
+.neon-story:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.14;background:repeating-linear-gradient(0deg,transparent 0 26px,#ffffff 27px 28px)}
+.neon-story>*{position:relative;z-index:1}
+.neon-story .neon-kicker{color:#79f8e7;letter-spacing:.24em;font-weight:950;font-size:clamp(10px,1.4vw,14px)}
+.neon-story h2{font-weight:950;letter-spacing:-.05em;line-height:1.02;font-size:clamp(34px,5.6vw,74px);color:#fff5e9;text-shadow:0 8px 28px #0008;margin:18px 0}
+.neon-story h2 span{color:#ffa7ce;text-shadow:0 0 24px #ff56aa66}
+.neon-story p{max-width:720px;color:#ffe3e7;font-size:clamp(14px,1.6vw,21px);line-height:1.45}
+.neon-story button{background:linear-gradient(110deg,#ff77b2,#ffe0a3);color:#2e1430;border:0;border-radius:99px;padding:14px 24px;font-weight:950;font-size:clamp(13px,1.6vw,17px);margin-top:24px;box-shadow:0 10px 30px #ff68b266}
+.neon-story .neon-duel{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.neon-story .neon-duel button{margin-top:0}
+.neon-story .neon-duel button:nth-child(2){background:linear-gradient(110deg,#71f4e4,#b7ecff)}
+#permanent-tip-display .pt-recipient{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
+#permanent-tip-display .pt-recipient button{border:1px solid #ffffff55;background:#ffffff16;color:#fff;border-radius:17px;padding:15px 8px;font-weight:900;font-size:16px}
+#permanent-tip-display .pt-recipient button.selected{background:linear-gradient(110deg,#73eee0,#c2eaff);color:#1e2533;border-color:transparent;box-shadow:0 8px 28px #65e6e54d}
+#permanent-tip-display .pt-recipient-hint{color:#e9cfc9;font-size:12px;margin-top:8px;line-height:1.4}
+@media(max-width:600px){.neon-story{min-height:300px;padding:20px}.neon-story h2{font-size:clamp(30px,9vw,52px)}.neon-story .neon-duel button{padding:11px 14px}}
+@media(prefers-reduced-motion:reduce){.neon-story{scroll-behavior:auto}}
+</style>
 </head>
 <body id="screen-body" class="text-cream selection:bg-gold/30 selection:text-ink font-sans relative">
 
@@ -1105,6 +1131,9 @@
 
     <!-- ═════════ 1. IDLE ═════════ -->
     <section id="idle-screen" class="screen-section active" onclick="handleIdleScreenClick(event)">
+      <div id="idle-neon-banner" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:10px 16px;border:1px solid #ffb8d766;border-radius:16px;background:linear-gradient(100deg,#e8468d44,#21cfc733);font-size:clamp(11px,1.5vw,15px);font-weight:900;color:#ffe7ed">
+        <span>🌴 COFFEEMAN AFTER DARK</span><span>☕ КТО СЕГОДНЯ ТВОЙ ГЕРОЙ?</span>
+      </div>
       <div id="slide-container" class="slide-stage min-h-[340px] md:min-h-[400px] max-h-[calc(100dvh-280px)]"></div>
       
       <div class="flex flex-col items-center gap-3 mt-4 md:mt-5 flex-shrink-0">
@@ -1117,7 +1146,7 @@
       <div class="idle-cta mt-3 md:mt-4 inline-flex items-center gap-3 px-5 md:px-6 py-2.5 md:py-3 rounded-full text-xs md:text-sm text-cream font-semibold flex-shrink-0">
         <span>Коснитесь экрана — полка вкусов</span>
         <span class="text-gold font-black">•</span>
-        <span onclick="event.stopPropagation(); window.triggerMagicTipScreen()" class="text-gold hover:text-goldLite transition-colors font-display font-black tracking-wide min-h-[32px] inline-flex items-center">Чаевые бариста</span>
+        <span onclick="event.stopPropagation(); window.triggerMagicTipScreen()" class="text-gold hover:text-goldLite transition-colors font-display font-black tracking-wide min-h-[32px] inline-flex items-center">Чаевые команде</span>
       </div>
     </section>
 
@@ -2371,7 +2400,7 @@
       loader.classList.add('flex');
 
       try {
-        const { paymentId, qrUrl } = await createLiveYookassaSbpQr(amount, `Чаевые бариста COFFEEMAN (${amount} ₽)`);
+        const { paymentId, qrUrl } = await createLiveYookassaSbpQr(amount, `Чаевые COFFEEMAN: ${window.permanentTipRecipient === "waiter" ? "официанту" : "бариста"} (${amount} ₽)`);
         const ok = renderQRCodeToCanvas(qrUrl, 'magic-qr-canvas');
         if (!ok) throw new Error("Ошибка рендера QR");
         loader.classList.add('hidden');
@@ -2536,6 +2565,20 @@
     let permanentTipGeneration = 0;
     let permanentTipRefreshTimer = null;
     window.permanentTipAmount = 100;
+    window.permanentTipRecipient = 'barista';
+    window.chooseTipRecipient = function(recipient) {
+      if (recipient !== 'barista' && recipient !== 'waiter') return;
+      window.permanentTipRecipient = recipient;
+      document.querySelectorAll('#permanent-tip-display [data-tip-recipient]').forEach(button => {
+        const selected = button.dataset.tipRecipient === recipient;
+        button.classList.toggle('selected', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+      const label = document.getElementById('permanent-tip-recipient-label');
+      if (label) label.textContent = recipient === 'barista' ? 'Для бариста ☕' : 'Для официанта ✨';
+      if (permanentTipActive) window.permanentTipSelect(window.permanentTipAmount);
+      else window.triggerMagicTipScreen();
+    };
     const permanentTipFacts = [
       '☕ Кофейные зёрна — это семена плодов кофейного дерева.',
       '🌱 Кофейное дерево может давать урожай много лет.',
@@ -2679,6 +2722,18 @@
     /* ═══════════════════════════════════════════
        SLIDES LOGIC
     ═══════════════════════════════════════════ */
+      const neonWelcomeSlide = {
+        type: 'neon_welcome', duration: 10500,
+        html: `<div class="neon-story"><div class="neon-kicker">🌴 COFFEEMAN · NIGHT CITY ENERGY</div><h2>ТВОЙ КОФЕ.<br><span>ТВОЯ ИСТОРИЯ.</span></h2><p>Немного неона, много вкуса. Пока ждёшь заказ — узнай кое-что неожиданное о кофе.</p><button onclick="event.stopPropagation(); window.triggerMagicTipScreen()">💖 Сказать спасибо команде</button></div>`
+      };
+      const neonDuelSlide = {
+        type: 'neon_duel', duration: 11000,
+        html: `<div class="neon-story"><div class="neon-kicker">⚡ ДРУЖЕСКИЙ БАТТЛ · БЕЗ ПРОИГРАВШИХ</div><h2>БАРИСТА <span>VS</span><br>ОФИЦИАНТ</h2><p>Кто сделал твой визит особенным? Выбери своего героя и, если захочешь, оставь чаевые.</p><div class="neon-duel"><button onclick="event.stopPropagation(); window.chooseTipRecipient('barista')">☕ За бариста</button><button onclick="event.stopPropagation(); window.chooseTipRecipient('waiter')">✨ За официанта</button></div></div>`
+      };
+      const neonFactSlide = {
+        type: 'neon_fact', duration: 10500,
+        html: `<div class="neon-story"><div class="neon-kicker">🧠 КОФЕЙНЫЙ ФАКТ</div><h2>КОФЕ — <span>ЭТО ПЛОД?</span></h2><p>Да! То, что мы называем кофейным зерном, на самом деле семя плода кофейного дерева.</p><button onclick="event.stopPropagation(); window.triggerMagicTipScreen()">☕ Поддержать команду</button></div>`
+      };
     function rebuildSlidesPool() {
       const generatedFacts = factsList.map(f => ({ html: buildFactHtml(f), type: 'fact', duration: 8500 }));
       const tipsTeaserSlide = {
@@ -2701,6 +2756,9 @@
         `
       };
       dynamicSlides = [
+        neonWelcomeSlide,
+        neonDuelSlide,
+        neonFactSlide,
         promoNineChipsSlide,
         { html: getRandomGreetingHtml(), type: 'greeting', duration: 8500 },
         signatureMenuSlide,
@@ -3125,6 +3183,11 @@
  <div class="pt-shell">
   <div><div class="pt-label">☕ COFFEEMAN · СПАСИБО БАРИСТА</div><h2>Кофе с душой.<br><span style="color:#ffcc95">Спасибо от сердца.</span></h2>
    <p class="pt-desc">Понравился кофе? Подари улыбку бариста! Выбери сумму или укажи свою — и наведи камеру на QR-код.</p>
+   <div class="pt-recipient" aria-label="Кому чаевые">
+    <button class="selected" data-tip-recipient="barista" aria-pressed="true" onclick="window.chooseTipRecipient('barista')">☕ Бариста</button>
+    <button data-tip-recipient="waiter" aria-pressed="false" onclick="window.chooseTipRecipient('waiter')">✨ Официант</button>
+   </div>
+   <div class="pt-recipient-hint">Выбирай, кому хочешь сказать спасибо. Выбор отмечается в назначении платежа; перечисление идёт через текущий аккаунт оплаты.</div>
    <div class="pt-amounts" aria-label="Сумма чаевых">
     <button data-tip-amount="50" onclick="window.permanentTipSelect(50)">50 ₽</button>
     <button data-tip-amount="100" onclick="window.permanentTipSelect(100)">100 ₽</button>
@@ -3137,6 +3200,7 @@
    <p id="permanent-tip-connection" style="font-size:11px;color:#e5b9a7;margin-top:5px">Подключение к терминалу…</p>
   </div>
   <div class="pt-qr-card"><div style="font-size:12px;font-weight:900;letter-spacing:.18em;color:#956a55">ЧАЕВЫЕ ПО СБП</div>
+   <div id="permanent-tip-recipient-label" style="font-size:14px;color:#8a6257;margin-top:10px;font-weight:900">Для бариста ☕</div>
    <div style="font-size:32px;font-weight:950;margin-top:12px" id="permanent-tip-amount">100 ₽</div>
    <canvas id="permanent-tip-qr" width="280" height="280" style="display:none"></canvas>
    <div id="permanent-tip-placeholder" style="min-height:280px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#806b5e">Подготавливаем QR-код…</div>
