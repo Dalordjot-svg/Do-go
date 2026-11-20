@@ -6,8 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#0d0810" />
-  <title>COFFEEMAN POS • Касса</title>
+  <meta name="theme-color" content="#1b1230" />
+  <title>COFFEEMAN • Vice Nights — Касса</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -500,6 +500,22 @@
 
     attachListeners();
   </script>
+<style id="vice-city-pos-design">
+:root{--pos-pink:#ff7fbd;--pos-cyan:#7cf5e8;--pos-peach:#ffd1a3}
+body.ambient-bg{background:radial-gradient(ellipse at 8% 8%,#73346288,transparent 45%),radial-gradient(ellipse at 95% 48%,#167b8588,transparent 42%),linear-gradient(155deg,#1c112d,#121c30 62%,#1b122b)!important}
+body>header{background:linear-gradient(110deg,#321c49e8,#17333ee8)!important;border-bottom:1px solid #ff9dce77!important;box-shadow:0 12px 32px #090a1b66}
+#view-pos,#view-history,#view-content,#view-settings{filter:drop-shadow(0 8px 30px #0a071a44)}
+#view-pos>div,#view-pos>section,#view-history>div,#view-content>div,#view-settings>div{border-color:#ffb0d34d}
+#permanent-tips-control{background:linear-gradient(120deg,#67305f,#1c6470)!important;border:1px solid #ffc0df88!important;box-shadow:0 16px 55px #ff61b42b!important}
+#permanent-tips-control button{background:linear-gradient(120deg,#ff83c4,#ffe1a0)!important;color:#301c32!important;box-shadow:0 10px 25px #ff6ea344}
+#permanent-tips-lock{background:radial-gradient(ellipse at 20% 10%,#743d73,#251a36 54%,#112d37)!important}
+#permanent-tips-lock .pt-card{border:1px solid #ffb8dc88!important;box-shadow:0 30px 90px #0009,0 0 70px #ff75b32c!important}
+#permanent-tips-lock button{background:linear-gradient(120deg,#ff8cc9,#ffe1a4)!important}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7cf5e8!important;outline-offset:2px}
+button:not(:disabled){transition:transform .18s ease,filter .18s ease}
+button:not(:disabled):active{transform:scale(.97)}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head>
 <body class="ambient-bg text-cream min-h-[100dvh] flex flex-col font-sans selection:bg-gold selection:text-ink pb-24">
 
