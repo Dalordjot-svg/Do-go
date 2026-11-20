@@ -2524,8 +2524,6 @@
       }
     }
 
-    function markOrderPaidInFirebase(paidTotal) {
-      
     // Независимый постоянный режим: QR перевыпускается после оплаты и по таймеру.
     const permanentTipRef = ref(db, `terminals/${terminalId}/permanent_tips`);
     const permanentTipOverlay = document.getElementById('permanent-tip-display');
@@ -2533,10 +2531,32 @@
     const permanentTipPlaceholder = document.getElementById('permanent-tip-placeholder');
     const permanentTipStatus = document.getElementById('permanent-tip-status');
     const permanentTipRetry = document.getElementById('permanent-tip-retry');
+    const permanentTipConnection = document.getElementById('permanent-tip-connection');
     let permanentTipActive = false;
     let permanentTipGeneration = 0;
     let permanentTipRefreshTimer = null;
     window.permanentTipAmount = 100;
+    const permanentTipFacts = [
+      '☕ Кофейные зёрна — это семена плодов кофейного дерева.',
+      '🌱 Кофейное дерево может давать урожай много лет.',
+      '🎨 Латте-арт рисуют с помощью молочной микропены.',
+      '🌍 Кофе выращивают преимущественно в тропических регионах.',
+      '💛 Маленький знак внимания может сделать чей-то день лучше.'
+    ];
+    let permanentFactIndex = 0;
+    setInterval(() => {
+      const el = document.getElementById('permanent-tip-fact');
+      if (el) el.textContent = permanentTipFacts[++permanentFactIndex % permanentTipFacts.length];
+    }, 12000);
+    window.permanentTipCustom = function() {
+      const input = document.getElementById('permanent-tip-custom-input');
+      const amount = Number(input.value);
+      if (!Number.isInteger(amount) || amount < 10 || amount > 10000) {
+        permanentTipStatus.textContent = 'Введите целую сумму от 10 до 10 000 ₽';
+        return;
+      }
+      window.permanentTipSelect(amount);
+    };
     function stopPermanentTipCycle() {
       ++permanentTipGeneration;
       if (permanentTipRefreshTimer) clearTimeout(permanentTipRefreshTimer);
@@ -2545,7 +2565,7 @@
       customerScreenPollingInterval = null;
     }
     window.permanentTipSelect = async function(amount) {
-      if (!permanentTipActive) return;
+      if (!permanentTipActive || !Number.isInteger(amount) || amount < 10 || amount > 10000) return;
       stopPermanentTipCycle();
       const generation = permanentTipGeneration;
       window.permanentTipAmount = amount;
@@ -2586,7 +2606,9 @@
         permanentTipRetry.style.display = 'inline-block';
       }
     };
+    permanentTipConnection.textContent = 'Терминал: ' + terminalId + ' · подключаемся…';
     onValue(permanentTipRef, snapshot => {
+      permanentTipConnection.textContent = 'Терминал: ' + terminalId + ' · связь активна';
       const enabled = snapshot.val()?.enabled === true;
       if (enabled === permanentTipActive) return;
       permanentTipActive = enabled;
@@ -2599,9 +2621,13 @@
         resetToIdle(false);
       }
     }, error => {
+      permanentTipConnection.textContent = 'Ошибка связи: ' + error.message;
       permanentTipStatus.textContent = 'Ошибка синхронизации: ' + error.message;
     });
 
+
+    function markOrderPaidInFirebase(paidTotal) {
+      
     const orderRef = ref(db, `terminals/${terminalId}/current_order`);
       set(orderRef, { status: 'PAID', amount: paidTotal, timestamp: Date.now() });
       triggerSuccess();
@@ -3081,17 +3107,34 @@
 #permanent-tip-display .pt-retry{border-radius:12px;padding:10px 18px;background:#39251f;color:white;font-weight:800;margin-top:10px}
 @media(max-width:760px){#permanent-tip-display .pt-shell{grid-template-columns:1fr;max-width:500px;gap:24px;padding:20px}#permanent-tip-display h2{margin:12px 0}#permanent-tip-display .pt-amounts{margin-top:18px}#permanent-tip-display .pt-amounts button{padding:13px}#permanent-tip-display .pt-qr-card{padding:18px}#permanent-tip-display .pt-qr-card canvas{max-height:230px;max-width:230px}}
 </style>
+<style>
+#permanent-tip-display{background:radial-gradient(ellipse at 12% 12%,#7a3948,#21151e 50%,#10101c)!important}
+#permanent-tip-display .pt-shell{width:min(1250px,100%);grid-template-columns:1.2fr .8fr!important}
+#permanent-tip-display h2{font-size:clamp(40px,6vw,82px)!important;letter-spacing:-.05em;line-height:1.04}
+#permanent-tip-display .pt-amounts{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#permanent-tip-display .pt-amounts button{padding:20px 6px!important;border-radius:18px!important;font-size:clamp(17px,2vw,26px)!important}
+#permanent-tip-display .pt-custom{display:flex;gap:10px;margin-top:14px}
+#permanent-tip-display .pt-custom input{min-width:0;flex:1;border-radius:14px;background:#ffffff16;color:#fff;border:1px solid #ffffff55;padding:14px;font-size:18px}
+#permanent-tip-display .pt-custom button{background:#ffe0a2;color:#38211d;border-radius:14px;padding:14px;font-weight:900}
+#permanent-tip-display .pt-fact{margin-top:22px;background:#ffffff13;border:1px solid #ffffff2a;border-radius:18px;padding:16px;color:#ffdfce;font-size:14px;line-height:1.5}
+#permanent-tip-display .pt-qr-card{box-shadow:0 28px 95px #0009}
+@media(max-width:850px){#permanent-tip-display .pt-shell{grid-template-columns:1fr!important;max-width:600px}#permanent-tip-display .pt-amounts button{padding:13px 5px!important}}
+@media(max-width:380px){#permanent-tip-display .pt-amounts{grid-template-columns:repeat(2,1fr)!important}}
+</style>
 <div id="permanent-tip-display" aria-label="Постоянный экран чаевых">
  <div class="pt-shell">
-  <div><div class="pt-label">☕ COFFEEMAN · СПАСИБО БАРИСТА</div><h2>Ваш кофе.<br><span style="color:#ffcc95">Наша любовь.</span></h2>
-   <p class="pt-desc">Понравился напиток? Поддержите команду чаевыми — выберите сумму и наведите камеру на QR-код.</p>
+  <div><div class="pt-label">☕ COFFEEMAN · СПАСИБО БАРИСТА</div><h2>Кофе с душой.<br><span style="color:#ffcc95">Спасибо от сердца.</span></h2>
+   <p class="pt-desc">Понравился кофе? Подари улыбку бариста! Выбери сумму или укажи свою — и наведи камеру на QR-код.</p>
    <div class="pt-amounts" aria-label="Сумма чаевых">
     <button data-tip-amount="50" onclick="window.permanentTipSelect(50)">50 ₽</button>
     <button data-tip-amount="100" onclick="window.permanentTipSelect(100)">100 ₽</button>
     <button data-tip-amount="200" onclick="window.permanentTipSelect(200)">200 ₽</button>
     <button data-tip-amount="300" onclick="window.permanentTipSelect(300)">300 ₽</button>
    </div>
-   <p style="font-size:12px;color:#c7aea2;margin-top:20px">Режим чаевых включён кассиром • Без автоматического отключения</p>
+   <form class="pt-custom" onsubmit="event.preventDefault();window.permanentTipCustom()"><input id="permanent-tip-custom-input" type="number" min="10" max="10000" step="1" inputmode="numeric" placeholder="Своя сумма, ₽" aria-label="Своя сумма чаевых"><button type="submit">Выбрать ↗</button></form>
+   <div class="pt-fact"><b style="color:#ffcc95">А ТЫ ЗНАЛ? ✨</b><div id="permanent-tip-fact" style="margin-top:5px">Кофейные зёрна — это семена плодов кофейного дерева.</div></div>
+   <p style="font-size:12px;color:#c7aea2;margin-top:14px">Режим чаевых включён кассиром • Без автоматического отключения</p>
+   <p id="permanent-tip-connection" style="font-size:11px;color:#e5b9a7;margin-top:5px">Подключение к терминалу…</p>
   </div>
   <div class="pt-qr-card"><div style="font-size:12px;font-weight:900;letter-spacing:.18em;color:#956a55">ЧАЕВЫЕ ПО СБП</div>
    <div style="font-size:32px;font-weight:950;margin-top:12px" id="permanent-tip-amount">100 ₽</div>
