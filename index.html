@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f8f7f5">
+  <meta name="theme-color" content="#f5f2e8">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <title>COFFEEMAN — Экран гостя</title>
@@ -12,7 +12,7 @@
       const hour = new Date().getHours();
       const dark = hour >= 17 || hour < 6;
       document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      document.querySelector('meta[name="theme-color"]').content = dark ? '#131517' : '#f8f7f5';
+      document.querySelector('meta[name="theme-color"]').content = dark ? '#17231c' : '#f5f2e8';
     }
     syncCoffeemanTheme();
     setInterval(syncCoffeemanTheme, 10000);
@@ -23,39 +23,51 @@
   <style>
     :root {
       color-scheme: light;
-      --canvas: #f8f7f5;
-      --ink: #212328;
-      --muted: #555c66;
-      --accent: #245dc1;
-      --accent-fill: #245dc1;
-      --on-accent: #fff;
-      --soft: #2123280d;
-      --soft-hover: #21232817;
-      --success: #16764d;
-      --warning: #9d3441;
-      --warm: #efbd9d63;
-      --cool: #b0ccfb74;
-      --glitch: #2e80f5;
-      --gutter: clamp(20px, 5vw, 82px);
+      --canvas: #f5f2e8;
+      --linen: #fffcf3;
+      --leaf: #dce9ce;
+      --sand: #f1e0cb;
+      --ink: #24372b;
+      --muted: #4e6355;
+      --accent: #265444;
+      --accent-fill: #265444;
+      --accent-hover: #1b4335;
+      --on-accent: #fffdf5;
+      --soft: #e4ead9;
+      --soft-hover: #d4e2c9;
+      --clay: #9c563d;
+      --success: #276046;
+      --warning: #973d31;
+      --warm: #e1b49355;
+      --cool: #bcd4a562;
+      --glitch: #66895c;
+      --gutter: clamp(15px, 3.5vw, 60px);
+      --bento-gap: clamp(10px, 1.9vw, 24px);
+      --bento-radius: clamp(23px, 3.8vw, 47px);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
       font-synthesis: none;
     }
 
     :root[data-theme=dark] {
       color-scheme: dark;
-      --canvas: #131517;
-      --ink: #f5f4f1;
-      --muted: #aab1bc;
-      --accent: #9dc3ff;
-      --accent-fill: #a6c9ff;
-      --on-accent: #141d2c;
-      --soft: #f5f4f113;
-      --soft-hover: #f5f4f121;
-      --success: #82dfb0;
-      --warning: #ffb2b9;
-      --warm: #8a412f48;
-      --cool: #294d855f;
-      --glitch: #88b4ff;
+      --canvas: #17231c;
+      --linen: #24382c;
+      --leaf: #314c38;
+      --sand: #48362b;
+      --ink: #f4f2e5;
+      --muted: #c0d3c0;
+      --accent: #c9e6b8;
+      --accent-fill: #cae3b8;
+      --accent-hover: #e2f3d2;
+      --on-accent: #1c3727;
+      --soft: #345444;
+      --soft-hover: #436451;
+      --clay: #edbd9e;
+      --success: #afe2b7;
+      --warning: #ffc0a8;
+      --warm: #ad6c4755;
+      --cool: #36544288;
+      --glitch: #acc995;
     }
 
     *, *::before, *::after { box-sizing: border-box }
@@ -90,8 +102,8 @@
       position: absolute;
       inset: -8%;
       background:
-        radial-gradient(ellipse at 82% 20%, var(--warm), transparent 43%),
-        radial-gradient(ellipse at 12% 87%, var(--cool), transparent 48%);
+        radial-gradient(ellipse at 88% 0%, var(--warm), transparent 39%),
+        radial-gradient(ellipse at 16% 87%, var(--cool), transparent 49%);
       animation: light-drift 25s ease-in-out infinite alternate;
     }
     @keyframes light-drift {
@@ -110,8 +122,28 @@
       user-select: none;
       gap: 16px;
     }
-    .wordmark { font-size: clamp(.83rem, 1.35vw, 1.08rem); font-weight: 760; letter-spacing: .13em }
+    .wordmark {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--accent);
+      font-size: clamp(.79rem, 1.35vw, 1.08rem);
+      font-weight: 780;
+      letter-spacing: .13em;
+    }
+    .wordmark::before {
+      content: "";
+      display: block;
+      width: .82rem;
+      height: .82rem;
+      border-radius: .65rem .14rem .65rem .14rem;
+      background: var(--accent);
+      transform: rotate(-18deg);
+    }
     .header-actions, .inline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px }
+    .header-actions { flex-wrap: nowrap; gap: 8px }
+    .header-actions .action { min-height: 46px; padding-inline: clamp(12px, 2vw, 27px); white-space: nowrap }
+    .header-actions .action.secondary { background: var(--sand); color: var(--clay) }
     .text-action {
       min-height: 44px;
       display: inline-flex;
@@ -134,21 +166,23 @@
       justify-content: center;
       min-height: 48px;
       padding: 10px 22px;
-      border-radius: 14px;
-      font-weight: 650;
-      color: var(--ink);
+      border-radius: 18px;
+      font-weight: 700;
+      color: var(--accent);
       background: var(--soft);
       transition: transform .22s, background-color .22s, color .22s;
     }
     .action:hover, .btn-ghost:hover { background: var(--soft-hover) }
     .action:active, .btn-gold:active, .btn-ghost:active { transform: scale(.96) }
     .action.primary, .btn-gold, .action.selected { color: var(--on-accent); background: var(--accent-fill) }
+    .action.primary:hover, .btn-gold:hover, .action.selected:hover { background: var(--accent-hover) }
+    .action.secondary:hover { background: var(--soft-hover) }
     .eyebrow { color: var(--muted); font-size: clamp(.76rem, 1.2vw, .94rem); font-weight: 670; letter-spacing: .04em }
     .eyebrow.accent { color: var(--accent) }
     .headline {
-      font-size: clamp(2.6rem, 7vw, 8rem);
-      font-weight: 720;
-      letter-spacing: -.075em;
+      font-size: clamp(2.45rem, 6.2vw, 7.4rem);
+      font-weight: 725;
+      letter-spacing: -.062em;
       line-height: .99;
       overflow-wrap: anywhere;
       text-wrap: balance;
@@ -168,7 +202,7 @@
     .amount {
       display: block;
       margin: .12em 0;
-      font-size: clamp(3.15rem, 9vw, 8.75rem);
+      font-size: clamp(2.55rem, 6.5vw, 7.15rem);
       line-height: 1;
       font-weight: 680;
       letter-spacing: -.085em;
@@ -219,24 +253,64 @@
     .story--essay .story-content { justify-items: center; text-align: center; margin-inline: auto }
     .story--essay .description { max-width: 45ch }
     .story--image .story-content { max-width: min(55vw, 820px) }
-    .story--image .headline { font-size: clamp(2.65rem, 6.7vw, 7.5rem) }
+    .story--image .headline { font-size: clamp(2.35rem, 5.65vw, 7rem) }
     .story--image .story-art { width: min(65vw, 1120px) }
-    .story--fact .headline { font-size: clamp(2.65rem, 5.9vw, 6.5rem) }
+    .story--fact .headline { font-size: clamp(2.25rem, 5.25vw, 6.25rem) }
     .story--cutout {
-      grid-template-columns: minmax(0, 1.22fr) minmax(0, .78fr);
-      align-items: center;
-      gap: clamp(12px, 3vw, 52px);
+      grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr);
+      align-items: stretch;
+      align-content: center;
+      gap: var(--bento-gap);
+      width: min(100%, 1500px);
+      margin-inline: auto;
+      padding: 16px var(--gutter);
     }
-    .story--cutout .story-content { grid-column: 1; grid-row: 1 }
+    .story--cutout .story-content {
+      grid-column: 1;
+      grid-row: 1;
+      align-content: center;
+      max-width: none;
+      padding: clamp(21px, 4.25vw, 76px);
+      border-radius: var(--bento-radius);
+      background: var(--linen);
+    }
     .story-cutout {
       grid-column: 2;
       grid-row: 1;
-      margin: 0;
-      height: min(36vw, 52dvh, 440px);
+      width: 100%;
+      min-width: 0;
+      min-height: clamp(255px, 50dvh, 580px);
+      display: grid;
+      place-items: center;
+      padding: clamp(13px, 2.5vw, 44px);
+      position: relative;
+      border-radius: var(--bento-radius);
+      background: var(--leaf);
+      overflow: hidden;
       pointer-events: none;
-      animation: settle .65s .1s both;
     }
-    .story-cutout img { display: block; width: 100%; height: 100%; object-fit: contain }
+    .story-cutout::before, .tip-photo::before {
+      content: "";
+      position: absolute;
+      inset: 8% 12%;
+      border-radius: 45% 55% 53% 47%;
+      background: radial-gradient(ellipse, var(--linen), transparent 68%);
+      animation: aroma-drift 13s ease-in-out infinite alternate;
+    }
+    .story-cutout img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: clamp(13px, 2.5vw, 44px);
+      filter: drop-shadow(0 18px 19px #25372922);
+      animation: settle .65s ease both;
+    }
+    .story--fact .story-cutout { background: var(--sand) }
+    @keyframes aroma-drift { from { transform: translate(-6%, 3%) rotate(-8deg) } to { transform: translate(6%, -3%) rotate(8deg) } }
+
     .story-art img { -webkit-user-drag: none }
     .story-art, .promo-art {
       pointer-events: none;
@@ -283,7 +357,16 @@
       padding: 10px var(--gutter) max(18px, calc(env(safe-area-inset-bottom) + 12px));
       flex-wrap: wrap;
     }
-    .story-nav { display: flex; align-items: center; gap: 12px }
+    .story-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px;
+      border-radius: 24px;
+      background: var(--linen);
+    }
+    .story-nav .icon-action, .shelf-controls .icon-action { background: var(--soft); border-radius: 17px; color: var(--accent) }
+    .story-nav .icon-action:hover, .shelf-controls .icon-action:hover { background: var(--soft-hover) }
     .slide-progress-track {
       width: clamp(42px, 7vw, 112px);
       border-radius: 3px;
@@ -327,14 +410,14 @@
     }
 
     .split {
-      width: min(100%, 1350px);
+      width: min(100%, 1370px);
       justify-self: center;
       display: grid;
-      grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+      grid-template-columns: minmax(0, 1.19fr) minmax(0, .81fr);
       align-content: center;
-      align-items: center;
-      gap: clamp(30px, 7vw, 110px);
-      padding: clamp(20px, 5vh, 70px) var(--gutter) max(30px, env(safe-area-inset-bottom));
+      align-items: stretch;
+      gap: var(--bento-gap);
+      padding: clamp(16px, 4vh, 50px) var(--gutter) max(25px, env(safe-area-inset-bottom));
     }
     .screen-copy, .code-area {
       display: grid;
@@ -343,6 +426,24 @@
       gap: 12px;
     }
     .screen-copy .subheadline { margin: 2px 0 8px }
+    #payment-screen .split > *, .tip-split > *, #permanent-tip-display .split > * {
+      min-width: 0;
+      padding: clamp(17px, 3vw, 52px);
+      border-radius: var(--bento-radius);
+    }
+    #payment-screen .screen-copy, .tip-split .screen-copy, #permanent-tip-display .screen-copy {
+      align-content: center;
+      background: var(--linen);
+    }
+    #payment-screen .code-area, .tip-split .code-area, #permanent-tip-display .code-area {
+      background: var(--leaf);
+      width: 100%;
+      max-width: none;
+      min-height: min(49dvh, 422px);
+    }
+    .code-area canvas, #order-tip-qr { border-radius: 11px }
+    .code-area canvas { max-width: 100% }
+    .screen-copy .eyebrow:first-child { color: var(--clay) }
     .code-area { justify-items: center; align-content: center; text-align: center }
     .code-area .subheadline { font-size: clamp(1.75rem, 4vw, 3.45rem) }
     .code-area canvas, #order-tip-qr {
@@ -377,19 +478,35 @@
       padding: clamp(24px, 5vh, 66px) var(--gutter) max(30px, env(safe-area-inset-bottom));
       text-align: center;
     }
-    .tip-split { grid-template-columns: minmax(0, 1fr) minmax(0, .83fr); gap: clamp(28px, 5vw, 85px) }
+    .tip-split { grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr) }
     .tip-photo {
       position: relative;
       width: 100%;
-      height: clamp(210px, 50dvh, 465px);
+      min-height: clamp(210px, 47dvh, 440px);
       margin: 0;
+      background: var(--leaf);
+      overflow: hidden;
       animation: settle .7s .08s both;
     }
-    .tip-photo img { display: block; width: 100%; height: 100%; object-fit: contain }
-    #order-tip-title { font-size: clamp(2.5rem, 6vw, 6.1rem) }
+    .tip-photo img {
+      position: absolute;
+      inset: 0;
+      padding: clamp(16px, 3vw, 42px);
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 16px 16px #25372922);
+    }
+    #order-tip-title { font-size: clamp(2.15rem, 5vw, 5.7rem) }
     #order-tip-title:focus { outline: none }
     #order-tip-actions { display: grid; gap: 14px; width: min(100%, 510px); margin-top: 5px }
     .tip-percentages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+    .tip-percentages .tip-percentage { background: var(--leaf) }
+    .tip-percentages .tip-percentage:hover:not(:disabled) { background: var(--soft-hover) }
+    .tip-percentages .tip-percentage:nth-child(3) { background: var(--sand); color: var(--clay) }
+    .tip-percentages .tip-percentage:nth-child(3):hover:not(:disabled) { background: color-mix(in srgb, var(--sand), var(--clay) 14%) }
+    .tip-value { font-size: clamp(1.25rem, 2.9vw, 2.35rem); font-weight: 730; color: var(--accent); letter-spacing: -.035em }
     #order-tip-actions .tip-percentage {
       display: grid;
       gap: 4px;
@@ -451,7 +568,17 @@
     .shelf-shell { width: min(100%, 1130px); margin: auto; min-width: 0; display: grid; gap: clamp(12px, 2.4vh, 30px); justify-items: center }
     .shelf-header { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px }
     .shelf-header .eyebrow { color: var(--ink); font-size: .92rem }
-    #syrup-detail-panel { display: grid; justify-items: center; text-align: center; gap: 9px; min-height: 12rem }
+    #syrup-detail-panel {
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      gap: 9px;
+      width: 100%;
+      max-width: 780px;
+      padding: clamp(16px, 2.7vh, 34px);
+      border-radius: var(--bento-radius);
+      background: var(--linen);
+    }
     #detail-name { font-size: clamp(2.25rem, 6vw, 5.5rem) }
     #detail-status-badge { color: var(--success); font-size: .82rem }
     #detail-status-badge[data-stock=out] { color: var(--warning) }
@@ -460,7 +587,17 @@
     .syrup-specs div { display: grid; gap: 2px; justify-items: center }
     .syrup-specs dt { color: var(--muted); font-size: .75rem; font-weight: 570 }
     .syrup-specs dd { font-size: .91rem; font-weight: 680 }
-    .shelf-stage { display: grid; width: 100%; justify-items: center; align-content: center; gap: 3px }
+    .shelf-stage {
+      display: grid;
+      width: 100%;
+      justify-items: center;
+      align-content: center;
+      gap: 3px;
+      background: var(--leaf);
+      border-radius: var(--bento-radius);
+      padding: 7px 12px 10px;
+      overflow: clip;
+    }
     #syrups-drum {
       position: relative;
       display: grid;
@@ -570,8 +707,26 @@
     }
     .toast.show { opacity: 1; transform: translate(-50%, 0) }
 
-    @media (max-width: 740px) {
-      .site-header { min-height: 58px }
+    @media (min-width: 601px) and (max-width: 1040px) {
+      .menu-list { grid-template-columns: 1fr; gap: 12px }
+      .menu-list > div { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; align-items: baseline }
+      .menu-list h3 { grid-column: 1 }
+      .menu-list p { grid-column: 1; margin-top: 3px; font-size: .82rem }
+      .menu-list strong { grid-column: 2; grid-row: 1; margin: 0; white-space: nowrap }
+      #order-tip-actions .tip-percentage { min-height: 66px }
+    }
+    @media (orientation: portrait) and (min-width: 601px) and (max-width: 1100px) {
+      #magic-tip-screen .tip-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: min(100%, 340px);
+      }
+    }
+    @media (max-width: 600px) {
+      .site-header { min-height: 58px; gap: 8px }
+      .wordmark { letter-spacing: .065em }
+      .wordmark::before { width: .65rem; height: .65rem }
+      .header-actions .action { min-height: 42px; padding-inline: 10px; font-size: .79rem }
       #idle-screen.active { min-height: calc(100dvh - 58px) }
       .header-actions { gap: 9px 14px }
       .header-actions > .text-action { font-size: .92rem }
@@ -586,26 +741,28 @@
       .story-art img { opacity: .65 }
       .story-art::after, .promo-art::after { display: none }
       .story--image .headline, .story--ad .headline { font-size: clamp(2.65rem, 10vw, 4rem) }
-      .story--cutout { grid-template-columns: 1fr; padding-top: clamp(20px, 4vh, 42px); align-content: center }
-      .story--cutout .story-content { grid-row: 2 }
-      .story-cutout { grid-column: 1; grid-row: 1; height: clamp(95px, 23dvh, 220px) }
+      .story--cutout { grid-template-columns: 1fr; padding-top: 6px }
+      .story--cutout .story-content { grid-row: 2; min-height: 165px }
+      .story-cutout { grid-column: 1; grid-row: 1; min-height: clamp(120px, 26dvh, 225px) }
       .story-prompt { font-size: .78rem }
       .story-nav { gap: 4px }
       .idle-controls { gap: 4px 12px }
-      .tip-photo { height: clamp(110px, 26dvh, 240px); max-width: 495px }
-      .tip-split { gap: 18px }
+      .tip-photo { min-height: clamp(136px, 29dvh, 246px) }
+      .tip-split { gap: var(--bento-gap) }
       #order-tip-auto-actions { justify-content: center }
       #order-tip-qr-area { min-height: 0 }
       .menu-list { grid-template-columns: 1fr; gap: 14px }
       .menu-list p { margin-top: 1px }
       .menu-list strong { margin-top: 3px }
-      .split { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 25px }
+      .split { grid-template-columns: minmax(0, 1fr); text-align: center; gap: var(--bento-gap) }
+      #payment-screen .code-area, .tip-split .code-area, #permanent-tip-display .code-area { min-height: 0 }
+      #order-tip-qr { width: clamp(152px, 46vw, 228px) }
       .screen-copy { justify-items: center }
       .tip-actions, .inline-actions, .pt-custom { justify-content: center }
       #special-promo-screen .split { justify-items: center; padding-top: min(32vh, 235px); text-align: center }
       #special-promo-screen .screen-copy { max-width: 100% }
     }
-    @media (max-height: 550px) and (min-width: 741px) {
+    @media (max-height: 550px) and (min-width: 601px) {
       .split, .centered { padding-block: 12px 18px }
       .amount { font-size: clamp(2.6rem, 9vw, 6rem) }
       .code-area canvas { width: clamp(150px, 40dvh, 220px) }
@@ -624,15 +781,15 @@
   <header class="site-header">
     <span class="wordmark" onclick="registerSecretTap()">COFFEEMAN</span>
     <div class="header-actions" id="header-actions">
-      <button class="text-action" id="guest-tips" type="button" onclick="triggerMagicTipScreen()">Чаевые</button>
-      <button class="text-action" id="guest-flavors" type="button" onclick="toggleSyrupsShelf(true)">Сиропы <span aria-hidden="true">→</span></button>
+      <button class="action secondary" id="guest-tips" type="button" onclick="triggerMagicTipScreen()">Чаевые</button>
+      <button class="action primary" id="guest-flavors" type="button" onclick="toggleSyrupsShelf(true)">Сиропы <span aria-hidden="true"> →</span></button>
     </div>
   </header>
   <main id="guest-main">
     <section id="idle-screen" class="screen-section active" aria-label="Экран ожидания" onclick="handleIdleScreenClick(event)">
       <div id="slide-container">
         <article class="story story--essay"><div class="story-content">
-          <p class="eyebrow accent">Кофейня · Кызыл</p>
+          <p class="eyebrow accent">Кофейня в Кызыле</p>
           <h1 class="headline">Хороший день начинается с кофе.</h1>
         </div></article>
       </div>
@@ -768,6 +925,7 @@
           <p id="order-tip-order" class="eyebrow accent"></p>
           <h2 id="order-tip-title" class="headline" tabindex="-1">Хотите оставить чаевые?</h2>
           <p id="order-tip-message" class="description" role="status"></p>
+          <output id="order-tip-amount" class="tip-value" hidden aria-label="Размер чаевых"></output>
           <div id="order-tip-actions">
             <div id="order-tip-percentages" class="tip-percentages" role="group" aria-label="Чаевые в процентах от чека">
               <button class="action tip-percentage" type="button" data-order-tip-percent="5"><strong>5%</strong><span></span></button>
@@ -776,7 +934,6 @@
             </div>
             <button id="order-tip-no" class="action" type="button">Без чаевых</button>
             <div id="order-tip-auto-actions" hidden>
-              <button id="order-tip-yes" class="action primary" type="button">Оставить чаевые</button>
               <button id="order-tip-dismiss" class="action" type="button">Не сейчас</button>
             </div>
           </div>
@@ -788,7 +945,7 @@
           <div id="order-tip-qr-activity" class="qr-activity flex"><span class="spinner" aria-hidden="true"></span></div>
           <canvas id="order-tip-qr" width="280" height="280" hidden aria-label="QR-код для оплаты чаевых"></canvas>
           <p id="order-tip-qr-status" class="supporting" role="status"></p>
-          <button id="order-tip-retry" class="text-action" type="button" hidden>Повторить</button>
+          <button id="order-tip-retry" class="action secondary" type="button" hidden>Повторить</button>
         </div>
       </div>
     </section>
@@ -884,7 +1041,7 @@
         <canvas id="permanent-tip-qr" width="280" height="280" style="display:none" aria-label="QR-код для чаевых"></canvas>
         <p id="permanent-tip-placeholder" class="supporting">Подготавливаем QR-код…</p>
         <p id="permanent-tip-status" class="supporting" role="status"></p>
-        <button class="text-action" type="button" id="permanent-tip-retry" onclick="permanentTipSelect(window.permanentTipAmount)" style="display:none">Обновить QR</button>
+        <button class="action secondary" type="button" id="permanent-tip-retry" onclick="permanentTipSelect(window.permanentTipAmount)" style="display:none">Обновить QR</button>
       </div>
     </div>
   </section>
@@ -1122,9 +1279,9 @@
       html: `<article class="story story--image story--cutout">
         ${storyPhoto()}
         <div class="story-content">
-          <p class="eyebrow accent">Кофейня · Кызыл</p>
+          <p class="eyebrow accent">Кофейня в Кызыле</p>
           <h1 class="headline">Хороший день начинается с кофе.</h1>
-          <button class="text-action" type="button" onclick="toggleSyrupsShelf(true)">Выбрать сироп <span aria-hidden="true">→</span></button>
+          <button class="action primary" type="button" onclick="toggleSyrupsShelf(true)">Выбрать сироп <span aria-hidden="true">→</span></button>
         </div>
       </article>`
     };
@@ -1468,7 +1625,7 @@
     let returnTimeout = null;
     let magicCountdownInterval = null;
 
-    let customerScreenPollingInterval = null;
+    let paymentWatcher = null;
     let promoInterval = null;
 
     const guestMain = document.getElementById('guest-main');
@@ -1513,6 +1670,9 @@
     const orderTipTitle = document.getElementById('order-tip-title');
     const orderTipOrder = document.getElementById('order-tip-order');
     const orderTipMessage = document.getElementById('order-tip-message');
+    const orderTipAmount = document.getElementById('order-tip-amount');
+    const automaticTipKopecks = 5000;
+    const automaticTipVisibleMs = 45000;
     const orderTipActions = document.getElementById('order-tip-actions');
     const orderTipPercentages = document.getElementById('order-tip-percentages');
     const orderTipButtons = orderTipPercentages.querySelectorAll('[data-order-tip-percent]');
@@ -1550,6 +1710,7 @@
       orderTipTitle.textContent = 'Спасибо!';
       orderTipMessage.textContent = message;
       orderTipActions.hidden = true;
+      orderTipAmount.hidden = true;
       setOrderTipVisual('photo');
       clearTimeout(orderTipTimer);
       orderTipTimer = setTimeout(() => resetToIdle(false), 4500);
@@ -1557,7 +1718,7 @@
 
     async function startOrderTipPayment(percentage) {
       const offer = activeTip;
-      if (!offer || offer.automatic || offer.pending) return;
+      if (!offer || offer.pending) return;
       if (percentage !== undefined) {
         const tipKopecks = Math.round(offer.amountKopecks * percentage / 100);
         if (tipKopecks < 1) return;
@@ -1567,12 +1728,18 @@
       if (!offer.tipKopecks) return;
 
       offer.pending = true;
-      clearTimeout(orderTipTimer);
-      orderTipTimer = setTimeout(() => resetToIdle(false), 180000);
+      if (percentage !== undefined) {
+        clearTimeout(orderTipTimer);
+        orderTipTimer = setTimeout(() => resetToIdle(false), 180000);
+      }
       const amount = offer.tipKopecks / 100;
-      orderTipActions.hidden = true;
-      orderTipTitle.textContent = 'Чаевые по СБП';
-      orderTipMessage.textContent = 'Размер чаевых — ' + rubles.format(amount);
+      orderTipActions.hidden = !offer.automatic;
+      orderTipTitle.textContent = offer.automatic ? 'Скажите спасибо команде' : 'Чаевые по СБП';
+      orderTipMessage.textContent = offer.automatic
+        ? 'Добровольные чаевые по СБП.'
+        : 'Выбранный размер чаевых';
+      orderTipAmount.textContent = rubles.format(amount);
+      orderTipAmount.hidden = false;
       setOrderTipVisual('loading', 'Готовим QR-код…');
       try {
         const {paymentId, qrUrl} = await createLiveYookassaSbpQr(amount, 'Чаевые COFFEEMAN', offer.paymentKey);
@@ -1607,10 +1774,13 @@
       isMagicActive = true;
       isPromoActive = false;
       isSuccessActive = false;
-      activeTip = {amountKopecks, automatic};
+      activeTip = automatic
+        ? {automatic: true, tipKopecks: automaticTipKopecks, paymentKey: generateUUID()}
+        : {amountKopecks};
       orderTipTitle.textContent = 'Хотите оставить чаевые?';
-      orderTipOrder.textContent = automatic ? 'COFFEEMAN' : 'Ваш заказ на сумму ' + rubles.format(amountKopecks / 100);
-      orderTipMessage.textContent = automatic ? 'Для команды кофейни' : 'Выберите процент от суммы чека.';
+      orderTipOrder.textContent = automatic ? 'Чаевые' : 'Ваш заказ на сумму ' + rubles.format(amountKopecks / 100);
+      orderTipMessage.textContent = automatic ? '' : 'Выберите процент от суммы чека.';
+      orderTipAmount.hidden = true;
       orderTipActions.hidden = false;
       orderTipPercentages.hidden = automatic;
       orderTipDecline.hidden = automatic;
@@ -1624,14 +1794,14 @@
       }
       setOrderTipVisual('photo');
       showScreen('order-tip-screen');
-      if (!automatic) orderTipTitle.focus({preventScroll: true});
-      orderTipTimer = setTimeout(() => resetToIdle(false), automatic ? 15000 : 180000);
+      orderTipTimer = setTimeout(() => resetToIdle(false), automatic ? automaticTipVisibleMs : 180000);
+      if (automatic) void startOrderTipPayment();
+      else orderTipTitle.focus({preventScroll: true});
     }
 
     for (const button of orderTipButtons) {
       button.onclick = () => startOrderTipPayment(Number(button.dataset.orderTipPercent));
     }
-    document.getElementById('order-tip-yes').onclick = () => window.triggerMagicTipScreen();
     document.getElementById('order-tip-dismiss').onclick = () => resetToIdle(false);
     orderTipRetry.onclick = () => startOrderTipPayment();
     orderTipDecline.onclick = () => showTipThanks('До встречи в COFFEEMAN!');
@@ -1658,8 +1828,11 @@
       if (!shopId || !secretKey) throw new Error("Не заданы ключи Shop ID / Secret Key");
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const requestUrl = buildGatewayUrl('https://api.yookassa.ru/v3/payments');
-      const response = await fetch(requestUrl, {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      const request = {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Authorization': authHeader,
           'Idempotence-Key': idempotenceKey,
@@ -1672,36 +1845,65 @@
           capture: true,
           description: descriptionText
         })
-      });
-      const data = await response.json();
-      if (!response.ok || !data.id) throw new Error(data.description || 'Ошибка создания QR');
-      const qrUrl = data.confirmation?.confirmation_data || data.confirmation?.confirmation_url;
-      if (!qrUrl) throw new Error("Пустой QR от шлюза");
-      return { paymentId: data.id, qrUrl };
+      };
+      try {
+        const response = await fetch(requestUrl, request);
+        const data = await response.json();
+        if (!response.ok || !data.id) throw new Error(data.description || 'Ошибка создания QR');
+        const qrUrl = data.confirmation?.confirmation_data || data.confirmation?.confirmation_url;
+        if (!qrUrl) throw new Error('Пустой QR от шлюза');
+        return {paymentId: data.id, qrUrl};
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    function stopPaymentWatcher() {
+      if (!paymentWatcher) return;
+      const watcher = paymentWatcher;
+      paymentWatcher = null;
+      clearTimeout(watcher.timer);
+      watcher.controller?.abort();
     }
 
     function startPaymentWatcher(paymentId, onPaidCallback) {
-      if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
+      stopPaymentWatcher();
       const shopId = globalShopId || localStorage.getItem('yk_shop_id');
       const secretKey = globalSecretKey || localStorage.getItem('yk_secret_key');
       if (!paymentId || !shopId || !secretKey) return;
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
-      const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${paymentId}`);
-      const watcher = setInterval(async () => {
+      const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${encodeURIComponent(paymentId)}`);
+      const watcher = {timer: null, controller: null};
+      paymentWatcher = watcher;
+
+      async function poll() {
+        if (paymentWatcher !== watcher) return;
+        const controller = new AbortController();
+        watcher.controller = controller;
+        const timeout = setTimeout(() => controller.abort(), 10000);
         try {
           const res = await fetch(pollUrl, {
-            method: 'GET',
-            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' }
+            headers: {'Authorization': authHeader, 'Content-Type': 'application/json'},
+            signal: controller.signal
           });
+          if (!res.ok || paymentWatcher !== watcher) return;
           const data = await res.json();
-          if (customerScreenPollingInterval === watcher && data && (data.status === 'succeeded' || data.paid === true)) {
-            clearInterval(watcher);
-            customerScreenPollingInterval = null;
+          if (paymentWatcher !== watcher) return;
+          if (data?.status === 'succeeded' || data?.paid === true) {
+            stopPaymentWatcher();
             onPaidCallback(data);
+          } else if (data?.status === 'canceled') {
+            stopPaymentWatcher();
           }
-        } catch (e) { console.error("Poll error:", e); }
-      }, 1600);
-      customerScreenPollingInterval = watcher;
+        } catch (error) {
+          if (error.name !== 'AbortError') console.warn('Не удалось проверить состояние оплаты');
+        } finally {
+          clearTimeout(timeout);
+          if (paymentWatcher === watcher) watcher.timer = setTimeout(poll, 1600);
+        }
+      }
+
+      watcher.timer = setTimeout(poll, 1600);
     }
 
     function renderQRCodeToCanvas(url, canvasId) {
@@ -1724,7 +1926,12 @@
     /* ═══════════════════════════════════════════
        MAGIC TIPS
     ═══════════════════════════════════════════ */
+    const manualTipKeys = new Map();
+    let manualTipRequest = null;
+
     window.triggerMagicTipScreen = function() {
+      manualTipKeys.clear();
+      manualTipRequest = null;
       const recipientText = document.getElementById('magic-tip-recipient-label');
       if (recipientText) recipientText.textContent = window.permanentTipRecipient === 'waiter' ? 'Чаевые официанту' : 'Чаевые бариста';
       window.toggleSyrupsShelf(false);
@@ -1758,6 +1965,14 @@
     };
 
     window.selectMagicTip = async function(amount, btn) {
+      if (!magicTipScreen.classList.contains('active')) return;
+      const recipient = window.permanentTipRecipient === 'waiter' ? 'официанту' : 'бариста';
+      const requestType = recipient + ':' + amount;
+      if (manualTipRequest?.type === requestType && manualTipRequest.phase !== 'error') return;
+      if (!manualTipKeys.has(requestType)) manualTipKeys.set(requestType, generateUUID());
+      const request = {type: requestType, phase: 'loading'};
+      manualTipRequest = request;
+      stopPaymentWatcher();
       const version = ++paymentRenderVersion;
       currentSelectedMagicTipAmount = amount;
       document.querySelectorAll('.magic-tip-btn').forEach(button => {
@@ -1779,20 +1994,24 @@
       loader.classList.add('flex');
 
       try {
-        const { paymentId, qrUrl } = await createLiveYookassaSbpQr(amount, `Чаевые COFFEEMAN: ${window.permanentTipRecipient === "waiter" ? "официанту" : "бариста"} (${amount} ₽)`);
+        const {paymentId, qrUrl} = await createLiveYookassaSbpQr(
+          amount, `Чаевые COFFEEMAN: ${recipient} (${amount} ₽)`, manualTipKeys.get(requestType)
+        );
         if (version !== paymentRenderVersion || !magicTipScreen.classList.contains('active')) return;
         const ok = renderQRCodeToCanvas(qrUrl, 'magic-qr-canvas');
         if (!ok) throw new Error("Ошибка рендера QR");
         loader.classList.add('hidden');
         loader.classList.remove('flex');
         qrWrapper.classList.remove('hidden');
-        
+        request.phase = 'ready';
+
         startPaymentWatcher(paymentId, () => {
           recordTipStat();
           window.triggerMagicThanksScreen();
         });
       } catch (err) {
         if (version !== paymentRenderVersion || !magicTipScreen.classList.contains('active')) return;
+        request.phase = 'error';
         loader.classList.add('hidden');
         loader.classList.remove('flex');
         qrWrapper.classList.add('hidden');
@@ -1807,6 +2026,7 @@
     let initialOrderQrUrl = '';
     let initialOrderPaymentId = '';
     let isCurrentOrderCard = false;
+    const orderQrKeys = new Map();
 
     function triggerPayment(orderData) {
       window.toggleSyrupsShelf(false);
@@ -1821,6 +2041,7 @@
 
       baseAmount = Number(orderData.amount) || 0;
       selectedTip = 0;
+      orderQrKeys.clear();
       initialOrderQrUrl = orderData.qrUrl || '';
       initialOrderPaymentId = orderData.paymentId || '';
       const orderTitleEl = document.getElementById('order-title');
@@ -1882,7 +2103,8 @@
     }
 
     window.setOrderTip = async function(tip, btn) {
-      if (isCurrentOrderCard) return;
+      if (isCurrentOrderCard || selectedTip === tip) return;
+      stopPaymentWatcher();
       ++paymentRenderVersion;
       selectedTip = tip;
       setOrderTipSelection(btn);
@@ -1905,6 +2127,7 @@
     async function regenerateOrderQrWithTip(tipAmount) {
       const version = ++paymentRenderVersion;
       const total = baseAmount + tipAmount;
+      if (!orderQrKeys.has(tipAmount)) orderQrKeys.set(tipAmount, generateUUID());
       const loader = document.getElementById('order-qr-loader');
       const errBox = document.getElementById('order-qr-error');
       const qrWrap = document.getElementById('qr-wrapper');
@@ -1914,7 +2137,7 @@
       loader.classList.add('flex');
       try {
         const { paymentId, qrUrl } = await createLiveYookassaSbpQr(
-          total, `Заказ COFFEEMAN ${baseAmount} ₽ + чаевые ${tipAmount} ₽`
+          total, `Заказ COFFEEMAN ${baseAmount} ₽ + чаевые ${tipAmount} ₽`, orderQrKeys.get(tipAmount)
         );
         if (version !== paymentRenderVersion || !paymentScreen.classList.contains('active')) return;
         if (!renderQRCodeToCanvas(qrUrl, 'qr-canvas')) throw new Error('QR недоступен');
@@ -1941,6 +2164,7 @@
     const permanentTipConnection = document.getElementById('permanent-tip-connection');
     let permanentTipActive = false;
     let permanentTipGeneration = 0;
+    let permanentTipRequest = null;
     let permanentTipRefreshTimer = null;
     window.permanentTipAmount = 100;
     window.permanentTipRecipient = 'barista';
@@ -1975,11 +2199,16 @@
       ++permanentTipGeneration;
       if (permanentTipRefreshTimer) clearTimeout(permanentTipRefreshTimer);
       permanentTipRefreshTimer = null;
-      if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
-      customerScreenPollingInterval = null;
+      stopPaymentWatcher();
     }
-    window.permanentTipSelect = async function(amount) {
+    window.permanentTipSelect = async function(amount, renew = false) {
       if (!permanentTipActive || !Number.isInteger(amount) || amount < 10 || amount > 10000) return;
+      const recipient = window.permanentTipRecipient === 'waiter' ? 'официанту' : 'бариста';
+      const type = recipient + ':' + amount;
+      const sameRequest = !renew && permanentTipRequest?.type === type;
+      if (sameRequest && permanentTipRequest.phase !== 'error') return;
+      const request = {type, phase: 'loading', key: sameRequest ? permanentTipRequest.key : generateUUID()};
+      permanentTipRequest = request;
       stopPermanentTipCycle();
       const generation = permanentTipGeneration;
       window.permanentTipAmount = amount;
@@ -1994,30 +2223,34 @@
       permanentTipStatus.textContent = 'Подключаем оплату…';
       permanentTipRetry.style.display = 'none';
       try {
-        const {paymentId, qrUrl} = await createLiveYookassaSbpQr(amount, `Чаевые COFFEEMAN: ${window.permanentTipRecipient === 'waiter' ? 'официанту' : 'бариста'} (${amount} ₽)`);
+        const {paymentId, qrUrl} = await createLiveYookassaSbpQr(
+          amount, `Чаевые COFFEEMAN: ${recipient} (${amount} ₽)`, request.key
+        );
         if (!permanentTipActive || generation !== permanentTipGeneration) return;
         if (!renderQRCodeToCanvas(qrUrl, 'permanent-tip-qr')) throw new Error('QR-код не удалось нарисовать');
+        request.phase = 'ready';
         permanentTipPlaceholder.style.display = 'none';
         permanentTipCanvas.style.display = 'block';
         permanentTipStatus.textContent = 'Наведите камеру телефона на QR-код';
         startPaymentWatcher(paymentId, () => {
           if (!permanentTipActive || generation !== permanentTipGeneration) return;
           recordTipStat();
-          permanentTipStatus.textContent = 'Спасибо за чаевые! ❤️ Готовим следующий QR…';
+          permanentTipStatus.textContent = 'Спасибо за чаевые! Готовим следующий код…';
           permanentTipCanvas.style.display = 'none';
           permanentTipPlaceholder.style.display = 'grid';
-          permanentTipPlaceholder.textContent = 'Спасибо! ☕';
+          permanentTipPlaceholder.textContent = 'Спасибо!';
           clearTimeout(permanentTipRefreshTimer);
-          permanentTipRefreshTimer = setTimeout(() => window.permanentTipSelect(window.permanentTipAmount), 2500);
+          permanentTipRefreshTimer = setTimeout(() => window.permanentTipSelect(window.permanentTipAmount, true), 2500);
         });
         // Платёжный QR не бессрочный: периодически обновляем его.
         permanentTipRefreshTimer = setTimeout(() => {
-          if (permanentTipActive && generation === permanentTipGeneration) window.permanentTipSelect(window.permanentTipAmount);
+          if (permanentTipActive && generation === permanentTipGeneration) window.permanentTipSelect(window.permanentTipAmount, true);
         }, 10 * 60 * 1000);
       } catch (error) {
         if (!permanentTipActive || generation !== permanentTipGeneration) return;
-        permanentTipPlaceholder.textContent = 'QR пока недоступен';
-        permanentTipStatus.textContent = 'Не удалось создать QR: ' + error.message + '. Проверьте настройки оплаты на дисплее.';
+        request.phase = 'error';
+        permanentTipPlaceholder.textContent = 'QR-код недоступен';
+        permanentTipStatus.textContent = 'Попробуйте обновить код или обратитесь к кассиру.';
         permanentTipRetry.style.display = 'inline-block';
       }
     };
@@ -2036,6 +2269,7 @@
         window.permanentTipSelect(window.permanentTipAmount);
       } else {
         stopPermanentTipCycle();
+        permanentTipRequest = null;
         resetToIdle(false);
       }
     }, error => {
@@ -2345,8 +2579,7 @@
       if (countdownInterval) clearInterval(countdownInterval);
       if (returnTimeout) clearTimeout(returnTimeout);
       if (magicCountdownInterval) clearInterval(magicCountdownInterval);
-      if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
-      customerScreenPollingInterval = null;
+      stopPaymentWatcher();
       if (promoInterval) clearInterval(promoInterval);
       if (slideProgressInterval) clearInterval(slideProgressInterval);
     }
