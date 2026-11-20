@@ -2,313 +2,43 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#f5f5f7" />
+  <meta name="theme-color" content="#f8f7f5" />
   <title>COFFEEMAN • Simply Good — Касса</title>
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Syne:wght@700;800;900&family=Unbounded:wght@600;700;800;900&display=swap" rel="stylesheet">
   
   <script src="https://cdn.tailwindcss.com"></script>
 
   <script>
-    tailwind.config = {
+    if (window.tailwind) tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            display: ['Unbounded', 'sans-serif'],
-            accent: ['Syne', 'sans-serif'],
-            sans: ['Montserrat', 'sans-serif'],
+            display: ['system-ui', 'sans-serif'],
+            accent: ['system-ui', 'sans-serif'],
+            sans: ['system-ui', 'sans-serif']
           },
           colors: {
-            cream: '#FFF1E3',
-            peach: '#FFC8A2',
-            coral: '#FF8A93',
-            rose: '#FFB6C8',
-            lavender: '#C7A6FF',
-            mint: '#7CE4D1',
-            gold: '#FFE28A',
-            sticker: '#FFE28A',
-            ink: '#0D0810',
-            inkDeep: '#070409',
-            surface: '#150F1A',
-            surfaceLight: '#211828'
+            cream: 'rgb(var(--ink-rgb) / <alpha-value>)',
+            peach: 'rgb(var(--accent-rgb) / <alpha-value>)',
+            coral: 'rgb(var(--error-rgb) / <alpha-value>)',
+            rose: 'rgb(var(--error-rgb) / <alpha-value>)',
+            lavender: 'rgb(var(--accent-rgb) / <alpha-value>)',
+            mint: 'rgb(var(--success-rgb) / <alpha-value>)',
+            gold: 'rgb(var(--accent-rgb) / <alpha-value>)',
+            sticker: 'rgb(var(--accent-rgb) / <alpha-value>)',
+            ink: 'rgb(var(--on-accent-rgb) / <alpha-value>)',
+            inkDeep: 'rgb(var(--depth-rgb) / <alpha-value>)',
+            surface: 'rgb(var(--surface-rgb) / <alpha-value>)',
+            surfaceLight: 'rgb(var(--surface-rgb) / <alpha-value>)'
           }
         }
       }
     }
   </script>
-
-  <style>
-    * { 
-      -webkit-tap-highlight-color: transparent; 
-      user-select: none; 
-      -webkit-user-select: none;
-      box-sizing: border-box;
-      touch-action: manipulation;
-    }
-    html, body { 
-      background: #070409; 
-      color: #FFF1E3;
-      overscroll-behavior-y: contain;
-    }
-    
-    /* ================= DEEP ESPRESSO AURORA BG ================= */
-    .ambient-bg {
-      background: 
-        radial-gradient(ellipse 75% 50% at 12% 6%, rgba(255, 226, 138, 0.09) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 45% at 88% 14%, rgba(199, 166, 255, 0.10) 0%, transparent 60%),
-        radial-gradient(ellipse 65% 50% at 80% 92%, rgba(255, 138, 147, 0.09) 0%, transparent 60%),
-        linear-gradient(180deg, #100A16 0%, #070409 100%);
-      background-attachment: fixed;
-    }
-
-    /* ================= GLASS SURFACES ================= */
-    .glass-card {
-      background: linear-gradient(160deg, rgba(255, 241, 227, 0.055) 0%, rgba(18, 12, 22, 0.76) 100%);
-      backdrop-filter: blur(22px) saturate(1.45);
-      -webkit-backdrop-filter: blur(22px) saturate(1.45);
-      border: 1px solid rgba(255, 200, 162, 0.13);
-      box-shadow: 
-        0 18px 46px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
-    .glass-modal {
-      background: linear-gradient(170deg, rgba(25, 17, 31, 0.96) 0%, rgba(10, 6, 13, 0.98) 100%);
-      backdrop-filter: blur(32px) saturate(1.5);
-      -webkit-backdrop-filter: blur(32px) saturate(1.5);
-      border: 1px solid rgba(255, 226, 138, 0.22);
-      box-shadow: 
-        0 32px 84px rgba(0, 0, 0, 0.8),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    }
-
-    /* ================= BADGES & BUTTONS ================= */
-    .btn-gold {
-      background: linear-gradient(135deg, #FFE28A 0%, #FFC8A2 50%, #FF8A93 100%);
-      color: #140810;
-      box-shadow: 
-        0 12px 30px rgba(255, 138, 147, 0.28),
-        inset 0 1px 0 rgba(255, 255, 255, 0.65);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .btn-gold:hover {
-      box-shadow: 
-        0 16px 38px rgba(255, 138, 147, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.75);
-    }
-    .btn-gold:active { transform: scale(0.96); }
-
-    .stamp-badge {
-      clip-path: polygon(50% 0%, 65% 15%, 85% 10%, 85% 30%, 100% 45%, 90% 65%, 95% 85%, 75% 85%, 65% 100%, 45% 90%, 25% 95%, 20% 75%, 0% 65%, 12% 45%, 5% 25%, 25% 20%, 35% 0%);
-    }
-
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255, 200, 162, 0.2); border-radius: 99px; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* ================= BOTTOM DOCK — ОСТРОВОК ================= */
-    .bottom-dock-wrap {
-      position: fixed;
-      bottom: max(14px, env(safe-area-inset-bottom));
-      left: 0; right: 0;
-      display: flex;
-      justify-content: center;
-      z-index: 80;
-      pointer-events: none;
-      padding: 0 14px;
-    }
-    .bottom-dock {
-      pointer-events: auto;
-      background: linear-gradient(180deg, rgba(28, 20, 34, 0.94), rgba(12, 7, 15, 0.98));
-      backdrop-filter: blur(28px) saturate(1.55);
-      -webkit-backdrop-filter: blur(28px) saturate(1.55);
-      border: 1px solid rgba(255, 226, 138, 0.2);
-      border-radius: 999px;
-      padding: 5px;
-      display: flex;
-      gap: 4px;
-      box-shadow: 
-        0 24px 60px rgba(0, 0, 0, 0.85), 
-        0 8px 20px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    }
-    .dock-btn {
-      padding: 12px 20px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 800;
-      font-size: 11px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: rgba(255, 241, 227, 0.55);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      white-space: nowrap;
-    }
-    .dock-btn .dock-icon { font-size: 17px; line-height: 1; transition: transform 0.28s; }
-    .dock-btn.active {
-      background: linear-gradient(135deg, #FFE28A 0%, #FFC8A2 55%, #FF8A93 100%);
-      color: #140810;
-      box-shadow: 0 0 24px rgba(255, 226, 138, 0.35), 0 8px 20px rgba(255, 138, 147, 0.28);
-    }
-    .dock-btn.active .dock-icon { transform: scale(1.1); }
-    
-    @media (max-width: 420px) {
-      .dock-btn { padding: 11px 14px; font-size: 9.5px; gap: 5px; }
-      .dock-btn .dock-icon { font-size: 15px; }
-    }
-
-    /* ================= SORT & FILTER PILLS ================= */
-    .sort-pill {
-      padding: 8px 13px;
-      border-radius: 999px;
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 700;
-      font-size: 10px;
-      letter-spacing: 0.03em;
-      color: rgba(255, 241, 227, 0.55);
-      background: rgba(255, 241, 227, 0.04);
-      border: 1px solid rgba(255, 200, 162, 0.12);
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .sort-pill:active { transform: scale(0.95); }
-    .sort-pill.active {
-      background: linear-gradient(135deg, rgba(255, 226, 138, 0.22), rgba(255, 138, 147, 0.16));
-      color: #FFE28A;
-      border-color: rgba(255, 226, 138, 0.45);
-      box-shadow: 0 4px 16px rgba(255, 226, 138, 0.16);
-    }
-    .filter-chip {
-      padding: 7px 12px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 700;
-      color: rgba(255, 241, 227, 0.6);
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-    .filter-chip.active {
-      background: rgba(199, 166, 255, 0.18);
-      color: #C7A6FF;
-      border-color: rgba(199, 166, 255, 0.4);
-    }
-
-    /* ================= MOBILE NUMPAD ================= */
-    .num-key {
-      height: clamp(54px, 7.6vh, 66px);
-      border-radius: 20px;
-      background: linear-gradient(180deg, rgba(255, 241, 227, 0.07) 0%, rgba(20, 14, 26, 0.88) 100%);
-      border: 1px solid rgba(255, 200, 162, 0.12);
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 800;
-      font-size: 21px;
-      color: #FFF1E3;
-      transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s, border-color 0.15s;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 6px 16px rgba(0, 0, 0, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .num-key:active { 
-      transform: scale(0.93); 
-      background: rgba(255, 226, 138, 0.18);
-      border-color: rgba(255, 226, 138, 0.35);
-    }
-    .num-key.muted { color: rgba(255, 241, 227, 0.48); font-size: 17px; }
-    .num-key.danger { 
-      background: linear-gradient(180deg, rgba(255, 138, 147, 0.16), rgba(190, 18, 60, 0.1)); 
-      color: #FF8A93; 
-      border-color: rgba(255, 138, 147, 0.28); 
-    }
-    .num-key.danger:active { background: rgba(255, 138, 147, 0.32); }
-
-    /* ================= AMOUNT HERO ================= */
-    .pos-amount-gradient {
-      background: linear-gradient(135deg, #FFF1E3 0%, #FFE28A 45%, #FFC8A2 85%, #FF8A93 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 4px 24px rgba(255, 226, 138, 0.24));
-    }
-
-    /* ================= CONTENT TABS ================= */
-    .content-tab {
-      padding: 10px 16px;
-      border-radius: 999px;
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 800;
-      font-size: 10px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: rgba(255, 241, 227, 0.5);
-      background: transparent;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.22s;
-      white-space: nowrap;
-    }
-    .content-tab.active {
-      background: linear-gradient(135deg, rgba(255, 226, 138, 0.18), rgba(255, 138, 147, 0.14));
-      color: #FFE28A;
-      border-color: rgba(255, 226, 138, 0.38);
-      box-shadow: 0 4px 16px rgba(255, 226, 138, 0.14);
-    }
-
-    /* ================= ANIMATIONS ================= */
-    .fade-in { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .modal-pop { animation: modalPop 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
-    @keyframes modalPop {
-      from { opacity: 0; transform: scale(0.93) translateY(16px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .amount-pulse { animation: amountPulse 0.26s cubic-bezier(0.16, 1, 0.3, 1); }
-    @keyframes amountPulse {
-      0% { transform: scale(1); }
-      45% { transform: scale(1.045); }
-      100% { transform: scale(1); }
-    }
-
-    .brand-live {
-      letter-spacing: 0.2em;
-      background: linear-gradient(90deg, #FFF1E3 0%, #FFE28A 48%, #C7A6FF 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* ================= TOAST PROGRESS BAR ================= */
-    .toast-bar {
-      animation: toastShrink 3.2s linear forwards;
-    }
-    @keyframes toastShrink {
-      from { width: 100%; }
-      to { width: 0%; }
-    }
-  </style>
 
   <!-- Firebase Модуль -->
   <script type="module">
@@ -342,63 +72,46 @@
       return command;
     }, {applyLocally: false});
 
+    window.updateTerminalOrder = change => {
+      const terminal = localStorage.getItem('yk_term_id') || 'term_01';
+      return runTransaction(ref(db, 'terminals/' + terminal + '/current_order'), change, {applyLocally: false});
+    };
+
     const tipForm = document.getElementById('tip-offer-form');
-    const tipCheck = document.getElementById('tip-check');
-    const tipValue = document.getElementById('tip-value');
     const tipStatus = document.getElementById('tip-offer-status');
-    const tipKeypad = document.getElementById('tip-keypad');
-    for (const key of ['1','2','3','4','5','6','7','8','9','⌫','0','Сброс']) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'cm-action';
-      button.textContent = key;
-      if (key === '⌫') button.setAttribute('aria-label', 'Удалить цифру');
-      button.addEventListener('click', () => {
-        if (key === 'Сброс') tipValue.value = '';
-        else if (key === '⌫') {
-          const shortened = tipValue.value.slice(0, -1).replace(/\.$/, '');
-          tipValue.value = shortened;
-        }
-        else if (tipValue.value.length < 8) tipValue.value = String(Number(tipValue.value + key));
-      });
-      tipKeypad.append(button);
-    }
-    tipForm.querySelectorAll('[data-tip-percent]').forEach(button => {
-      button.addEventListener('click', () => {
-        if (!tipCheck.reportValidity()) return;
-        tipValue.value = (tipCheck.valueAsNumber * Number(button.dataset.tipPercent) / 100).toFixed(2);
-        tipValue.reportValidity();
-      });
-    });
     document.getElementById('tip-dismiss').addEventListener('click', async event => {
       const button = event.currentTarget;
+      const status = document.getElementById('tip-screen-status');
       const terminal = localStorage.getItem('yk_term_id') || 'term_01';
       button.disabled = true;
       try {
         const result = await window.sendTipScreenCommand(ref(db, 'terminals/' + terminal + '/current_order'), {status: 'IDLE'});
-        tipStatus.textContent = result.committed ? 'Экран возвращён в ожидание.' : 'На терминале идёт оплата.';
+        status.textContent = result.committed ? 'Экран возвращён в ожидание.' : 'На терминале идёт оплата.';
       } catch (error) {
-        tipStatus.textContent = 'Не удалось вернуть экран в ожидание.';
+        status.textContent = 'Не удалось вернуть экран в ожидание.';
       } finally {
         button.disabled = false;
       }
     });
+
     tipForm.addEventListener('submit', async event => {
       event.preventDefault();
+      const amount = Number(tipCheckInput);
+      const tipAmount = calculateCheckTip();
+      if (amount < 1 || amount > 1000000 || tipAmount < 1 || tipAmount > 10000) {
+        tipStatus.textContent = 'Сумма чаевых должна быть от 1 ₽ до 10 000 ₽.';
+        return;
+      }
       const button = tipForm.querySelector('[type=submit]');
       const terminal = localStorage.getItem('yk_term_id') || 'term_01';
       const order = ref(db, 'terminals/' + terminal + '/current_order');
-      const timestamp = Date.now();
       button.disabled = true;
       tipStatus.textContent = 'Отправляем запрос…';
       try {
-        const offer = {
-          status: 'OFFER_ORDER_TIP', amount: tipCheck.valueAsNumber,
-          tipAmount: tipValue.valueAsNumber, timestamp
-        };
+        const offer = {status: 'OFFER_ORDER_TIP', amount, tipAmount, timestamp: Date.now()};
         const result = await window.sendTipScreenCommand(order, offer);
         tipStatus.textContent = result.committed
-          ? 'Запрос отправлен на экран гостя.'
+          ? 'Предложение отправлено на экран гостя.'
           : 'Завершите текущую оплату и повторите отправку.';
       } catch (error) {
         tipStatus.textContent = 'Не удалось отправить запрос. Проверьте связь с терминалом.';
@@ -470,54 +183,7 @@
       const orderStatusRef = ref(db, `terminals/${terminalId}/current_order`);
       onValue(orderStatusRef, (snapshot) => {
         const data = snapshot.val();
-        const statusBadge = document.getElementById('live-terminal-status');
-        const orderSub = document.getElementById('live-terminal-sub');
-        const cardPaidBtn = document.getElementById('btn-confirm-card-paid');
-        const statusDot = document.getElementById('status-dot');
-        
-        if (!statusBadge) return;
-
-        if (data && (data.status === 'WAITING_FOR_PAYMENT' || data.status === 'WAITING_FOR_CARD')) {
-          const isCard = data.method === 'card' || data.status === 'WAITING_FOR_CARD';
-          statusBadge.innerText = `${data.amount} ₽ • ${isCard ? 'Карта' : 'СБП'}`;
-          statusBadge.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full bg-gold/15 text-gold border border-gold/35';
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-gold animate-ping';
-          if (orderSub) orderSub.innerText = isCard ? `Ожидание карты (${data.amount} ₽)` : `Ожидание СБП: ${data.amount} ₽`;
-          if (cardPaidBtn) {
-            if (isCard) cardPaidBtn.classList.remove('hidden');
-            else cardPaidBtn.classList.add('hidden');
-          }
-        } else if (data && data.status === 'SHOW_PROMO' && data.promo) {
-          statusBadge.innerText = '🎁 Акция';
-          statusBadge.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full bg-coral/20 text-peach border border-coral/40';
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-peach animate-pulse';
-          if (orderSub) orderSub.innerText = data.promo.title || 'Акция активна';
-          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-        } else if (data && data.status === 'TRIGGER_MAGIC_TIPS') {
-          statusBadge.innerText = '☕ Чаевые';
-          statusBadge.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full bg-peach/20 text-peach border border-peach/35';
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-peach animate-pulse';
-          if (orderSub) orderSub.innerText = 'Сбор чаевых бариста';
-          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-        } else if (data && data.status === 'SHOW_SYRUPS') {
-          statusBadge.innerText = '🧴 Сиропы';
-          statusBadge.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full bg-lavender/20 text-lavender border border-lavender/35';
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-lavender animate-pulse';
-          if (orderSub) orderSub.innerText = 'Гость смотрит полку сиропов';
-          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-        } else if (data && (data.status === 'PAID' || data.status === 'succeeded' || data.status === 'cash_succeeded')) {
-          statusBadge.innerText = '✓ Оплачено';
-          statusBadge.className = 'text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-full bg-mint/15 text-mint border border-mint/35';
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-mint';
-          if (orderSub) orderSub.innerText = 'Оплата зафиксирована';
-          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-        } else {
-          statusBadge.innerText = 'Свободен';
-          statusBadge.className = 'text-[10px] sm:text-[11px] font-semibold px-2.5 py-1 rounded-full bg-cream/5 text-cream/55 border border-cream/10';
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-mint/70';
-          if (orderSub) orderSub.innerText = 'Готов к работе';
-          if (cardPaidBtn) cardPaidBtn.classList.add('hidden');
-        }
+        updateOrderStatus(data);
       });
 
       // 2. Сиропы
@@ -570,197 +236,499 @@
 
     attachListeners();
   </script>
-<style id="vice-city-pos-design">
-:root{--pos-pink:#ff7fbd;--pos-cyan:#7cf5e8;--pos-peach:#ffd1a3}
-body.ambient-bg{background:radial-gradient(ellipse at 8% 8%,#73346288,transparent 45%),radial-gradient(ellipse at 95% 48%,#167b8588,transparent 42%),linear-gradient(155deg,#1c112d,#121c30 62%,#1b122b)!important}
-body>header{background:linear-gradient(110deg,#321c49e8,#17333ee8)!important;border-bottom:1px solid #ff9dce77!important;box-shadow:0 12px 32px #090a1b66}
-#view-pos,#view-history,#view-content,#view-settings{filter:drop-shadow(0 8px 30px #0a071a44)}
-#view-pos>div,#view-pos>section,#view-history>div,#view-content>div,#view-settings>div{border-color:#ffb0d34d}
-#permanent-tips-control{background:linear-gradient(120deg,#67305f,#1c6470)!important;border:1px solid #ffc0df88!important;box-shadow:0 16px 55px #ff61b42b!important}
-#permanent-tips-control button{background:linear-gradient(120deg,#ff83c4,#ffe1a0)!important;color:#301c32!important;box-shadow:0 10px 25px #ff6ea344}
-#permanent-tips-lock{background:radial-gradient(ellipse at 20% 10%,#743d73,#251a36 54%,#112d37)!important}
-#permanent-tips-lock .pt-card{border:1px solid #ffb8dc88!important;box-shadow:0 30px 90px #0009,0 0 70px #ff75b32c!important}
-#permanent-tips-lock button{background:linear-gradient(120deg,#ff8cc9,#ffe1a4)!important}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7cf5e8!important;outline-offset:2px}
-button:not(:disabled){transition:transform .18s ease,filter .18s ease}
-button:not(:disabled):active{transform:scale(.97)}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+<style>
+:root {
+  color-scheme: light;
+  --canvas: #f8f7f5;
+  --ink-rgb: 33 35 40;
+  --muted: #555c66;
+  --depth-rgb: 33 35 40;
+  --surface-rgb: 255 255 255;
+  --accent-rgb: 36 93 193;
+  --on-accent-rgb: 255 255 255;
+  --success-rgb: 14 109 78;
+  --error-rgb: 174 49 58;
+  --control: #eeedeb;
+  --control-hover: #e4e6ec;
+  --warm-light: #ffd8c868;
+  --cool-light: #cedfff85;
+  --ink: rgb(var(--ink-rgb));
+  --accent: rgb(var(--accent-rgb));
+  --on-accent: rgb(var(--on-accent-rgb));
+  --error: rgb(var(--error-rgb));
+  --success: rgb(var(--success-rgb));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #131517;
+  --ink-rgb: 245 244 241;
+  --muted: #aab1bc;
+  --depth-rgb: 10 13 18;
+  --surface-rgb: 33 37 44;
+  --accent-rgb: 157 195 255;
+  --on-accent-rgb: 9 30 64;
+  --success-rgb: 133 223 188;
+  --error-rgb: 255 163 168;
+  --control: #22272e;
+  --control-hover: #303846;
+  --warm-light: #773e3650;
+  --cool-light: #2c4e886b;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden], .hidden { display: none !important; }
+html, body { min-height: 100%; }
+html { background: var(--canvas); }
+body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  margin: 0;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: inherit;
+  overscroll-behavior-y: contain;
+  transition: background-color 450ms, color 450ms;
+}
+button, input, select, textarea { font: inherit; }
+button {
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 200ms ease, color 200ms ease, transform 180ms cubic-bezier(.16,1,.3,1), opacity 180ms ease;
+}
+button:disabled { opacity: .48; cursor: default; }
+button:not(:disabled):active { transform: scale(.96); }
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 4px;
+}
+.ambient-light {
+  position: fixed;
+  z-index: -1;
+  inset: -8%;
+  pointer-events: none;
+  background: radial-gradient(ellipse 49% 54% at 99% 7%, var(--cool-light), transparent 76%),
+              radial-gradient(ellipse 54% 49% at 4% 60%, var(--warm-light), transparent 77%);
+  animation: ambient-drift 21s ease-in-out infinite alternate;
+}
+@keyframes ambient-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to { transform: translate3d(3%, 4%, 0) scale(1.09); }
+}
+.register-header {
+  width: min(100%, 1120px);
+  margin-inline: auto;
+  min-height: 71px;
+  padding: max(15px, env(safe-area-inset-top)) clamp(18px, 5vw, 54px) 12px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.brand-live {
+  justify-self: start;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: clamp(19px, 2.55vw, 28px);
+  font-weight: 760;
+  letter-spacing: -.075em;
+}
+.brand-live span, .guest-link { color: var(--accent); }
+.guest-link {
+  justify-self: end;
+  color: var(--accent);
+  font-size: clamp(11px, 1.7vw, 14px);
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.guest-link:hover { text-decoration: underline; }
+.terminal-state {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+#status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: 0 0 6px;
+}
+.terminal-state[data-state="waiting"] #status-dot { background: var(--accent); animation: status-pulse 1.8s ease infinite alternate; }
+.terminal-state[data-state="paid"] #status-dot { background: var(--success); }
+@keyframes status-pulse { to { opacity: .38; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.register-view {
+  width: min(100%, 900px);
+  padding: 4px clamp(18px, 5vw, 38px) 25px;
+  margin-inline: auto;
+}
+.register-view.management { width: min(100%, 1120px); }
+.subtabs {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(12px, 3vw, 32px);
+  margin: 0 0 clamp(20px, 4vh, 44px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subtab {
+  white-space: nowrap;
+  padding: 9px 0 12px;
+  min-height: 44px;
+  flex: 0 0 auto;
+  position: relative;
+  background: transparent;
+  color: var(--muted);
+  font-size: clamp(13px, 1.9vw, 16px);
+  font-weight: 650;
+}
+.subtab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transform: scaleX(.4);
+  transition: transform 210ms, opacity 210ms;
+}
+.subtab.active { color: var(--ink); }
+.subtab.active::after { opacity: 1; transform: scaleX(1); }
+.subtab:hover { color: var(--accent); }
+.subpanel:not([hidden]) { animation: unfold 320ms cubic-bezier(.16,1,.3,1) both; }
+
+.entry-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, .8fr);
+  gap: clamp(22px, 5vw, 58px);
+  align-items: center;
+  max-width: 780px;
+  min-height: min(540px, 63vh);
+  margin-inline: auto;
+}
+.entry-intro { min-width: 0; }
+.amount-label {
+  margin: 0 0 9px;
+  color: var(--muted);
+  font-size: clamp(15px, 2.5vw, 21px);
+  font-weight: 550;
+}
+.amount-box { display: flex; align-items: baseline; gap: .5rem; white-space: nowrap; color: var(--ink); }
+.amount-box output {
+  font-size: clamp(27px, 5.25vw, 83px);
+  line-height: 1.04;
+  font-weight: 710;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.065em;
+}
+.amount-box:has(output[data-wide]) output { font-size: clamp(25px, 4.9vw, 65px); }
+.amount-box > span { font-size: clamp(22px, 3.8vw, 42px); font-weight: 630; }
+.entry-status {
+  margin: 13px 0 0;
+  min-height: 1.45em;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.entry-status:empty { display: none; }
+.entry-controls { display: grid; gap: 12px; }
+.amount-keypad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.num-key {
+  min-height: clamp(49px, 8.5vh, 70px);
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--ink);
+  border-radius: 18px;
+  font-size: clamp(25px, 4vw, 32px);
+  font-weight: 590;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  user-select: none;
+}
+.control-key { color: var(--muted); font-size: clamp(21px, 3vw, 25px); }
+.num-key:active { background: var(--control-hover); }
+@media(hover: hover) { .num-key:hover { background: var(--control); } }
+.payment-actions, .entry-tools { display: flex; gap: 9px; }
+.payment-actions > *, .entry-tools > * { flex: 1 1 0; }
+.action, .btn-gold {
+  background: var(--control) !important;
+  color: var(--ink) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  font-weight: 670;
+}
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 49px;
+  border-radius: 13px;
+  padding: 10px 17px;
+  font-size: 15px;
+  line-height: 1.18;
+}
+.action.primary, .btn-gold { background: var(--accent) !important; color: var(--on-accent) !important; }
+.action:not(.primary):hover { background: var(--control-hover) !important; }
+.text-action {
+  min-height: 40px;
+  background: transparent;
+  color: var(--accent);
+  padding: 8px 4px;
+  font-weight: 650;
+  font-size: 12px;
+}
+.text-action:hover { text-decoration: underline; }
+.danger-action { color: var(--error); }
+.tip-percent { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.tip-percent button {
+  min-height: 42px;
+  border-radius: 12px;
+  min-width: 58px;
+  padding: 7px 10px;
+  background: var(--control);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+.tip-percent button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.tip-preview { margin: 12px 0 0; color: var(--muted); font-size: 15px; }
+.tip-preview output { margin-left: .25em; color: var(--ink); font-weight: 720; font-variant-numeric: tabular-nums; }
+
+.register-nav {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 42;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: clamp(7px, 3vw, 26px);
+  padding: 14px clamp(10px, 4vw, 32px) calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, var(--canvas) 76%, color-mix(in srgb, var(--canvas) 0%, transparent));
+}
+.register-nav button {
+  position: relative;
+  background: transparent;
+  color: var(--muted);
+  padding: 13px 4px 9px;
+  min-height: 44px;
+  flex: 0 1 109px;
+  font-size: clamp(13px, 2vw, 16px);
+  font-weight: 630;
+}
+.register-nav button[aria-current="page"] { color: var(--accent); }
+.register-nav button[aria-current="page"]::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: calc(50% - 2px);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.register-nav button:hover { color: var(--accent); }
+
+.plain-section {
+  width: min(100%, 580px);
+  margin: clamp(20px, 8vh, 80px) auto;
+}
+.plain-section h2, .management h2 {
+  margin: 0 0 14px;
+  font-size: clamp(26px, 4.5vw, 45px) !important;
+  letter-spacing: -.045em;
+  font-weight: 690;
+  color: var(--ink);
+  text-transform: none !important;
+  line-height: 1.1;
+}
+.plain-section p { color: var(--muted); }
+.action-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.glass-card { background: transparent !important; }
+.glass-modal { background: var(--canvas) !important; }
+.management :is([role="tabpanel"], #history-list-container) { gap: 18px; }
+.management [role="tabpanel"] > .glass-card { padding-inline: 0 !important; }
+.management [role="tabpanel"] > .glass-card:not(#ad-editor-card) { background: transparent !important; }
+.management :is(div, article, tr, img, button, p, span, td)[class*="border"],
+.glass-modal :is(div, span, button)[class*="border"], #toast-container [class*="border"] {
+  border-width: 0 !important;
+  box-shadow: none !important;
+}
+.management :is(article, div, tr)[class*="bg-white"], .management :is(article, div)[class*="bg-inkDeep"] {
+  background: transparent !important;
+}
+.management [class*="bg-gradient-to"] { background: var(--control) !important; color: var(--ink) !important; }
+.management :is(img, figure, #desk-preview-bg) { border-radius: 4px !important; }
+.management :is(label, p, span)[class*="text-cream/"], .glass-modal :is(label, p)[class*="text-cream/"] { color: var(--muted) !important; }
+.management :is(input, textarea, select), .glass-modal :is(input, textarea, select) {
+  background: var(--control) !important;
+  color: var(--ink) !important;
+  border: 0 !important;
+  border-radius: 10px;
+  min-height: 42px;
+  font-size: 14px;
+}
+.management :is(input, textarea)::placeholder, .glass-modal :is(input, textarea)::placeholder { color: var(--muted); }
+.management :is(button:not(.btn-gold), .sort-pill, .filter-chip),
+.glass-modal button:not(.btn-gold) { background: var(--control); color: var(--ink); min-height: 39px; }
+.management .subtab { background: transparent !important; color: var(--muted) !important; }
+.management .subtab.active { color: var(--ink) !important; }
+.management :is(.sort-pill, .filter-chip).active { background: var(--accent); color: var(--on-accent); }
+:is(#syrup-editor-modal, #promo-editor-modal, #custom-confirm-modal) { background: rgb(var(--depth-rgb) / .45) !important; }
+#permanent-tips-lock {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  overflow: auto;
+  padding: 24px 20px;
+  place-content: center;
+  background: var(--canvas);
+  text-align: center;
+}
+#permanent-tips-lock.active { display: grid; }
+#permanent-tips-lock .action { margin-top: 18px; }
+#permanent-tips-lock-error { color: var(--error); }
+#toast-container > div {
+  background: var(--canvas) !important;
+  color: var(--ink) !important;
+}
+.no-scrollbar { scrollbar-width: none; }
+.fade-in, .modal-pop { animation: unfold 300ms cubic-bezier(.16,1,.3,1) both; }
+.toast-bar { animation: toast-shrink 3.2s linear forwards; }
+@keyframes unfold {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes toast-shrink { to { width: 0; } }
+@media(max-width: 650px) {
+  .register-header { min-height: 59px; }
+  .subtabs { margin-bottom: 18px; }
+  .entry-layout { grid-template-columns: minmax(0, 1fr); text-align: center; min-height: 0; gap: 14px; max-width: 460px; }
+  .amount-box { justify-content: center; }
+  .amount-box output { font-size: clamp(34px, 10.5vw, 64px); }
+  .amount-box:has(output[data-wide]) output { font-size: clamp(27px, 8vw, 48px); }
+  .tip-percent { justify-content: center; }
+  .entry-status { margin-top: 7px; font-size: 13px; }
+  .num-key { min-height: clamp(39px, 7.6dvh, 61px); }
+  .entry-controls { gap: 8px; }
+}
+@media(max-width: 380px) {
+  .register-header { grid-template-columns: 1fr auto; }
+  .terminal-state { order: 1; grid-column: 1 / -1; gap: 5px; }
+}
+@media(prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 </style>
-<style id="coffeeman-cupertino-pos-v2">
-:root{--cm-blue:#0071e3;--cm-text:#1d1d1f;--cm-border:#e5e5e9}
-body.ambient-bg{background:#f5f5f7!important;color:#1d1d1f!important;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif!important}
-body>header{background:#ffffffed!important;border-bottom:1px solid #e5e5e9!important;color:#1d1d1f!important;box-shadow:0 8px 28px #0000000a!important}
-body>header *{text-shadow:none!important}
-#view-pos,#view-history,#view-content,#view-settings{filter:none!important}
-#view-pos>div,#view-pos>section,#view-history>div,#view-content>div,#view-settings>div{border-color:#e4e4e9!important;box-shadow:0 8px 28px #0000000a;border-radius:22px}
-#permanent-tips-control{background:#fff!important;border:1px solid #e5e5e9!important;color:#1d1d1f!important;box-shadow:0 14px 40px #0000000e!important}
-#permanent-tips-control div,#permanent-tips-control p{color:#1d1d1f!important}
-#permanent-tips-control button{background:#0071e3!important;color:#fff!important;box-shadow:0 10px 28px #0071e329!important;border:0!important}
-#permanent-tips-lock{background:#f5f5f7!important;color:#1d1d1f!important}
-#permanent-tips-lock .pt-card{background:#fff!important;border:1px solid #e5e5e9!important;box-shadow:0 25px 80px #00000013!important}
-#permanent-tips-lock h2,#permanent-tips-lock p,#permanent-tips-lock .pt-card div{color:#1d1d1f!important}
-#permanent-tips-lock button{background:#0071e3!important;color:white!important}
-button{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease!important}
-button:not(:disabled):hover{transform:translateY(-2px)}
-button:not(:disabled):active{transform:scale(.97)}
-@keyframes cmPanelIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-#view-pos>div,#view-pos>section{animation:cmPanelIn .65s cubic-bezier(.2,.8,.2,1) both}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
-</style>
+
+<script>
+  function syncCoffeemanTheme() {
+    const hour = new Date().getHours();
+    const dark = hour >= 17 || hour < 6;
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.querySelector('meta[name=theme-color]').content = dark ? '#131517' : '#f8f7f5';
+  }
+  syncCoffeemanTheme();
+  setInterval(syncCoffeemanTheme, 10000);
+  document.addEventListener('visibilitychange', syncCoffeemanTheme);
+</script>
 </head>
-<body class="ambient-bg text-cream min-h-[100dvh] flex flex-col font-sans selection:bg-gold selection:text-ink pb-24">
-
-  <!-- ================= TOP BAR (КОМПАКТНЫЙ ДЛЯ ТЕЛЕФОНА) ================= -->
-  <header class="w-full bg-inkDeep/80 backdrop-blur-2xl border-b border-peach/10 px-3.5 sm:px-6 py-2.5 flex justify-between items-center sticky top-0 z-40 pt-[max(10px,env(safe-area-inset-top))]">
-    <div class="flex items-center gap-2.5">
-      <div class="stamp-badge bg-gradient-to-br from-gold to-coral text-ink font-display font-black text-[10px] px-2.5 py-1 uppercase -rotate-3 shadow-lg shrink-0">
-        CM
-      </div>
-      <div class="flex flex-col leading-tight">
-        <div class="flex items-center gap-1.5">
-          <span id="status-dot" class="w-2 h-2 rounded-full bg-mint/70 shrink-0"></span>
-          <h1 class="brand-live font-display text-xs sm:text-sm font-black uppercase truncate">
-            COFFEEMAN
-          </h1>
-        </div>
-        <p id="live-terminal-sub" class="text-[10px] text-cream/45 truncate max-w-[150px] sm:max-w-xs">Готов к работе</p>
-      </div>
+<body>
+  <div class="ambient-light" aria-hidden="true"></div>
+  <header class="register-header">
+    <a class="brand-live" href="cashier.html">coffeeman<span>.</span></a>
+    <div class="terminal-state" aria-live="polite">
+      <span id="status-dot" aria-hidden="true"></span>
+      <span id="live-terminal-status">Подключение</span>
+      <span id="live-terminal-sub" class="sr-only"></span>
     </div>
-
-    <div class="flex items-center gap-1.5 sm:gap-2">
-      <div id="live-terminal-status" class="text-[10px] sm:text-[11px] font-semibold px-2.5 py-1 rounded-full bg-cream/5 text-cream/55 border border-cream/10 whitespace-nowrap">
-        Свободен
-      </div>
-      <a href="index.html" target="_blank" class="bg-cream/[0.06] hover:bg-cream/[0.12] active:scale-95 text-[11px] text-cream/85 px-2.5 py-1.5 rounded-xl border border-peach/15 font-semibold transition-all flex items-center gap-1 shrink-0">
-        <span>🖥️</span> <span class="hidden sm:inline">Экран</span> <span class="text-gold">↗</span>
-      </a>
-    </div>
+    <a class="guest-link" href="index.html" target="_blank" rel="noopener">Экран гостя <span aria-hidden="true">→</span></a>
   </header>
-
-  <!-- ================= ОСНОВНОЙ КОНТЕЙНЕР ================= -->
   <main class="flex-1 w-full">
 
-    <!-- ============ ВКЛАДКА 1: МОБИЛЬНАЯ КАССА ============ -->
-    <section id="view-pos" class="w-full max-w-lg mx-auto px-3.5 pt-3 pb-4 flex flex-col gap-3 fade-in">
+    <section id="view-pos" class="register-view">
+<div class="subtabs" role="tablist" aria-label="Касса">
+  <button type="button" id="tab-pos-order" role="tab" aria-controls="pos-order" aria-selected="true" tabindex="0" onclick="selectSubtab(this)" class="subtab active">Оплата</button>
+  <button type="button" id="tab-pos-screen" role="tab" aria-controls="pos-screen" aria-selected="false" tabindex="-1" onclick="selectSubtab(this)" class="subtab">Экран гостя</button>
+</div>
+<div id="pos-order" class="subpanel" role="tabpanel" aria-labelledby="tab-pos-order">
 
-      
+<div class="entry-layout">
+  <div class="entry-intro">
+    <p id="pos-amount-label" class="amount-label">К оплате</p>
+    <div class="amount-box">
+      <output id="amount-display" aria-labelledby="pos-amount-label" aria-live="polite" aria-atomic="true">0</output>
+      <span aria-hidden="true">₽</span>
+    </div>
+    <p id="pos-status-text" class="entry-status" role="status">Введите сумму на пинпаде</p>
+  </div>
+  <div class="entry-controls">
+    <div class="amount-keypad" data-keypad="pos" aria-label="Пинпад суммы">
+  <button type="button" class="num-key" data-key="1">1</button>
+  <button type="button" class="num-key" data-key="2">2</button>
+  <button type="button" class="num-key" data-key="3">3</button>
+  <button type="button" class="num-key" data-key="4">4</button>
+  <button type="button" class="num-key" data-key="5">5</button>
+  <button type="button" class="num-key" data-key="6">6</button>
+  <button type="button" class="num-key" data-key="7">7</button>
+  <button type="button" class="num-key" data-key="8">8</button>
+  <button type="button" class="num-key" data-key="9">9</button>
+  <button type="button" class="num-key control-key" data-key="." aria-label="Десятичная запятая">,</button>
+  <button type="button" class="num-key" data-key="0">0</button>
+  <button type="button" class="num-key control-key" data-key="erase" aria-label="Удалить цифру">⌫</button>
+</div>
+    <div class="payment-actions">
+      <button id="send-bill-btn" type="button" class="action primary" onclick="createDirectSbpPayment()">СБП</button>
+      <button id="send-card-btn" type="button" class="action" onclick="triggerCardPaymentOnScreen()">Карта</button>
+    </div>
+    <button id="btn-confirm-card-paid" type="button" class="action primary hidden" onclick="confirmCardPaymentSuccess()">Подтвердить оплату картой</button>
+    <div class="entry-tools">
+      <button type="button" class="text-action" data-clear="pos">Очистить сумму</button>
+      <button type="button" class="text-action danger-action" onclick="sendCancelToFirebase()">Сбросить операцию</button>
+    </div>
+  </div>
+</div>
+</div>
+<div id="pos-screen" class="subpanel" role="tabpanel" aria-labelledby="tab-pos-screen" hidden>
 
-      <!-- Быстрый пульт экрана гостя -->
-      <div class="grid grid-cols-2 gap-2">
-        <button onclick="triggerShowSyrupsOnDisplay()" class="glass-card hover:border-lavender/40 active:scale-95 py-2.5 px-2 rounded-2xl flex items-center justify-center gap-1.5 text-[11px] font-display font-bold text-lavender transition-all">
-          <span class="text-sm">🧴</span>
-          <span>Сиропы</span>
-        </button>
-        <button onclick="sendCancelToFirebase()" class="bg-coral/12 hover:bg-coral/20 active:scale-95 border border-coral/25 py-2.5 px-2 rounded-2xl flex items-center justify-center gap-1.5 text-[11px] font-display font-bold text-coral transition-all">
-          <span class="text-sm">🛑</span>
-          <span>Сброс</span>
-        </button>
-      </div>
-
-      <!-- Дисплей суммы -->
-      <div id="amount-display-box" class="relative glass-card rounded-[26px] px-4 py-4 sm:py-6 text-center overflow-hidden">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,226,138,0.14),transparent_68%)] pointer-events-none"></div>
-        <div class="flex items-center justify-between relative mb-1">
-          <span class="text-[9px] text-peach/70 uppercase font-bold tracking-[0.2em]">К оплате</span>
-          <button onclick="clearAmount()" class="text-[10px] text-cream/45 hover:text-coral font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg bg-white/5 active:scale-95">
-            Очистить ✕
-          </button>
-        </div>
-        <div class="flex items-baseline justify-center gap-1.5 relative my-0.5">
-          <span id="amount-display" class="pos-amount-gradient font-display text-[56px] sm:text-[74px] font-black tracking-tighter leading-none">0</span>
-          <span class="font-display text-2xl sm:text-3xl font-black text-gold">₽</span>
-        </div>
-        <p id="pos-status-text" class="text-[11px] text-cream/60 mt-1.5 font-medium relative truncate">Введите сумму или выберите напиток</p>
-      </div>
-
-      <!-- Кнопка подтверждения оплаты картой -->
-      <button id="btn-confirm-card-paid" onclick="confirmCardPaymentSuccess()" class="hidden w-full bg-gradient-to-r from-mint to-emerald-400 active:scale-95 text-ink font-display font-black text-xs uppercase py-3.5 rounded-2xl shadow-[0_12px_30px_rgba(124,228,209,0.35)] transition-all">
-        ✅ Карта приложена — экран Спасибо
-      </button>
-
-      <!-- Быстрые напитки — горизонтальный скролл / сетка -->
-      <div class="grid grid-cols-4 gap-1.5">
-        <button onclick="addAmountDirect(190, 'Капучино')" class="glass-card active:scale-95 py-2 px-1 rounded-2xl text-center transition-all">
-          <span class="block text-[9px] text-cream/55 uppercase font-bold truncate">Капучино</span>
-          <span class="block font-display font-black text-xs sm:text-sm text-cream mt-0.5">190 ₽</span>
-        </button>
-        <button onclick="addAmountDirect(210, 'Латте')" class="glass-card active:scale-95 py-2 px-1 rounded-2xl text-center transition-all">
-          <span class="block text-[9px] text-cream/55 uppercase font-bold truncate">Латте</span>
-          <span class="block font-display font-black text-xs sm:text-sm text-cream mt-0.5">210 ₽</span>
-        </button>
-        <button onclick="addAmountDirect(250, 'Раф')" class="glass-card active:scale-95 py-2 px-1 rounded-2xl text-center transition-all">
-          <span class="block text-[9px] text-cream/55 uppercase font-bold truncate">Раф</span>
-          <span class="block font-display font-black text-xs sm:text-sm text-cream mt-0.5">250 ₽</span>
-        </button>
-        <button onclick="addAmountDirect(150, 'Американо')" class="glass-card active:scale-95 py-2 px-1 rounded-2xl text-center transition-all">
-          <span class="block text-[9px] text-cream/55 uppercase font-bold truncate">Америк.</span>
-          <span class="block font-display font-black text-xs sm:text-sm text-cream mt-0.5">150 ₽</span>
-        </button>
-      </div>
-
-      <!-- Numpad -->
-      <div class="grid grid-cols-3 gap-2">
-        <button onclick="pressKey('7')" class="num-key">7</button>
-        <button onclick="pressKey('8')" class="num-key">8</button>
-        <button onclick="pressKey('9')" class="num-key">9</button>
-        <button onclick="pressKey('4')" class="num-key">4</button>
-        <button onclick="pressKey('5')" class="num-key">5</button>
-        <button onclick="pressKey('6')" class="num-key">6</button>
-        <button onclick="pressKey('1')" class="num-key">1</button>
-        <button onclick="pressKey('2')" class="num-key">2</button>
-        <button onclick="pressKey('3')" class="num-key">3</button>
-        <button onclick="pressKey('00')" class="num-key muted">00</button>
-        <button onclick="pressKey('0')" class="num-key">0</button>
-        <button onclick="backspace()" class="num-key danger">⌫</button>
-      </div>
-
-      <!-- Быстрые добавки -->
-      <div class="grid grid-cols-4 gap-1.5">
-        <button onclick="addQuickAmount(35)" class="bg-gold/12 active:scale-95 border border-gold/30 py-2 rounded-xl text-[11px] font-display font-bold text-gold transition-all">+35 ₽</button>
-        <button onclick="addQuickAmount(50)" class="bg-cream/[0.05] active:scale-95 border border-peach/15 py-2 rounded-xl text-[11px] font-display font-bold text-cream/85 transition-all">+50 ₽</button>
-        <button onclick="addQuickAmount(100)" class="bg-cream/[0.05] active:scale-95 border border-peach/15 py-2 rounded-xl text-[11px] font-display font-bold text-cream/85 transition-all">+100 ₽</button>
-        <button onclick="addQuickAmount(200)" class="bg-cream/[0.05] active:scale-95 border border-peach/15 py-2 rounded-xl text-[11px] font-display font-bold text-cream/85 transition-all">+200 ₽</button>
-      </div>
-
-      <!-- Главные кнопки оплаты -->
-      <div class="grid grid-cols-2 gap-2.5 pt-0.5">
-        <button id="send-bill-btn" onclick="createDirectSbpPayment()" class="btn-gold font-display font-black text-xs sm:text-sm uppercase py-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-1.5">
-          <span>⚡</span> <span>СБП QR</span>
-        </button>
-        <button onclick="triggerCardPaymentOnScreen()" class="bg-lavender/18 hover:bg-lavender/25 text-cream font-display font-black text-xs sm:text-sm uppercase py-4 rounded-2xl active:scale-95 transition-all border border-lavender/35 shadow-[0_10px_28px_rgba(199,166,255,0.14)] flex items-center justify-center gap-1.5">
-          <span>💳</span> <span>Карта</span>
-        </button>
-      </div>
+<div class="plain-section">
+  <h2>Экран гостя</h2>
+  <div class="action-row">
+    <button type="button" class="action primary" onclick="triggerShowSyrupsOnDisplay()">Показать сиропы</button>
+    <button type="button" class="action" onclick="hideSyrupsOnDisplay()">Закрыть сиропы</button>
+  </div>
+</div>
+</div>
     </section>
 
     <!-- ============ ВКЛАДКА 2: ИСТОРИЯ ОПЕРАЦИЙ ============ -->
-    <section id="view-history" class="hidden w-full max-w-2xl mx-auto p-3.5 sm:p-6 flex-col gap-3.5 fade-in">
-      
+    <section id="view-history" class="register-view management" hidden>
+<div class="subtabs" role="tablist" aria-label="История">
+  <button type="button" id="tab-history-ops" role="tab" aria-controls="history-ops" aria-selected="true" tabindex="0" onclick="selectSubtab(this)" class="subtab active">Операции</button>
+  <button type="button" id="tab-history-summary" role="tab" aria-controls="history-summary" aria-selected="false" tabindex="-1" onclick="selectSubtab(this)" class="subtab">Сводка</button>
+</div>
+<div id="history-ops" class="subpanel" role="tabpanel" aria-labelledby="tab-history-ops">
       <!-- Заголовок и кнопка очистки -->
       <div class="flex items-center justify-between gap-2">
         <div>
-          <h2 class="font-display text-base sm:text-xl font-black uppercase text-cream">📜 История операций</h2>
+          <h2 class="font-display text-base sm:text-xl font-black uppercase text-cream">История операций</h2>
           <p class="text-[11px] text-cream/50">Все чеки, оплаты и отмены терминала</p>
         </div>
         <button onclick="clearHistoryLogs()" class="bg-coral/12 hover:bg-coral/20 active:scale-95 border border-coral/25 text-coral font-display font-bold text-[10px] uppercase px-3 py-2 rounded-xl transition-all">
-          🗑️ Очистить
+          Очистить
         </button>
-      </div>
-
-      <!-- Сводка выручки -->
-      <div class="grid grid-cols-3 gap-2">
-        <div class="glass-card rounded-2xl p-3 text-left">
-          <span class="block text-[9px] text-cream/50 uppercase font-bold tracking-wider">Выручка</span>
-          <span id="hist-stat-revenue" class="font-display font-black text-sm sm:text-lg text-gold mt-0.5 block">0 ₽</span>
-        </div>
-        <div class="glass-card rounded-2xl p-3 text-left">
-          <span class="block text-[9px] text-cream/50 uppercase font-bold tracking-wider">Оплачено</span>
-          <span id="hist-stat-count" class="font-display font-black text-sm sm:text-lg text-mint mt-0.5 block">0</span>
-        </div>
-        <div class="glass-card rounded-2xl p-3 text-left">
-          <span class="block text-[9px] text-cream/50 uppercase font-bold tracking-wider">Средний чек</span>
-          <span id="hist-stat-avg" class="font-display font-black text-sm sm:text-lg text-peach mt-0.5 block">0 ₽</span>
-        </div>
       </div>
 
       <!-- Панель сортировки и фильтрации -->
@@ -805,27 +773,39 @@ button:not(:disabled):active{transform:scale(.97)}
 
       <!-- Список операций -->
       <div id="history-list-container" class="flex flex-col gap-2"></div>
-    </section>
 
-    <!-- ============ ВКЛАДКА 3: КОНТЕНТ ============ -->
-    <section id="view-content" class="hidden w-full max-w-5xl mx-auto p-3.5 sm:p-6 flex-col gap-4">
-
-      <div class="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h2 class="font-display text-base sm:text-xl font-black uppercase text-cream">🎁 Контент экрана</h2>
-          <p class="text-[11px] text-cream/50">Сиропы, баннеры и акции со скидкой</p>
+</div>
+<div id="history-summary" class="subpanel" role="tabpanel" aria-labelledby="tab-history-summary" hidden>
+<h2>Сводка по чекам</h2>      <!-- Сводка выручки -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="glass-card rounded-2xl p-3 text-left">
+          <span class="block text-[9px] text-cream/50 uppercase font-bold tracking-wider">Выручка</span>
+          <span id="hist-stat-revenue" class="font-display font-black text-sm sm:text-lg text-gold mt-0.5 block">0 ₽</span>
+        </div>
+        <div class="glass-card rounded-2xl p-3 text-left">
+          <span class="block text-[9px] text-cream/50 uppercase font-bold tracking-wider">Оплачено</span>
+          <span id="hist-stat-count" class="font-display font-black text-sm sm:text-lg text-mint mt-0.5 block">0</span>
+        </div>
+        <div class="glass-card rounded-2xl p-3 text-left">
+          <span class="block text-[9px] text-cream/50 uppercase font-bold tracking-wider">Средний чек</span>
+          <span id="hist-stat-avg" class="font-display font-black text-sm sm:text-lg text-peach mt-0.5 block">0 ₽</span>
         </div>
       </div>
 
-      <!-- Внутренние табы -->
-      <div class="flex gap-1.5 glass-card p-1.5 rounded-full w-full sm:w-fit overflow-x-auto no-scrollbar">
-        <button onclick="openSubTab('promos')" id="subtab-promos" class="content-tab active flex-1 sm:flex-initial text-center">🎁 Акции</button>
-        <button onclick="openSubTab('syrups')" id="subtab-syrups" class="content-tab flex-1 sm:flex-initial text-center">🧴 Сиропы</button>
-        <button onclick="openSubTab('ads')" id="subtab-ads" class="content-tab flex-1 sm:flex-initial text-center">🎨 Баннеры</button>
-      </div>
 
+</div>
+    </section>
+
+    <!-- ============ ВКЛАДКА 3: КОНТЕНТ ============ -->
+    <section id="view-content" class="register-view management" hidden>
+<div class="subtabs" role="tablist" aria-label="Экран гостя">
+  <button type="button" id="tab-subtab-content-promos" role="tab" aria-controls="subtab-content-promos" aria-selected="true" tabindex="0" onclick="openSubTab('promos')" class="subtab active">Акции</button>
+  <button type="button" id="tab-subtab-content-syrups" role="tab" aria-controls="subtab-content-syrups" aria-selected="false" tabindex="-1" onclick="openSubTab('syrups')" class="subtab">Сиропы</button>
+  <button type="button" id="tab-subtab-content-ads" role="tab" aria-controls="subtab-content-ads" aria-selected="false" tabindex="-1" onclick="openSubTab('ads')" class="subtab">Баннеры</button>
+  <button type="button" id="tab-subtab-content-settings" role="tab" aria-controls="subtab-content-settings" aria-selected="false" tabindex="-1" onclick="openSubTab('settings')" class="subtab">Настройки</button>
+</div>
       <!-- Подпапка: АКЦИИ (С СТАРОЙ И НОВОЙ ЦЕНОЙ) -->
-      <div id="subtab-content-promos" class="fade-in flex flex-col gap-3.5">
+      <div id="subtab-content-promos" role="tabpanel" aria-labelledby="tab-subtab-content-promos" class="fade-in flex flex-col gap-3.5">
         <div class="flex flex-wrap justify-between items-center gap-2.5 glass-card p-3.5 sm:p-4 rounded-2xl">
           <div>
             <div class="flex items-center gap-2">
@@ -848,7 +828,7 @@ button:not(:disabled):active{transform:scale(.97)}
       </div>
 
       <!-- Подпапка: СИРОПЫ -->
-      <div id="subtab-content-syrups" class="hidden fade-in flex-col gap-3.5">
+      <div id="subtab-content-syrups" role="tabpanel" aria-labelledby="tab-subtab-content-syrups" class="hidden fade-in flex-col gap-3.5">
         <div class="flex flex-wrap justify-between items-center gap-2.5 glass-card p-3.5 sm:p-4 rounded-2xl">
           <div>
             <div class="flex items-center gap-2">
@@ -880,7 +860,7 @@ button:not(:disabled):active{transform:scale(.97)}
       </div>
 
       <!-- Подпапка: РЕКЛАМА -->
-      <div id="subtab-content-ads" class="hidden fade-in flex-col gap-3.5">
+      <div id="subtab-content-ads" role="tabpanel" aria-labelledby="tab-subtab-content-ads" class="hidden fade-in flex-col gap-3.5">
         <div class="flex justify-between items-center gap-2">
           <div>
             <h3 class="font-display font-black text-xs sm:text-sm uppercase text-cream">Баннеры карусели</h3>
@@ -1056,26 +1036,23 @@ button:not(:disabled):active{transform:scale(.97)}
         </div>
       </div>
 
-    </section>
-
-    <!-- ============ ВКЛАДКА 3: НАСТРОЙКИ ============ -->
-    <section id="view-settings" class="hidden w-full max-w-2xl mx-auto p-3.5 sm:p-6 flex-col gap-4 fade-in">
+      <div id="subtab-content-settings" role="tabpanel" aria-labelledby="tab-subtab-content-settings" class="hidden flex-col gap-4">
       <div class="glass-card rounded-2xl p-4 sm:p-6 flex flex-col gap-5 text-left">
         <div class="border-b border-peach/10 pb-3">
-          <h2 class="font-display text-base sm:text-lg font-black uppercase text-cream">⚙️ Настройки</h2>
+          <h2 class="font-display text-base sm:text-lg font-black uppercase text-cream">Настройки экрана</h2>
           <p class="text-[11px] text-cream/50">Платёжный шлюз, NFC-подсветка и облако</p>
         </div>
 
         <!-- 1. NFC -->
         <div class="flex flex-col gap-2">
-          <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">1. Сторона NFC-подсветки</h3>
+          <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">Сторона NFC-подсветки</h3>
           <p class="text-[10px] text-cream/55">С какого края экрана гость прикладывает карту:</p>
           <div class="grid grid-cols-2 gap-2.5">
             <button id="settings-side-left" onclick="setNfcSide('left')" class="py-3 px-4 rounded-xl border border-white/10 bg-white/5 font-display text-[11px] font-bold text-cream/75 transition-all">
-              ◀ Левый край
+              Левый край
             </button>
             <button id="settings-side-right" onclick="setNfcSide('right')" class="py-3 px-4 rounded-xl btn-gold font-display text-[11px] font-bold transition-all">
-              Правый край ▶
+              Правый край
             </button>
           </div>
         </div>
@@ -1083,8 +1060,7 @@ button:not(:disabled):active{transform:scale(.97)}
         <!-- 2. Cloudflare -->
         <div class="flex flex-col gap-2.5 pt-4 border-t border-peach/10">
           <div class="flex justify-between items-center">
-            <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">2. Cloudflare прокси</h3>
-            <span class="text-[9px] bg-peach/15 text-peach border border-peach/30 px-2.5 py-0.5 rounded-full font-bold">Workers</span>
+            <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">Прокси Cloudflare</h3>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
@@ -1106,9 +1082,9 @@ button:not(:disabled):active{transform:scale(.97)}
           </div>
         </div>
 
-        <!-- 3. ЮKassa -->
+        <!-- ЮKassa -->
         <div class="flex flex-col gap-2.5 pt-4 border-t border-peach/10">
-          <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">3. ЮKassa</h3>
+          <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">ЮKassa</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
               <label class="text-[10px] text-cream/60 font-bold block mb-1">Shop ID</label>
@@ -1125,50 +1101,88 @@ button:not(:disabled):active{transform:scale(.97)}
           </div>
         </div>
 
-        <!-- 4. Cloudinary -->
+        <!-- Cloudinary -->
         <div class="flex flex-col gap-2.5 pt-4 border-t border-peach/10">
-          <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">4. Cloudinary</h3>
+          <h3 class="font-display text-[11px] font-black uppercase text-gold tracking-wider">Cloudinary</h3>
           <div>
             <label class="text-[10px] text-cream/60 font-bold block mb-1">Cloud Name</label>
             <input type="text" id="desk-cloud-name" placeholder="dxyz123abc" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-[11px] text-cream font-mono focus:outline-none focus:border-gold" />
           </div>
         </div>
 
-        <button onclick="saveDesktopSettings()" class="w-full btn-gold font-display font-black text-xs uppercase py-4 rounded-xl active:scale-95 mt-1">
-          💾 Сохранить настройки
+        <button onclick="saveDesktopSettings()" class="action primary">
+          Сохранить настройки
         </button>
+      </div>
       </div>
     </section>
 
 
-    <section id="view-tips" class="hidden w-full max-w-lg mx-auto px-4 py-4 flex-col gap-4">
-      <form id="tip-offer-form" class="cm-panel grid gap-4">
-        <h2 class="text-3xl">Чаевые по чеку</h2>
-        <label for="tip-check" class="grid gap-2 font-semibold">Сумма чека, ₽
-          <input id="tip-check" type="number" min="1" max="1000000" step="0.01" inputmode="decimal" required>
-        </label>
-        <div class="grid grid-cols-3 gap-2" aria-label="Процент от чека">
-          <button class="cm-action" type="button" data-tip-percent="5">5%</button>
-          <button class="cm-action" type="button" data-tip-percent="10">10%</button>
-          <button class="cm-action" type="button" data-tip-percent="15">15%</button>
-        </div>
-        <label for="tip-value" class="grid gap-2 font-semibold">Чаевые, ₽
-          <input id="tip-value" type="number" min="1" max="10000" step="0.01" inputmode="decimal" required>
-        </label>
-        <div id="tip-keypad" class="grid grid-cols-3 gap-2" aria-label="Клавиатура суммы чаевых"></div>
-        <button class="cm-action primary" type="submit">Отправить на экран</button>
-        <p id="tip-offer-status" role="status"></p>
-      </form>
-      <div class="cm-panel grid gap-3">
-        <h3 class="text-xl">Управление экраном</h3>
-        <button class="cm-action" onclick="castMagicTips()">Показать экран чаевых</button>
-        <button class="cm-action" id="tip-dismiss" type="button">Вернуть экран в ожидание</button>
-      </div>
-      <div id="permanent-tips-control" class="cm-panel">
-        <h3 class="text-xl">Бессрочные чаевые</h3>
-        <p>На экране гостя будет QR-код. Касса приостановится до отключения режима.</p>
-        <button onclick="window.enablePermanentTips()">Включить</button>
-      </div>
+
+    <section id="view-tips" class="register-view" hidden>
+<div class="subtabs" role="tablist" aria-label="Чаевые">
+  <button type="button" id="tab-tips-order" role="tab" aria-controls="tips-order" aria-selected="true" tabindex="0" onclick="selectSubtab(this)" class="subtab active">По чеку</button>
+  <button type="button" id="tab-tips-screen" role="tab" aria-controls="tips-screen" aria-selected="false" tabindex="-1" onclick="selectSubtab(this)" class="subtab">На экране</button>
+  <button type="button" id="tab-tips-permanent" role="tab" aria-controls="tips-permanent" aria-selected="false" tabindex="-1" onclick="selectSubtab(this)" class="subtab">Бессрочные</button>
+</div>
+<div id="tips-order" class="subpanel" role="tabpanel" aria-labelledby="tab-tips-order">
+
+<form id="tip-offer-form" class="entry-layout">
+  <div class="entry-intro">
+    <p id="tip-check-label" class="amount-label">Сумма чека</p>
+    <div class="amount-box">
+      <output id="tip-check" aria-labelledby="tip-check-label" aria-live="polite" aria-atomic="true">0</output>
+      <span aria-hidden="true">₽</span>
+    </div>
+    <div class="tip-percent" role="group" aria-label="Процент чаевых">
+      <button type="button" data-tip-percent="5" aria-pressed="false">5%</button>
+      <button type="button" data-tip-percent="10" aria-pressed="true">10%</button>
+      <button type="button" data-tip-percent="15" aria-pressed="false">15%</button>
+    </div>
+    <p class="tip-preview">Чаевые <output id="tip-value" aria-live="polite" aria-atomic="true">0 ₽</output></p>
+    <p id="tip-offer-status" class="entry-status" role="status"></p>
+  </div>
+  <div class="entry-controls">
+    <div class="amount-keypad" data-keypad="tip" aria-label="Пинпад суммы">
+  <button type="button" class="num-key" data-key="1">1</button>
+  <button type="button" class="num-key" data-key="2">2</button>
+  <button type="button" class="num-key" data-key="3">3</button>
+  <button type="button" class="num-key" data-key="4">4</button>
+  <button type="button" class="num-key" data-key="5">5</button>
+  <button type="button" class="num-key" data-key="6">6</button>
+  <button type="button" class="num-key" data-key="7">7</button>
+  <button type="button" class="num-key" data-key="8">8</button>
+  <button type="button" class="num-key" data-key="9">9</button>
+  <button type="button" class="num-key control-key" data-key="." aria-label="Десятичная запятая">,</button>
+  <button type="button" class="num-key" data-key="0">0</button>
+  <button type="button" class="num-key control-key" data-key="erase" aria-label="Удалить цифру">⌫</button>
+</div>
+    <button type="submit" class="action primary">Отправить на экран</button>
+    <button type="button" class="text-action" data-clear="tip">Очистить сумму</button>
+  </div>
+</form>
+</div>
+<div id="tips-screen" class="subpanel" role="tabpanel" aria-labelledby="tab-tips-screen" hidden>
+
+<div class="plain-section">
+  <h2>Чаевые на экране гостя</h2>
+  <div class="action-row">
+    <button type="button" class="action primary" onclick="castMagicTips()">Показать экран чаевых</button>
+    <button type="button" class="action" id="tip-dismiss">Вернуть в ожидание</button>
+  </div>
+  <p id="tip-screen-status" class="entry-status" role="status"></p>
+</div>
+</div>
+<div id="tips-permanent" class="subpanel" role="tabpanel" aria-labelledby="tab-tips-permanent" hidden>
+
+<div id="permanent-tips-control" class="plain-section">
+  <h2>Бессрочные чаевые</h2>
+  <p>Экран гостя будет показывать QR-код для чаевых до отключения режима.</p>
+  <div class="action-row">
+    <button type="button" class="action primary" onclick="window.enablePermanentTips()">Включить</button>
+  </div>
+</div>
+</div>
     </section>
   </main>
 
@@ -1308,36 +1322,20 @@ button:not(:disabled):active{transform:scale(.97)}
   <!-- ================= СТИЛИЗОВАННЫЕ TOAST-УВЕДОМЛЕНИЯ ================= -->
   <div id="toast-container" class="fixed top-14 left-1/2 -translate-x-1/2 z-[110] flex flex-col items-center gap-2 pointer-events-none w-full max-w-sm px-3.5"></div>
 
-  <!-- ================= BOTTOM DOCK — ОСТРОВОК ================= -->
-  <div class="bottom-dock-wrap">
-    <nav class="bottom-dock">
-      <button id="dock-pos" onclick="openView('pos')" class="dock-btn active">
-        <span class="dock-icon">⚡</span>
-        <span class="dock-text">Касса</span>
-      </button>
-      <button id="dock-tips" onclick="openView('tips')" class="dock-btn">
-        <span class="dock-icon" aria-hidden="true">♡</span>
-        <span class="dock-text">Чаевые</span>
-      </button>
-      <button id="dock-history" onclick="openView('history')" class="dock-btn">
-        <span class="dock-icon">📜</span>
-        <span class="dock-text">История</span>
-      </button>
-      <button id="dock-content" onclick="openView('content')" class="dock-btn">
-        <span class="dock-icon">🎁</span>
-        <span class="dock-text">Контент</span>
-      </button>
-      <button id="dock-settings" onclick="openView('settings')" class="dock-btn">
-        <span class="dock-icon">⚙️</span>
-        <span class="dock-text">Ещё</span>
-      </button>
-    </nav>
-  </div>
+  <nav class="register-nav" aria-label="Разделы кассы">
+    <button id="dock-pos" type="button" onclick="openView('pos')" aria-current="page">Касса</button>
+    <button id="dock-tips" type="button" onclick="openView('tips')">Чаевые</button>
+    <button id="dock-history" type="button" onclick="openView('history')">История</button>
+    <button id="dock-content" type="button" onclick="openView('content')">Экран</button>
+  </nav>
 
   <!-- ================= СЦЕНАРИИ ================= -->
   <script>
     let currentInput = "0";
-    let lastSelectedItemName = "";
+    let tipCheckInput = "0";
+    let tipPercent = 10;
+    let paymentStarting = false;
+    let pendingOrder = null;
     let activePollInterval = null;
     let selectedNfcSide = localStorage.getItem('moon_nfc_side') || 'right';
     const CLOUDINARY_PRESET = "my_shop_unsigned";
@@ -1485,63 +1483,65 @@ button:not(:disabled):active{transform:scale(.97)}
 
     // ============ НАВИГАЦИЯ ============
     window.openView = function(view) {
+      const section = view === 'settings' ? 'content' : view;
+      const target = document.getElementById('view-' + section);
+      if (!target) return;
+
       haptic(10);
-      ['pos', 'tips', 'history', 'content', 'settings'].forEach(v => {
-        const el = document.getElementById('view-' + v);
-        if (el) { el.classList.add('hidden'); el.classList.remove('flex', 'fade-in'); }
-        const btn = document.getElementById('dock-' + v);
-        if (btn) btn.classList.remove('active');
+      document.querySelectorAll('.register-view').forEach(item => { item.hidden = item !== target; });
+      document.querySelectorAll('.register-nav button').forEach(button => {
+        if (button.id === 'dock-' + section) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
       });
 
-      const target = document.getElementById('view-' + view);
-      if (target) {
-        target.classList.remove('hidden');
-        if (view !== 'pos') target.classList.add('flex');
-        void target.offsetWidth;
-        target.classList.add('fade-in');
+      target.getAnimations().forEach(animation => animation.cancel());
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        target.animate([{opacity: 0, transform: 'translateY(8px)'}, {opacity: 1, transform: 'none'}], {duration: 280, easing: 'cubic-bezier(.16,1,.3,1)'});
       }
-      const btn = document.getElementById('dock-' + view);
-      if (btn) btn.classList.add('active');
+      if (section === 'history') renderHistoryList();
+      if (view === 'settings') openSubTab('settings');
+      window.scrollTo(0, 0);
+    };
 
-      if (view === 'tips') {
-        const check = document.getElementById('tip-check');
-        if (!check.value && Number(currentInput) > 0) check.value = currentInput;
-      }
-      if (view === 'history' && typeof renderHistoryList === 'function') {
-        renderHistoryList();
-      }
-      if (view === 'content') {
-        if (typeof renderSyrupsManager === 'function') renderSyrupsManager(window.loadedSyrups);
-        if (typeof renderPromosList === 'function') renderPromosList(window.loadedPromos || {});
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.selectSubtab = function(button) {
+      haptic(8);
+      button.closest('[role=tablist]').querySelectorAll('[role=tab]').forEach(tab => {
+        const selected = tab === button;
+        tab.classList.toggle('active', selected);
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+        const content = document.getElementById(tab.getAttribute('aria-controls'));
+        content.hidden = !selected;
+        if (content.id.startsWith('subtab-content-')) {
+          content.classList.toggle('hidden', !selected);
+          content.classList.toggle('flex', selected);
+        }
+      });
     };
 
     window.openSubTab = function(tab) {
-      haptic(10);
-      ['syrups', 'ads', 'promos'].forEach(t => {
-        const content = document.getElementById('subtab-content-' + t);
-        const btn = document.getElementById('subtab-' + t);
-        if (content) {
-          content.classList.add('hidden');
-          content.classList.remove('flex', 'fade-in');
-        }
-        if (btn) btn.classList.remove('active');
-      });
-      const content = document.getElementById('subtab-content-' + tab);
-      const btn = document.getElementById('subtab-' + tab);
-      if (content) {
-        content.classList.remove('hidden');
-        content.classList.add('flex');
-        void content.offsetWidth;
-        content.classList.add('fade-in');
-      }
-      if (btn) btn.classList.add('active');
-
-      if (tab === 'syrups' && typeof renderSyrupsManager === 'function') renderSyrupsManager(window.loadedSyrups);
+      const button = document.getElementById('tab-subtab-content-' + tab);
+      if (!button) return;
+      selectSubtab(button);
+      if (tab === 'syrups') renderSyrupsManager(window.loadedSyrups);
       if (tab === 'ads') updateDesktopLivePreview();
-      if (tab === 'promos' && typeof renderPromosList === 'function') renderPromosList(window.loadedPromos || {});
+      if (tab === 'promos') renderPromosList(window.loadedPromos || {});
     };
+
+    document.querySelectorAll('[role=tablist]').forEach(tablist => {
+      tablist.addEventListener('keydown', event => {
+        const index = ['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key);
+        if (index === -1) return;
+        const tabs = Array.from(tablist.querySelectorAll('[role=tab]'));
+        const current = tabs.indexOf(event.target);
+        if (current === -1) return;
+        event.preventDefault();
+        const targets = [(current + tabs.length - 1) % tabs.length, (current + 1) % tabs.length, 0, tabs.length - 1];
+        const next = tabs[targets[index]];
+        next.click();
+        next.focus();
+      });
+    });
 
     // ============ NFC ============
     window.setNfcSide = function(side) {
@@ -1780,53 +1780,90 @@ button:not(:disabled):active{transform:scale(.97)}
       }
     };
 
-    // ============ КАРТА ============
+    // ============ ОПЛАТА ============
+    function updateOrderStatus(order) {
+      const state = order?.status;
+      const waiting = state === 'WAITING_FOR_PAYMENT' || state === 'WAITING_FOR_CARD';
+      const card = state === 'WAITING_FOR_CARD';
+      const paid = ['PAID', 'succeeded', 'cash_succeeded'].includes(state);
+      pendingOrder = waiting ? order : null;
+      const label = document.getElementById('live-terminal-status');
+      const labelText = waiting ? (card ? 'Карта' : 'СБП') : paid ? 'Оплачено' : 'Готова';
+      if (label.textContent !== labelText) label.textContent = labelText;
+      label.parentElement.dataset.state = waiting ? 'waiting' : paid ? 'paid' : 'idle';
+      document.getElementById('live-terminal-sub').textContent = waiting ? rubleFormat.format(order.amount) : '';
+      document.getElementById('btn-confirm-card-paid').classList.toggle('hidden', !card);
+      if (waiting) {
+        currentInput = String(order.amount);
+        updateDisplay();
+        document.getElementById('pos-status-text').textContent = card
+          ? 'Приложите карту и подтвердите оплату.'
+          : 'QR-код открыт на экране гостя. Ожидаем оплату.';
+      }
+      syncPaymentControls();
+    }
+
+    function syncPaymentControls() {
+      const locked = paymentStarting || Boolean(pendingOrder);
+      document.querySelectorAll('[data-keypad=pos] button, [data-clear=pos], #send-bill-btn, #send-card-btn').forEach(button => {
+        button.disabled = locked;
+      });
+    }
+
     window.triggerCardPaymentOnScreen = async function() {
       haptic(18);
-      const amount = parseInt(currentInput);
-      if (!amount || amount <= 0) { showToast('Введите сумму больше 0 ₽', 'error'); return; }
+      if (paymentStarting || pendingOrder) return;
+      const amount = Number(currentInput);
+      if (amount < .01) { showToast('Введите сумму больше 0 ₽', 'error'); return; }
+      if (!window.firebaseDB) { showToast('Терминал пока не подключён', 'error'); return; }
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-      if (activePollInterval) clearInterval(activePollInterval);
-
-      if (window.firebaseDB && window.dbRef && window.dbSet) {
-        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-        await window.dbSet(orderRef, {
-          status: 'WAITING_FOR_CARD',
-          method: 'card',
-          amount: amount,
-          nfcSide: selectedNfcSide,
-          description: `Оплата картой (${amount} ₽)`,
-          timestamp: Date.now()
+      const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
+      paymentStarting = true;
+      syncPaymentControls();
+      try {
+        const result = await window.sendTipScreenCommand(orderRef, {
+          status: 'WAITING_FOR_CARD', method: 'card', amount,
+          nfcSide: selectedNfcSide, description: `Оплата картой (${amount} ₽)`, timestamp: Date.now()
         });
-        document.getElementById('pos-status-text').innerHTML = `<span class="text-lavender font-bold">💳 Мигает ${selectedNfcSide === 'left' ? 'левый' : 'правый'} край</span>`;
-        showToast(`💳 Запрос на карту (${amount} ₽) отправлен`, 'info');
+        if (!result.committed) showToast('Сначала завершите текущую оплату', 'error');
+      } catch (error) {
+        showToast('Не удалось отправить оплату на терминал', 'error');
+      } finally {
+        paymentStarting = false;
+        syncPaymentControls();
       }
     };
 
     window.confirmCardPaymentSuccess = async function() {
       haptic(20);
-      const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
-      const amount = parseInt(currentInput) || 0;
-      const itemTitle = lastSelectedItemName || `Оплата картой`;
-      if (window.firebaseDB && window.dbRef && window.dbSet) {
-        const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-        await window.dbSet(orderRef, { status: 'PAID', amount: amount, timestamp: Date.now() });
-        await logOperationToHistory({
-          amount: amount,
-          method: 'card',
-          status: 'PAID',
-          title: itemTitle
+      if (pendingOrder?.status !== 'WAITING_FOR_CARD') return;
+      const button = document.getElementById('btn-confirm-card-paid');
+      const matchingOrder = pendingOrder;
+      const amount = Number(matchingOrder.amount);
+      button.disabled = true;
+      try {
+        const result = await window.updateTerminalOrder(current => {
+          if (current?.status !== 'WAITING_FOR_CARD' || current.timestamp !== matchingOrder.timestamp) return;
+          return {status: 'PAID', amount, timestamp: Date.now()};
         });
+        if (!result.committed) return;
+        await logOperationToHistory({amount, method: 'card', status: 'PAID', title: 'Оплата картой'});
         clearAmount();
-        document.getElementById('pos-status-text').innerHTML = '<span class="text-mint font-bold">✅ Оплата картой зафиксирована</span>';
-        showToast('Оплата картой подтверждена!', 'success');
+        document.getElementById('pos-status-text').textContent = 'Оплата картой подтверждена';
+        showToast('Оплата картой подтверждена', 'success');
+      } catch (error) {
+        showToast('Не удалось подтвердить оплату картой', 'error');
+      } finally {
+        button.disabled = false;
       }
     };
 
     // ============ СБП ============
     async function createDirectSbpPayment() {
       haptic(18);
-      const amount = parseInt(currentInput);
+      if (paymentStarting || pendingOrder) return;
+      if (!window.firebaseDB) { showToast('Терминал пока не подключён', 'error'); return; }
+      const amount = Number(currentInput);
       if (!amount || amount <= 0) { showToast('Введите сумму больше 0 ₽', 'error'); return; }
       const shopId = localStorage.getItem('yk_shop_id') || '1350725';
       const secretKey = localStorage.getItem('yk_secret_key');
@@ -1842,8 +1879,9 @@ button:not(:disabled):active{transform:scale(.97)}
 
       const sendBtn = document.getElementById('send-bill-btn');
       const statusText = document.getElementById('pos-status-text');
-      sendBtn.disabled = true;
-      sendBtn.innerHTML = '⏳ Создаем...';
+      paymentStarting = true;
+      syncPaymentControls();
+      sendBtn.textContent = 'Подготовка QR…';
       statusText.innerText = 'Связь с ЮKassa...';
 
       if (activePollInterval) clearInterval(activePollInterval);
@@ -1873,7 +1911,8 @@ button:not(:disabled):active{transform:scale(.97)}
 
         if (window.firebaseDB && window.dbRef && window.dbSet) {
           const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-          await window.dbSet(orderRef, {
+          if (!sbpQrData) throw new Error('Платёжный шлюз не вернул QR-код');
+          const result = await window.sendTipScreenCommand(orderRef, {
             status: 'WAITING_FOR_PAYMENT',
             method: 'sbp',
             amount: amount,
@@ -1883,54 +1922,50 @@ button:not(:disabled):active{transform:scale(.97)}
             description: `Заказ #${payment.id.slice(0, 5)}`,
             timestamp: Date.now()
           });
+          if (!result.committed) throw new Error('Сначала завершите текущую оплату');
         }
         statusText.innerHTML = `<span class="text-gold font-bold">QR на ${amount} ₽ выведен на экран</span>`;
         showToast(`⚡ QR на ${amount} ₽ на экране`, 'info');
-        startDirectPaymentPolling(shopId, secretKey, payment.id, terminalId);
+        startDirectPaymentPolling(shopId, secretKey, payment.id);
       } catch (err) {
         showToast('Ошибка: ' + err.message, 'error');
         statusText.innerText = 'Ошибка: ' + err.message;
       } finally {
-        sendBtn.disabled = false;
-        sendBtn.innerHTML = '<span>⚡</span> <span>СБП QR</span>';
+        paymentStarting = false;
+        syncPaymentControls();
+        sendBtn.textContent = 'СБП';
       }
     }
 
-    function startDirectPaymentPolling(shopId, secretKey, paymentId, terminalId) {
+    function startDirectPaymentPolling(shopId, secretKey, paymentId) {
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${paymentId}`);
-      activePollInterval = setInterval(async () => {
+      const watcher = setInterval(async () => {
         try {
           const res = await fetch(pollUrl, {
             method: 'GET',
             headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' }
           });
           const data = await res.json();
-          if (data && (data.status === 'succeeded' || data.paid === true)) {
-            clearInterval(activePollInterval);
+          if (activePollInterval === watcher && (data?.status === 'succeeded' || data?.paid === true)) {
+            clearInterval(watcher);
+            activePollInterval = null;
             haptic(30);
-            const paidAmount = data.amount ? Number(data.amount.value) : (parseInt(currentInput) || 0);
-            const itemTitle = lastSelectedItemName || `Оплата СБП #${paymentId.slice(0, 5)}`;
-            if (window.firebaseDB && window.dbRef && window.dbSet) {
-              const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-              await window.dbSet(orderRef, {
-                status: 'PAID',
-                amount: paidAmount,
-                timestamp: Date.now()
-              });
-              await logOperationToHistory({
-                amount: paidAmount,
-                method: 'sbp',
-                status: 'PAID',
-                title: itemTitle
-              });
-            }
-            clearAmount();
+            const paidAmount = Number(data.amount?.value ?? currentInput);
+            await window.updateTerminalOrder(current => {
+              if (current?.status !== 'WAITING_FOR_PAYMENT' || current.paymentId !== paymentId) return;
+              return {status: 'PAID', amount: paidAmount, timestamp: Date.now()};
+            });
+            await logOperationToHistory({
+              amount: paidAmount, method: 'sbp', status: 'PAID', title: `Оплата СБП #${paymentId.slice(0, 5)}`
+            });
+            if (!pendingOrder || pendingOrder.paymentId === paymentId) clearAmount();
             document.getElementById('pos-status-text').innerHTML = '<span class="text-mint font-bold">✅ Оплата по СБП получена</span>';
             showToast('Оплата по СБП получена!', 'success');
           }
         } catch (e) { console.error("Polling:", e); }
       }, 1500);
+      activePollInterval = watcher;
     }
 
     // ============ ИСТОРИЯ ОПЕРАЦИЙ И СОРТИРОВКА ============
@@ -2065,76 +2100,99 @@ button:not(:disabled):active{transform:scale(.97)}
       }
     };
 
-    // ============ NUMPAD ============
+    // ============ ВВОД СУММЫ ============
+    const amountFormat = new Intl.NumberFormat('ru-RU', {maximumFractionDigits: 0});
+    const rubleFormat = new Intl.NumberFormat('ru-RU', {style: 'currency', currency: 'RUB', maximumFractionDigits: 2, minimumFractionDigits: 0});
+
+    function formatEnteredAmount(input) {
+      const [whole, fraction] = input.split('.');
+      return amountFormat.format(Number(whole)) + (fraction === undefined ? '' : ',' + fraction);
+    }
+
+    function updateAmountInput(input, key) {
+      if (key === 'erase') return input.slice(0, -1) || '0';
+      if (key === '.') return input.includes('.') ? input : input + '.';
+      const [whole, fraction] = input.split('.');
+      if (fraction !== undefined) return fraction.length < 2 ? input + key : input;
+      if (whole.length >= 7) return input;
+      return input === '0' ? key : input + key;
+    }
+
     function updateDisplay() {
-      const el = document.getElementById('amount-display');
-      el.innerText = currentInput;
-      const box = document.getElementById('amount-display-box');
-      box.classList.remove('amount-pulse');
-      void box.offsetWidth;
-      box.classList.add('amount-pulse');
+      renderAmount(document.getElementById('amount-display'), currentInput);
     }
 
-    function pressKey(num) {
-      haptic(8);
-      lastSelectedItemName = "";
-      if (currentInput === "0") {
-        if (num === "00") return;
-        currentInput = num;
-      } else {
-        if (currentInput.length < 7) currentInput += num;
-      }
-      updateDisplay();
-    }
-
-    function backspace() {
-      haptic(10);
-      if (currentInput.length > 1) currentInput = currentInput.slice(0, -1);
-      else {
-        currentInput = "0";
-        lastSelectedItemName = "";
-      }
-      updateDisplay();
+    function renderAmount(output, input) {
+      const value = formatEnteredAmount(input);
+      if (output.textContent === value) return;
+      output.toggleAttribute('data-wide', value.length >= 9);
+      output.value = value;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      output.getAnimations().forEach(animation => animation.cancel());
+      output.animate([{opacity: .62, transform: 'translateY(3px)'}, {opacity: 1, transform: 'none'}], {duration: 180, easing: 'ease-out'});
     }
 
     function clearAmount() {
-      currentInput = "0";
-      lastSelectedItemName = "";
+      currentInput = '0';
       updateDisplay();
     }
 
-    function addQuickAmount(val) {
-      haptic(10);
-      const current = parseInt(currentInput) || 0;
-      currentInput = String(current + val);
-      updateDisplay();
+    function calculateCheckTip() {
+      return Math.round(Math.round(Number(tipCheckInput) * 100) * tipPercent / 100) / 100;
     }
 
-    function addAmountDirect(val, title) {
-      haptic(12);
-      currentInput = String(val);
-      lastSelectedItemName = title;
-      updateDisplay();
-      document.getElementById('pos-status-text').innerText = `Выбрано: ${title} (${val} ₽)`;
+    function updateTipDisplay() {
+      renderAmount(document.getElementById('tip-check'), tipCheckInput);
+      document.getElementById('tip-value').value = rubleFormat.format(calculateCheckTip());
+      document.getElementById('tip-offer-status').textContent = '';
     }
 
-    window.addEventListener('keydown', (e) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
-      if (e.key >= '0' && e.key <= '9') pressKey(e.key);
-      else if (e.key === 'Backspace') backspace();
-      else if (e.key === 'Enter') createDirectSbpPayment();
-      else if (e.key === 'Escape') sendCancelToFirebase();
+    document.querySelectorAll('[data-keypad] button').forEach(button => {
+      button.addEventListener('click', () => {
+        haptic(8);
+        const key = button.dataset.key;
+        if (button.closest('[data-keypad]').dataset.keypad === 'pos') {
+          currentInput = updateAmountInput(currentInput, key);
+          updateDisplay();
+        } else {
+          tipCheckInput = updateAmountInput(tipCheckInput, key);
+          updateTipDisplay();
+        }
+      });
+    });
+
+    document.querySelector('[data-clear=pos]').addEventListener('click', clearAmount);
+    document.querySelector('[data-clear=tip]').addEventListener('click', () => {
+      tipCheckInput = '0';
+      updateTipDisplay();
+    });
+
+    document.querySelectorAll('[data-tip-percent]').forEach(button => {
+      button.addEventListener('click', () => {
+        tipPercent = Number(button.dataset.tipPercent);
+        document.querySelectorAll('[data-tip-percent]').forEach(option => {
+          option.setAttribute('aria-pressed', String(option === button));
+        });
+        updateTipDisplay();
+      });
     });
 
     async function sendCancelToFirebase() {
       haptic(15);
+      if (paymentStarting) return;
       if (activePollInterval) clearInterval(activePollInterval);
-      const canceledAmount = parseInt(currentInput) || 0;
-      const canceledTitle = lastSelectedItemName || 'Сброс операции';
+      activePollInterval = null;
+      const canceledAmount = Number(currentInput) || 0;
+      const canceledTitle = 'Сброс операции';
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       if (window.firebaseDB && window.dbRef && window.dbSet) {
         const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
-        await window.dbSet(orderRef, { status: 'IDLE', promo: null });
+        try {
+          await window.dbSet(orderRef, {status: 'IDLE', promo: null});
+        } catch (error) {
+          showToast('Не удалось сбросить операцию', 'error');
+          return;
+        }
         if (canceledAmount > 0) {
           await logOperationToHistory({
             amount: canceledAmount,
@@ -2195,7 +2253,7 @@ button:not(:disabled):active{transform:scale(.97)}
           </div>
           <div class="flex gap-1.5 relative z-10 pt-2.5 border-t border-white/10">
             <button onclick="showPromoOnScreen('${id}')" class="flex-1 btn-gold font-display font-black text-[10px] uppercase py-2.5 rounded-xl active:scale-95">
-              ▶ На экран
+              На экран
             </button>
             <button onclick="openPromoEditor('${id}')" class="bg-white/10 active:scale-90 text-cream/85 px-3 py-2.5 rounded-xl text-xs font-bold">✏️</button>
             <button onclick="deletePromo('${id}')" class="bg-coral/15 active:scale-90 text-coral px-3 py-2.5 rounded-xl text-xs">🗑️</button>
@@ -2306,7 +2364,7 @@ button:not(:disabled):active{transform:scale(.97)}
       permRow.innerHTML = `
         <td class="p-3 pl-4">
           <div class="w-14 h-10 rounded-lg overflow-hidden bg-inkDeep border border-gold/40">
-            <img src="coffeeman-cup.jpg" onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200'" class="w-full h-full object-cover" />
+            <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200" class="w-full h-full object-cover" />
           </div>
         </td>
         <td class="p-3">
@@ -2323,7 +2381,7 @@ button:not(:disabled):active{transform:scale(.97)}
       permMob.className = 'bg-gold/10 border border-gold/25 p-3 rounded-xl flex items-center gap-3';
       permMob.innerHTML = `
         <div class="w-12 h-10 rounded-lg overflow-hidden bg-inkDeep shrink-0 border border-gold/40">
-          <img src="coffeeman-cup.jpg" onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200'" class="w-full h-full object-cover" />
+          <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200" class="w-full h-full object-cover" />
         </div>
         <div class="flex-1 min-w-0">
           <div class="font-display font-black text-[11px] text-cream truncate">9 ФИШЕК = 10-Й</div>
@@ -2545,67 +2603,13 @@ button:not(:disabled):active{transform:scale(.97)}
     }
   </script>
 
-<style>
-#permanent-tips-control{border:1px solid rgba(255,199,125,.32);background:linear-gradient(120deg,rgba(255,181,115,.15),rgba(255,120,129,.08));border-radius:22px;padding:17px;color:#fff5e8;box-shadow:0 16px 45px rgba(0,0,0,.12)}
-#permanent-tips-control button{border:1px solid rgba(255,212,145,.55);border-radius:14px;padding:13px 16px;font-weight:850;background:linear-gradient(120deg,#ffe4a4,#ffb88c);color:#301b19;width:100%;margin-top:12px}
-#permanent-tips-lock{display:none;position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse at 20% 10%,#55382e,#19151b 62%,#0c1016);color:#fff4e6;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:system-ui,sans-serif}
-#permanent-tips-lock.active{display:flex}
-#permanent-tips-lock .pt-card{width:min(100%,480px);border:1px solid rgba(255,209,157,.32);background:rgba(255,255,255,.055);border-radius:32px;padding:clamp(24px,5vw,42px);box-shadow:0 25px 90px #0007}
-#permanent-tips-lock .pt-icon{font-size:66px;margin-bottom:16px}
-#permanent-tips-lock h2{font-size:clamp(26px,5vw,38px);font-weight:900;line-height:1.1;margin:10px 0 16px}
-#permanent-tips-lock p{font-size:15px;color:#e5d1c7;line-height:1.6}
-#permanent-tips-lock button{width:100%;padding:17px;margin-top:30px;border-radius:18px;background:#ffe2ae;color:#33211c;font-size:17px;font-weight:900}
-#permanent-tips-lock button:disabled{opacity:.5}
-</style>
-<div id="permanent-tips-lock" role="dialog" aria-modal="true" aria-label="Режим бессрочных чаевых" aria-hidden="true">
- <div class="pt-card"><div class="pt-icon">☕</div><div style="color:#ffd9a4;letter-spacing:.18em;font-size:12px;font-weight:800">COFFEEMAN • РЕЖИМ ЧАЕВЫХ</div>
- <h2>Бессрочные чаевые<br>включены</h2><p>Экран гостя показывает QR-код для чаевых.<br>Остальные функции кассы временно заблокированы.</p>
- <button id="permanent-tips-stop" onclick="window.disablePermanentTips()">Отключить режим</button>
- <div id="permanent-tips-lock-error" style="color:#ffc0b4;margin-top:14px;font-size:13px" aria-live="polite"></div></div>
-</div>
-
-<style>
-:root{--paper:#f7f5f1;--surface:#fff;--text:#25231f;--muted:#625b52;--line:#e5ded4;--accent:#1e6655;--wash:#e7f1eb;--shadow:0 16px 44px #34261a13;color-scheme:light}
-:root[data-theme=dark]{--paper:#171a19;--surface:#222725;--text:#f4f0e7;--muted:#c1b9ac;--line:#414844;--accent:#236a58;--wash:#2b3b34;--shadow:0 16px 44px #0005;color-scheme:dark}
-html:root,body.ambient-bg,html body{background:var(--paper)!important;color:var(--text)!important}
-html body>header,html body .glass,html body .glass-strong,html body .glass-card{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:var(--shadow)!important}
-html body>header *,html body>footer{color:var(--text)!important}
-html body .btn-gold,html body .btn-coral,html body>header button{background:var(--accent)!important;color:#fff!important}
-html body .btn-ghost{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
-.cm-panel{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:clamp(18px,4vw,38px);box-shadow:var(--shadow);animation:cm-arrive .45s ease both}
-.cm-panel h2,.cm-panel h3{font-weight:800;letter-spacing:-.035em;line-height:1.12}
-.cm-panel p{color:var(--muted)}
-.cm-action{border:1px solid var(--line);background:var(--wash);color:var(--text);border-radius:15px;padding:12px 18px;min-height:46px;font-weight:750}
-.cm-action.primary{background:var(--accent);color:#fff;border-color:transparent}
-.cm-action:disabled{opacity:.6;cursor:wait}
-.cm-action:focus-visible,.syrup-card:focus-visible{outline:3px solid var(--text);outline-offset:3px}
-@keyframes cm-arrive{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
-</style>
-<script>
-  function syncCoffeemanTheme() {
-    const hour = new Date().getHours();
-    document.documentElement.dataset.theme = hour >= 17 || hour < 6 ? 'dark' : 'light';
-  }
-  syncCoffeemanTheme();
-  setInterval(syncCoffeemanTheme, 10000);
-  document.addEventListener('visibilitychange', syncCoffeemanTheme);
-</script>
-<style>
-#view-tips input{border:1px solid var(--line);background:var(--paper);color:var(--text);border-radius:12px;padding:10px 13px;width:100%}
-html body #permanent-tips-control,html body #permanent-tips-lock .pt-card{background:var(--surface)!important;color:var(--text)!important;border-color:var(--line)!important}
-html body #permanent-tips-control p,html body #permanent-tips-lock h2,html body #permanent-tips-lock p,html body #permanent-tips-lock .pt-card div{color:var(--text)!important}
-html body #permanent-tips-lock{background:var(--paper)!important}
-html body #permanent-tips-control button,html body #permanent-tips-lock button{background:var(--accent)!important;color:white!important}
-html body .bottom-dock{background:var(--surface)!important;border-color:var(--line)!important}
-html body .dock-btn{color:var(--muted)!important;min-width:0}
-html body .dock-btn.active{color:var(--text)!important;background:var(--wash)!important}
-html body .pos-amount-gradient{background:none!important;color:var(--text)!important;-webkit-text-fill-color:var(--text)!important}
-html body [class*="text-cream"],html body [class*="text-peach"],html body [class*="text-gold"],html body [class*="text-lavender"]{color:var(--text)!important}
-html body .dock-text{white-space:nowrap}
-html body .bottom-dock{max-width:calc(100vw - 12px);box-shadow:var(--shadow)}
-html body .dock-btn{padding:10px clamp(6px,1.5vw,18px)}
-@media(max-width:520px){html body .dock-btn{flex-direction:column;gap:4px;letter-spacing:0;font-size:9px}}
-</style>
+<div id="permanent-tips-lock" role="dialog" aria-modal="true" aria-labelledby="permanent-title" aria-hidden="true">
+    <div class="plain-section">
+      <h2 id="permanent-title">Бессрочные чаевые включены</h2>
+      <p>Экран гостя показывает QR-код для чаевых.</p>
+      <button type="button" class="action primary" id="permanent-tips-stop" onclick="window.disablePermanentTips()">Отключить режим</button>
+      <p id="permanent-tips-lock-error" role="status"></p>
+    </div>
+  </div>
 </body>
 </html>
