@@ -2525,7 +2525,84 @@
     }
 
     function markOrderPaidInFirebase(paidTotal) {
-      const orderRef = ref(db, `terminals/${terminalId}/current_order`);
+      
+    // Независимый постоянный режим: QR перевыпускается после оплаты и по таймеру.
+    const permanentTipRef = ref(db, `terminals/${terminalId}/permanent_tips`);
+    const permanentTipOverlay = document.getElementById('permanent-tip-display');
+    const permanentTipCanvas = document.getElementById('permanent-tip-qr');
+    const permanentTipPlaceholder = document.getElementById('permanent-tip-placeholder');
+    const permanentTipStatus = document.getElementById('permanent-tip-status');
+    const permanentTipRetry = document.getElementById('permanent-tip-retry');
+    let permanentTipActive = false;
+    let permanentTipGeneration = 0;
+    let permanentTipRefreshTimer = null;
+    window.permanentTipAmount = 100;
+    function stopPermanentTipCycle() {
+      ++permanentTipGeneration;
+      if (permanentTipRefreshTimer) clearTimeout(permanentTipRefreshTimer);
+      permanentTipRefreshTimer = null;
+      if (customerScreenPollingInterval) clearInterval(customerScreenPollingInterval);
+      customerScreenPollingInterval = null;
+    }
+    window.permanentTipSelect = async function(amount) {
+      if (!permanentTipActive) return;
+      stopPermanentTipCycle();
+      const generation = permanentTipGeneration;
+      window.permanentTipAmount = amount;
+      document.getElementById('permanent-tip-amount').textContent = amount + ' ₽';
+      document.querySelectorAll('[data-tip-amount]').forEach(button => {
+        button.classList.toggle('selected', Number(button.dataset.tipAmount) === amount);
+        button.setAttribute('aria-pressed', String(Number(button.dataset.tipAmount) === amount));
+      });
+      permanentTipCanvas.style.display = 'none';
+      permanentTipPlaceholder.style.display = 'flex';
+      permanentTipPlaceholder.textContent = 'Создаём новый QR-код…';
+      permanentTipStatus.textContent = 'Подключаем оплату…';
+      permanentTipRetry.style.display = 'none';
+      try {
+        const {paymentId, qrUrl} = await createLiveYookassaSbpQr(amount, `Чаевые COFFEEMAN (${amount} ₽)`);
+        if (!permanentTipActive || generation !== permanentTipGeneration) return;
+        if (!renderQRCodeToCanvas(qrUrl, 'permanent-tip-qr')) throw new Error('QR-код не удалось нарисовать');
+        permanentTipPlaceholder.style.display = 'none';
+        permanentTipCanvas.style.display = 'block';
+        permanentTipStatus.textContent = 'Наведите камеру телефона на QR-код';
+        startPaymentWatcher(paymentId, () => {
+          if (!permanentTipActive || generation !== permanentTipGeneration) return;
+          recordTipStat();
+          permanentTipStatus.textContent = 'Спасибо за чаевые! ❤️ Готовим следующий QR…';
+          permanentTipCanvas.style.display = 'none';
+          permanentTipPlaceholder.style.display = 'flex';
+          permanentTipPlaceholder.textContent = 'Спасибо! ☕';
+          permanentTipRefreshTimer = setTimeout(() => window.permanentTipSelect(window.permanentTipAmount), 2500);
+        });
+        // Платёжный QR не бессрочный: периодически обновляем его.
+        permanentTipRefreshTimer = setTimeout(() => {
+          if (permanentTipActive && generation === permanentTipGeneration) window.permanentTipSelect(window.permanentTipAmount);
+        }, 10 * 60 * 1000);
+      } catch (error) {
+        if (!permanentTipActive || generation !== permanentTipGeneration) return;
+        permanentTipPlaceholder.textContent = 'QR пока недоступен';
+        permanentTipStatus.textContent = 'Не удалось создать QR: ' + error.message + '. Проверьте настройки оплаты на дисплее.';
+        permanentTipRetry.style.display = 'inline-block';
+      }
+    };
+    onValue(permanentTipRef, snapshot => {
+      const enabled = snapshot.val()?.enabled === true;
+      if (enabled === permanentTipActive) return;
+      permanentTipActive = enabled;
+      permanentTipOverlay.classList.toggle('active', enabled);
+      if (enabled) {
+        clearAllTimeouts();
+        window.permanentTipSelect(window.permanentTipAmount);
+      } else {
+        stopPermanentTipCycle();
+        resetToIdle(false);
+      }
+    }, error => {
+      permanentTipStatus.textContent = 'Ошибка синхронизации: ' + error.message;
+    });
+
+    const orderRef = ref(db, `terminals/${terminalId}/current_order`);
       set(orderRef, { status: 'PAID', amount: paidTotal, timestamp: Date.now() });
       triggerSuccess();
     }
@@ -2952,6 +3029,7 @@
     const orderRef = ref(db, `terminals/${terminalId}/current_order`);
     onValue(orderRef, (snapshot) => {
       const data = snapshot.val();
+      if (permanentTipActive) return;
       if (data) {
         if (data.status === 'WAITING_FOR_PAYMENT' || data.status === 'WAITING_FOR_CARD') {
           isSuccessActive = false;
@@ -2986,5 +3064,43 @@
     // START
     startIdleCycle();
   </script>
+
+<style>
+#permanent-tip-display{display:none;position:fixed;inset:0;z-index:99990;overflow:auto;background:radial-gradient(ellipse at 20% 10%,#593a2d 0%,#211a20 48%,#10131a 100%);color:#fff6eb;font-family:system-ui,sans-serif}
+#permanent-tip-display.active{display:flex;align-items:center;justify-content:center}
+#permanent-tip-display .pt-shell{width:min(1120px,100%);padding:clamp(20px,4vw,56px);display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,5vw,72px);align-items:center}
+#permanent-tip-display .pt-label{font-size:12px;font-weight:900;letter-spacing:.22em;color:#ffdaa6}
+#permanent-tip-display h2{font-size:clamp(34px,5.5vw,72px);line-height:1.03;font-weight:950;letter-spacing:-.045em;margin:20px 0}
+#permanent-tip-display .pt-desc{font-size:clamp(15px,1.8vw,21px);color:#e3d0c4;line-height:1.6}
+#permanent-tip-display .pt-amounts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:30px}
+#permanent-tip-display .pt-amounts button{background:#ffffff12;border:1px solid #ffffff30;color:#fff6eb;border-radius:20px;padding:20px 8px;font-size:clamp(20px,2.5vw,30px);font-weight:900;cursor:pointer}
+#permanent-tip-display .pt-amounts button.selected{background:linear-gradient(130deg,#ffe2a6,#ffad88);color:#392321;border-color:transparent;box-shadow:0 10px 30px #ffb58533}
+#permanent-tip-display .pt-qr-card{background:#fffaf3;color:#30221e;padding:clamp(24px,3vw,42px);border-radius:34px;text-align:center;box-shadow:0 24px 85px #0007}
+#permanent-tip-display .pt-qr-card canvas{width:min(100%,280px);height:auto;display:block;margin:18px auto}
+#permanent-tip-display .pt-status{min-height:42px;font-size:14px;line-height:1.5;color:#65514b}
+#permanent-tip-display .pt-retry{border-radius:12px;padding:10px 18px;background:#39251f;color:white;font-weight:800;margin-top:10px}
+@media(max-width:760px){#permanent-tip-display .pt-shell{grid-template-columns:1fr;max-width:500px;gap:24px;padding:20px}#permanent-tip-display h2{margin:12px 0}#permanent-tip-display .pt-amounts{margin-top:18px}#permanent-tip-display .pt-amounts button{padding:13px}#permanent-tip-display .pt-qr-card{padding:18px}#permanent-tip-display .pt-qr-card canvas{max-height:230px;max-width:230px}}
+</style>
+<div id="permanent-tip-display" aria-label="Постоянный экран чаевых">
+ <div class="pt-shell">
+  <div><div class="pt-label">☕ COFFEEMAN · СПАСИБО БАРИСТА</div><h2>Ваш кофе.<br><span style="color:#ffcc95">Наша любовь.</span></h2>
+   <p class="pt-desc">Понравился напиток? Поддержите команду чаевыми — выберите сумму и наведите камеру на QR-код.</p>
+   <div class="pt-amounts" aria-label="Сумма чаевых">
+    <button data-tip-amount="50" onclick="window.permanentTipSelect(50)">50 ₽</button>
+    <button data-tip-amount="100" onclick="window.permanentTipSelect(100)">100 ₽</button>
+    <button data-tip-amount="200" onclick="window.permanentTipSelect(200)">200 ₽</button>
+    <button data-tip-amount="300" onclick="window.permanentTipSelect(300)">300 ₽</button>
+   </div>
+   <p style="font-size:12px;color:#c7aea2;margin-top:20px">Режим чаевых включён кассиром • Без автоматического отключения</p>
+  </div>
+  <div class="pt-qr-card"><div style="font-size:12px;font-weight:900;letter-spacing:.18em;color:#956a55">ЧАЕВЫЕ ПО СБП</div>
+   <div style="font-size:32px;font-weight:950;margin-top:12px" id="permanent-tip-amount">100 ₽</div>
+   <canvas id="permanent-tip-qr" width="280" height="280" style="display:none"></canvas>
+   <div id="permanent-tip-placeholder" style="min-height:280px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#806b5e">Подготавливаем QR-код…</div>
+   <div class="pt-status" id="permanent-tip-status" role="status" aria-live="polite">Подключаем оплату…</div>
+   <button class="pt-retry" id="permanent-tip-retry" onclick="window.permanentTipSelect(window.permanentTipAmount)" style="display:none">Обновить QR ↻</button>
+  </div>
+ </div>
+</div>
 </body>
 </html>
