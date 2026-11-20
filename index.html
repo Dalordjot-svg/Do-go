@@ -187,7 +187,14 @@
       overflow: clip;
       touch-action: pan-y;
     }
-    #slide-container { display: grid; align-items: center; position: relative; min-height: min(560px, 70dvh) }
+    #slide-container {
+      display: grid;
+      align-items: center;
+      position: relative;
+      min-height: min(560px, 70dvh);
+      touch-action: pan-y pinch-zoom;
+      user-select: none;
+    }
     .story {
       position: relative;
       display: grid;
@@ -211,8 +218,12 @@
     .story-content > :nth-child(n+4) { animation: settle .55s .24s both }
     .story--essay .story-content { justify-items: center; text-align: center; margin-inline: auto }
     .story--essay .description { max-width: 45ch }
-    .story--image .story-content { max-width: min(68vw, 800px) }
-    .story--image .headline { font-size: clamp(2.65rem, 7.3vw, 7.7rem) }
+    .story--image .story-content { max-width: min(55vw, 820px) }
+    .story--image .headline { font-size: clamp(2.65rem, 6.7vw, 7.5rem) }
+    .story--image .story-art { width: min(65vw, 1120px) }
+    .story--fact .headline { font-size: clamp(2.65rem, 5.9vw, 6.5rem) }
+    .story--fact .story-art img { opacity: .53 }
+    .story-art img { -webkit-user-drag: none }
     .story-art, .promo-art {
       pointer-events: none;
       position: absolute;
@@ -270,6 +281,8 @@
     #slide-count { min-width: 5ch; font-size: .78rem; color: var(--muted); text-align: center }
     .story-nav .icon-action { font-size: 1.2rem }
     .story-prompt { color: var(--muted); font-size: .9rem }
+    .story-prompt strong { color: var(--ink) }
+    .story-nav .icon-action:active { transform: scale(.92) }
     .fade-blur-exit { opacity: 0; transition: opacity .18s ease }
     .fade-blur-active { opacity: 1; transition: opacity .33s ease }
     @keyframes settle {
@@ -350,10 +363,38 @@
       padding: clamp(24px, 5vh, 66px) var(--gutter) max(30px, env(safe-area-inset-bottom));
       text-align: center;
     }
-    #order-tip-actions { display: grid; width: min(100%, 510px); grid-template-columns: 1fr 1fr; gap: 12px }
-    #order-tip-actions .action { min-height: clamp(56px, 9vh, 84px); font-size: clamp(1.25rem, 2.8vw, 2rem) }
-    #order-tip-screen .headline { font-size: clamp(2.5rem, 7vw, 6.5rem) }
-    #order-tip-qr { max-width: min(100%, 34dvh) }
+    .tip-split { grid-template-columns: minmax(0, 1fr) minmax(0, .83fr); gap: clamp(28px, 5vw, 85px) }
+    .tip-photo {
+      position: relative;
+      width: 100%;
+      height: clamp(260px, 57dvh, 620px);
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent, #000 23% 88%, transparent),
+                  linear-gradient(transparent, #000 15% 80%, transparent);
+      mask-composite: intersect;
+      animation: settle .7s .08s both;
+    }
+    .tip-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 58% }
+    #order-tip-title { font-size: clamp(2.5rem, 6vw, 6.1rem) }
+    #order-tip-title:focus { outline: none }
+    #order-tip-actions { display: grid; gap: 14px; width: min(100%, 510px); margin-top: 5px }
+    .tip-percentages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+    #order-tip-actions .tip-percentage {
+      display: grid;
+      gap: 4px;
+      min-height: clamp(66px, 10vh, 96px);
+      padding-inline: clamp(5px, 1.35vw, 20px);
+      font-size: clamp(1.12rem, 2.6vw, 1.8rem);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    .tip-percentage span { font-size: clamp(.79rem, 1.35vw, 1rem); font-weight: 520; color: var(--muted) }
+    .tip-percentage:disabled { opacity: .48; cursor: default; transform: none }
+    #order-tip-auto-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center }
+    #order-tip-qr-area { animation: settle .42s ease both; min-height: min(290px, 45dvh) }
+    #order-tip-qr { max-width: min(100%, 40dvh) }
+    #order-tip-qr-activity { min-height: 0 }
+    #order-tip-qr-area[data-phase="ready"] #order-tip-qr-status { color: var(--accent) }
     .cafe-mark { color: var(--accent); width: min(28vw, 132px); aspect-ratio: 1 }
     .success-mark { color: var(--success) }
     .nfc-edge {
@@ -415,7 +456,7 @@
       place-content: center;
       width: 100%;
       height: clamp(150px, 31dvh, 330px);
-      touch-action: pan-y;
+      touch-action: pan-y pinch-zoom;
       cursor: grab;
     }
     #syrups-drum.dragging { cursor: grabbing }
@@ -525,7 +566,7 @@
       .header-actions > .text-action { font-size: .92rem }
       .story--image, .story--ad { align-content: end; min-height: 100%; padding-top: clamp(152px, 34vh, 258px) }
       .story--image .story-content, .story--ad .story-content { max-width: 100%; width: 100% }
-      .story-art, .story--ad .story-art, .promo-art {
+      .story-art, .story--image .story-art, .story--ad .story-art, .promo-art {
         inset: 0 0 auto;
         width: 100%;
         height: min(39vh, 350px);
@@ -534,7 +575,13 @@
       .story-art img { opacity: .65 }
       .story-art::after, .promo-art::after { display: none }
       .story--image .headline, .story--ad .headline { font-size: clamp(2.65rem, 10vw, 4rem) }
-      .story-prompt { display: none }
+      .story-prompt { font-size: .78rem }
+      .story-nav { gap: 4px }
+      .idle-controls { gap: 4px 12px }
+      .tip-photo { height: clamp(110px, 26dvh, 240px); max-width: 495px }
+      .tip-split { gap: 18px }
+      #order-tip-auto-actions { justify-content: center }
+      #order-tip-qr-area { min-height: 0 }
       .menu-list { grid-template-columns: 1fr; gap: 14px }
       .menu-list p { margin-top: 1px }
       .menu-list strong { margin-top: 3px }
@@ -576,7 +623,7 @@
         </div></article>
       </div>
       <div class="idle-controls">
-        <p class="story-prompt">Коснитесь экрана, чтобы посмотреть сиропы</p>
+        <p class="story-prompt">Листайте экран <span aria-hidden="true">·</span> Коснитесь, чтобы открыть сиропы</p>
         <div class="story-nav" aria-label="Слайды экрана ожидания">
           <button class="icon-action" type="button" id="story-prev" aria-label="Предыдущий слайд">←</button>
           <div class="slide-progress-track" aria-hidden="true"><div id="slide-progress"></div></div>
@@ -624,13 +671,13 @@
     </section>
 
     <section id="magic-tip-screen" class="screen-section" aria-labelledby="magic-tip-heading">
-      <div class="split">
+      <div class="split tip-split">
         <div class="screen-copy">
           <p class="eyebrow accent" id="magic-tip-recipient-label">Чаевые бариста</p>
           <h2 id="magic-tip-heading" class="subheadline">Скажите спасибо</h2>
           <p class="description">Выберите сумму и отсканируйте QR-код в приложении банка.</p>
           <div class="tip-actions" aria-label="Сумма чаевых">
-            <button type="button" class="action magic-tip-btn selected" onclick="selectMagicTip(50, this)" aria-pressed="true">50 ₽</button>
+            <button type="button" class="action magic-tip-btn" onclick="selectMagicTip(50, this)" aria-pressed="false">50 ₽</button>
             <button type="button" class="action magic-tip-btn" onclick="selectMagicTip(100, this)" aria-pressed="false">100 ₽</button>
             <button type="button" class="action magic-tip-btn" onclick="selectMagicTip(200, this)" aria-pressed="false">200 ₽</button>
             <button type="button" class="action magic-tip-btn" onclick="selectMagicTip(300, this)" aria-pressed="false">300 ₽</button>
@@ -641,7 +688,8 @@
             <p class="countdown">Возврат через <time id="magic-timer-val">03:00</time></p>
           </div>
         </div>
-        <div class="code-area qr-area">
+        <figure id="magic-tip-photo" class="tip-photo" aria-hidden="true"><img data-tip-photo alt=""></figure>
+        <div id="magic-tip-qr-area" class="code-area qr-area" hidden>
           <div id="magic-qr-loader" class="hidden qr-activity" role="status"><span class="spinner" aria-hidden="true"></span>Создаём QR-код…</div>
           <div id="magic-qr-error" class="hidden qr-activity" role="status">
             <p id="magic-error-desc" class="problem">QR-код недоступен.</p>
@@ -701,16 +749,33 @@
     </section>
 
     <section id="order-tip-screen" class="screen-section" aria-labelledby="order-tip-title">
-      <div class="centered">
-        <p id="order-tip-order" class="eyebrow accent"></p>
-        <h2 id="order-tip-title" class="headline" tabindex="-1">Хотите оставить чаевые?</h2>
-        <p id="order-tip-message" class="description" role="status"></p>
-        <div id="order-tip-actions">
-          <button id="order-tip-yes" class="action primary" type="button">Да</button>
-          <button id="order-tip-no" class="action" type="button">Нет</button>
+      <div class="split tip-split">
+        <div class="screen-copy">
+          <p id="order-tip-order" class="eyebrow accent"></p>
+          <h2 id="order-tip-title" class="headline" tabindex="-1">Хотите оставить чаевые?</h2>
+          <p id="order-tip-message" class="description" role="status"></p>
+          <div id="order-tip-actions">
+            <div id="order-tip-percentages" class="tip-percentages" role="group" aria-label="Чаевые в процентах от чека">
+              <button class="action tip-percentage" type="button" data-order-tip-percent="5"><strong>5%</strong><span></span></button>
+              <button class="action tip-percentage" type="button" data-order-tip-percent="10"><strong>10%</strong><span></span></button>
+              <button class="action tip-percentage" type="button" data-order-tip-percent="15"><strong>15%</strong><span></span></button>
+            </div>
+            <button id="order-tip-no" class="action" type="button">Без чаевых</button>
+            <div id="order-tip-auto-actions" hidden>
+              <button id="order-tip-yes" class="action primary" type="button">Оставить чаевые</button>
+              <button id="order-tip-dismiss" class="action" type="button">Не сейчас</button>
+            </div>
+          </div>
         </div>
-        <canvas id="order-tip-qr" width="280" height="280" hidden aria-label="QR-код для оплаты чаевых"></canvas>
-        <button id="order-tip-retry" class="text-action" type="button" hidden>Повторить</button>
+        <figure id="order-tip-photo" class="tip-photo" aria-hidden="true">
+          <img data-tip-photo alt="">
+        </figure>
+        <div id="order-tip-qr-area" class="code-area" hidden>
+          <div id="order-tip-qr-activity" class="qr-activity flex"><span class="spinner" aria-hidden="true"></span></div>
+          <canvas id="order-tip-qr" width="280" height="280" hidden aria-label="QR-код для оплаты чаевых"></canvas>
+          <p id="order-tip-qr-status" class="supporting" role="status"></p>
+          <button id="order-tip-retry" class="text-action" type="button" hidden>Повторить</button>
+        </div>
       </div>
     </section>
   </main>
@@ -1027,11 +1092,20 @@
     ];
 
     const defaultCoffeePhoto = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200';
+    const coffeeShopPhoto = 'barista-tips.webp';
+    for (const image of document.querySelectorAll('[data-tip-photo]')) {
+      image.addEventListener('error', () => { image.src = defaultCoffeePhoto; }, {once: true});
+      image.src = coffeeShopPhoto;
+    }
+
+    function storyPhoto(source = defaultCoffeePhoto) {
+      return `<figure class="story-art" aria-hidden="true"><img src="${source}" alt="" draggable="false"></figure>`;
+    }
     const welcomeSlide = {
       type: 'welcome',
       duration: 11000,
       html: `<article class="story story--image">
-        <figure class="story-art" aria-hidden="true"><img src="${defaultCoffeePhoto}" alt=""></figure>
+        ${storyPhoto()}
         <div class="story-content">
           <p class="eyebrow accent">Кофейня · Кызыл</p>
           <h1 class="headline">Хороший день начинается с кофе.</h1>
@@ -1043,7 +1117,7 @@
     const loyaltySlide = {
       type: 'loyalty',
       duration: 10000,
-      html: `<article class="story story--essay"><div class="story-content">
+      html: `<article class="story story--image">${storyPhoto()}<div class="story-content">
         <p class="eyebrow accent">Карта лояльности</p>
         <h2 class="headline">Десятый кофе — в подарок.</h2>
         <p class="description">Соберите девять отметок. Карту можно взять на кассе.</p>
@@ -1053,7 +1127,7 @@
     const signatureMenuSlide = {
       type: 'menu',
       duration: 11000,
-      html: `<article class="story"><div class="story-content">
+      html: `<article class="story story--image">${storyPhoto()}<div class="story-content">
         <h2 class="headline">Любимые напитки</h2>
         <div class="menu-list">
           <div><h3>Солёно-карамельный раф</h3><p>Эспрессо, сливки и карамель · 350 мл</p><strong>250 ₽</strong></div>
@@ -1066,7 +1140,7 @@
     const tipStorySlide = {
       type: 'tips',
       duration: 9500,
-      html: `<article class="story story--essay"><div class="story-content">
+      html: `<article class="story story--image">${storyPhoto()}<div class="story-content">
         <h2 class="headline">Скажите спасибо команде.</h2>
         <div class="inline-actions">
           <button class="text-action" type="button" onclick="chooseTipRecipient('barista')">Чаевые бариста</button>
@@ -1078,7 +1152,7 @@
     const factSlides = factsList.map(([topic, title, detail], index) => ({
       type: 'fact-' + index,
       duration: 10000,
-      html: `<article class="story story--essay"><div class="story-content">
+      html: `<article class="story story--image story--fact">${storyPhoto()}<div class="story-content">
         <p class="eyebrow accent">${topic}</p>
         <h2 class="headline">${title}</h2>
         <p class="description">${detail}</p>
@@ -1162,6 +1236,7 @@
     let shelfFrame;
     let drag;
     let lastWheel = 0;
+    let lastDrumSwipeAt = 0;
 
     function renderSyrupsDrum() {
       drum.replaceChildren();
@@ -1186,7 +1261,8 @@
         const name = document.createElement('strong');
         name.textContent = item.name || 'Сироп';
         card.append(bottle, name);
-        card.addEventListener('click', () => {
+        card.addEventListener('click', event => {
+          if (event.detail > 0 && Date.now() - lastDrumSwipeAt < 320) return;
           drumPosition += nearestDrumOffset(index);
           updateDrum3DEffect();
           resetShelfIdle();
@@ -1275,30 +1351,41 @@
     }, { passive: false });
     drum.addEventListener('pointerdown', event => {
       if (event.isPrimary && event.button === 0) {
-        drag = { x: event.clientX, position: drumPosition, pointer: event.pointerId, moved: false };
+        drag = { x: event.clientX, y: event.clientY, position: drumPosition, pointer: event.pointerId, moved: false };
       }
     });
     drum.addEventListener('pointermove', event => {
       if (drag?.pointer !== event.pointerId) return;
       const delta = drag.x - event.clientX;
-      if (!drag.moved && Math.abs(delta) < 8) return;
-      if (!drag.moved) drum.setPointerCapture(event.pointerId);
-      drag.moved = true;
+      const vertical = drag.y - event.clientY;
+      if (!drag.moved) {
+        if (Math.abs(delta) < 9 || Math.abs(delta) < Math.abs(vertical) * 1.2) return;
+        drum.setPointerCapture(event.pointerId);
+        drag.moved = true;
+      }
       resetShelfIdle();
       drum.classList.add('dragging');
       drumPosition = drag.position + delta / 95;
       updateDrum3DEffect();
     });
-    for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture', 'pointerleave']) {
-      drum.addEventListener(eventName, event => {
-        if (drag?.pointer !== event.pointerId) return;
-        if (eventName === 'pointerleave' && drag.moved) return;
-        drag = null;
-        drum.classList.remove('dragging');
-        drumPosition = Math.round(drumPosition);
-        updateDrum3DEffect();
-      });
+
+    function finishDrumDrag(event, canceled = false) {
+      if (drag?.pointer !== event.pointerId) return;
+      const start = drag;
+      drag = null;
+      if (!start.moved) return;
+      lastDrumSwipeAt = Date.now();
+      drum.classList.remove('dragging');
+      const delta = start.x - event.clientX;
+      const distance = Math.round(drumPosition - start.position);
+      drumPosition = start.position + (canceled ? 0 : distance || (Math.abs(delta) >= 24 ? Math.sign(delta) : 0));
+      updateDrum3DEffect();
     }
+    drum.addEventListener('pointerup', event => finishDrumDrag(event));
+    drum.addEventListener('pointercancel', event => finishDrumDrag(event, true));
+    drum.addEventListener('lostpointercapture', event => {
+      if (event.target === drum) finishDrumDrag(event, true);
+    });
     window.addEventListener('resize', () => {
       if (!syrupsModal.classList.contains('hidden')) updateDrum3DEffect();
     });
@@ -1412,19 +1499,35 @@
     const orderTipOrder = document.getElementById('order-tip-order');
     const orderTipMessage = document.getElementById('order-tip-message');
     const orderTipActions = document.getElementById('order-tip-actions');
+    const orderTipPercentages = document.getElementById('order-tip-percentages');
+    const orderTipButtons = orderTipPercentages.querySelectorAll('[data-order-tip-percent]');
+    const orderTipDecline = document.getElementById('order-tip-no');
+    const orderTipAutoActions = document.getElementById('order-tip-auto-actions');
+    const orderTipPhoto = document.getElementById('order-tip-photo');
+    const orderTipQRArea = document.getElementById('order-tip-qr-area');
     const orderTipQR = document.getElementById('order-tip-qr');
+    const orderTipQRStatus = document.getElementById('order-tip-qr-status');
+    const orderTipQRActivity = document.getElementById('order-tip-qr-activity');
     const orderTipRetry = document.getElementById('order-tip-retry');
     const rubles = new Intl.NumberFormat('ru-RU', {style: 'currency', currency: 'RUB', maximumFractionDigits: 2, minimumFractionDigits: 0});
     let activeTip = null;
     let orderTipTimer;
     let previousOffer;
-    let tipPaymentPending = false;
-    let orderTipPaymentKey;
 
     function closeOrderTip() {
       clearTimeout(orderTipTimer);
       activeTip = null;
-      tipPaymentPending = false;
+    }
+
+    function setOrderTipVisual(phase, status = '') {
+      const qrVisible = phase === 'loading' || phase === 'ready' || phase === 'error';
+      orderTipPhoto.hidden = qrVisible;
+      orderTipQRArea.hidden = !qrVisible;
+      orderTipQRArea.dataset.phase = phase;
+      orderTipQRActivity.hidden = phase !== 'loading';
+      orderTipQR.hidden = phase !== 'ready';
+      orderTipRetry.hidden = phase !== 'error';
+      orderTipQRStatus.textContent = status;
     }
 
     function showTipThanks(message) {
@@ -1432,26 +1535,35 @@
       orderTipTitle.textContent = 'Спасибо!';
       orderTipMessage.textContent = message;
       orderTipActions.hidden = true;
-      orderTipRetry.hidden = true;
-      orderTipQR.hidden = true;
+      setOrderTipVisual('photo');
       clearTimeout(orderTipTimer);
       orderTipTimer = setTimeout(() => resetToIdle(false), 4500);
     }
 
-    async function startOrderTipPayment() {
+    async function startOrderTipPayment(percentage) {
       const offer = activeTip;
-      if (!offer || tipPaymentPending) return;
-      tipPaymentPending = true;
+      if (!offer || offer.automatic || offer.pending) return;
+      if (percentage !== undefined) {
+        const tipKopecks = Math.round(offer.amountKopecks * percentage / 100);
+        if (tipKopecks < 1) return;
+        offer.tipKopecks = tipKopecks;
+        offer.paymentKey = generateUUID();
+      }
+      if (!offer.tipKopecks) return;
+
+      offer.pending = true;
+      clearTimeout(orderTipTimer);
+      orderTipTimer = setTimeout(() => resetToIdle(false), 180000);
+      const amount = offer.tipKopecks / 100;
       orderTipActions.hidden = true;
-      orderTipRetry.hidden = true;
       orderTipTitle.textContent = 'Чаевые по СБП';
-      orderTipMessage.textContent = 'Готовим QR-код…';
+      orderTipMessage.textContent = 'Размер чаевых — ' + rubles.format(amount);
+      setOrderTipVisual('loading', 'Готовим QR-код…');
       try {
-        const {paymentId, qrUrl} = await createLiveYookassaSbpQr(offer.tipAmount, 'Чаевые COFFEEMAN', orderTipPaymentKey);
+        const {paymentId, qrUrl} = await createLiveYookassaSbpQr(amount, 'Чаевые COFFEEMAN', offer.paymentKey);
         if (activeTip !== offer) return;
         if (!renderQRCodeToCanvas(qrUrl, 'order-tip-qr')) throw new Error('QR недоступен');
-        orderTipQR.hidden = false;
-        orderTipMessage.textContent = 'Наведите камеру на QR-код · ' + rubles.format(offer.tipAmount);
+        setOrderTipVisual('ready', 'Наведите камеру телефона на QR-код');
         startPaymentWatcher(paymentId, () => {
           if (activeTip !== offer) return;
           recordTipStat();
@@ -1459,48 +1571,55 @@
         });
       } catch (error) {
         if (activeTip !== offer) return;
-        orderTipMessage.textContent = 'QR-код недоступен. Попробуйте ещё раз.';
-        orderTipRetry.hidden = false;
-        tipPaymentPending = false;
+        setOrderTipVisual('error', 'QR-код недоступен. Попробуйте ещё раз.');
+        offer.pending = false;
       }
     }
 
     function showOrderTip(offer, automatic = false) {
+      const amountKopecks = Math.round(Number(offer.amount) * 100);
       if (!automatic) {
         const age = Date.now() - offer.timestamp;
         if (!Number.isFinite(age) || age > 180000 || age < -60000 ||
-            !Number.isFinite(offer.amount) || offer.amount <= 0 ||
-            !Number.isFinite(offer.tipAmount) || offer.tipAmount < 1 || offer.tipAmount > 10000 ||
+            !Number.isSafeInteger(amountKopecks) || amountKopecks <= 0 ||
             previousOffer === offer.timestamp) return;
         previousOffer = offer.timestamp;
       }
       closeOrderTip();
-      clearTimeout(idleTimeout);
       clearAllTimeouts();
       hideNfcGlow();
       window.toggleSyrupsShelf(false);
       isMagicActive = true;
       isPromoActive = false;
       isSuccessActive = false;
-      activeTip = offer;
-      if (!automatic) orderTipPaymentKey = generateUUID();
+      activeTip = {amountKopecks, automatic};
       orderTipTitle.textContent = 'Хотите оставить чаевые?';
-      orderTipOrder.textContent = automatic ? 'COFFEEMAN' : 'Сумма заказа — ' + rubles.format(offer.amount);
-      orderTipMessage.textContent = automatic ? 'Для команды кофейни' : 'Чаевые — ' + rubles.format(offer.tipAmount);
+      orderTipOrder.textContent = automatic ? 'COFFEEMAN' : 'Ваш заказ на сумму ' + rubles.format(amountKopecks / 100);
+      orderTipMessage.textContent = automatic ? 'Для команды кофейни' : 'Выберите процент от суммы чека.';
       orderTipActions.hidden = false;
-      orderTipQR.hidden = true;
-      orderTipRetry.hidden = true;
+      orderTipPercentages.hidden = automatic;
+      orderTipDecline.hidden = automatic;
+      orderTipAutoActions.hidden = !automatic;
+      if (!automatic) {
+        for (const button of orderTipButtons) {
+          const kopecks = Math.round(amountKopecks * Number(button.dataset.orderTipPercent) / 100);
+          button.disabled = kopecks < 1;
+          button.querySelector('span').textContent = rubles.format(kopecks / 100);
+        }
+      }
+      setOrderTipVisual('photo');
       showScreen('order-tip-screen');
       if (!automatic) orderTipTitle.focus({preventScroll: true});
       orderTipTimer = setTimeout(() => resetToIdle(false), automatic ? 15000 : 180000);
     }
 
-    document.getElementById('order-tip-yes').onclick = () => {
-      if (activeTip?.automatic) window.triggerMagicTipScreen();
-      else startOrderTipPayment();
-    };
-    orderTipRetry.onclick = startOrderTipPayment;
-    document.getElementById('order-tip-no').onclick = () => showTipThanks('До встречи в COFFEEMAN!');
+    for (const button of orderTipButtons) {
+      button.onclick = () => startOrderTipPayment(Number(button.dataset.orderTipPercent));
+    }
+    document.getElementById('order-tip-yes').onclick = () => window.triggerMagicTipScreen();
+    document.getElementById('order-tip-dismiss').onclick = () => resetToIdle(false);
+    orderTipRetry.onclick = () => startOrderTipPayment();
+    orderTipDecline.onclick = () => showTipThanks('До встречи в COFFEEMAN!');
 
     function generateUUID() {
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -1601,8 +1720,12 @@
       hideNfcGlow();
       showScreen('magic-tip-screen');
       
-      // select 50 default
-      window.selectMagicTip(50, document.querySelector('.magic-tip-btn'));
+      document.getElementById('magic-tip-photo').hidden = false;
+      document.getElementById('magic-tip-qr-area').hidden = true;
+      document.querySelectorAll('.magic-tip-btn').forEach(button => {
+        button.classList.remove('selected');
+        button.setAttribute('aria-pressed', 'false');
+      });
       
       let timeLeft = 180;
       const timerEl = document.getElementById('magic-timer-val');
@@ -1628,6 +1751,8 @@
         button.setAttribute('aria-pressed', String(selected));
       });
       document.getElementById('magic-tip-display-val').textContent = rubles.format(amount);
+      document.getElementById('magic-tip-photo').hidden = true;
+      document.getElementById('magic-tip-qr-area').hidden = false;
 
       const loader = document.getElementById('magic-qr-loader');
       const errorBox = document.getElementById('magic-qr-error');
@@ -2023,9 +2148,19 @@
 
     let swipeStart;
     let lastSwipeAt = 0;
+    let lastGuestActivity = Date.now();
+    document.addEventListener('pointerdown', () => { lastGuestActivity = Date.now(); }, {passive: true});
     slideContainer.addEventListener('pointerdown', event => {
       if (event.isPrimary && event.button === 0 && !event.target.closest('button, a')) {
         swipeStart = { x: event.clientX, y: event.clientY, pointer: event.pointerId };
+      }
+    });
+    slideContainer.addEventListener('pointermove', event => {
+      if (swipeStart?.pointer !== event.pointerId || slideContainer.hasPointerCapture(event.pointerId)) return;
+      const x = event.clientX - swipeStart.x;
+      const y = event.clientY - swipeStart.y;
+      if (Math.abs(x) >= 10 && Math.abs(x) > Math.abs(y) * 1.2) {
+        slideContainer.setPointerCapture(event.pointerId);
       }
     });
     slideContainer.addEventListener('pointerup', event => {
@@ -2033,12 +2168,21 @@
       const x = event.clientX - swipeStart.x;
       const y = event.clientY - swipeStart.y;
       swipeStart = null;
-      if (Math.abs(x) >= 65 && Math.abs(x) > Math.abs(y) * 1.45) {
+      if (Math.abs(x) >= 40 && Math.abs(x) > Math.abs(y) * 1.3) {
         lastSwipeAt = Date.now();
         advanceSlide(x < 0 ? 1 : -1);
       }
     });
     slideContainer.addEventListener('pointercancel', () => { swipeStart = null; });
+    slideContainer.addEventListener('lostpointercapture', event => {
+      if (event.target === slideContainer) swipeStart = null;
+    });
+    idleScreen.addEventListener('keydown', event => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      lastGuestActivity = Date.now();
+      advanceSlide(event.key === 'ArrowRight' ? 1 : -1);
+    });
 
     function startIdleCycle() {
       clearTimeout(idleTimeout);
@@ -2059,12 +2203,18 @@
       if (nfcGlowRight) nfcGlowRight.classList.add('hidden');
     }
 
-    setInterval(() => {
-      if (!permanentTipActive && idleScreen.classList.contains('active') &&
-          !isSuccessActive && !isMagicActive && !isPromoActive && syrupsModal.classList.contains('hidden')) {
-        showOrderTip({automatic: true}, true);
-      }
-    }, 60000);
+    function scheduleAutomaticTips(delay) {
+      setTimeout(() => {
+        const idle = document.visibilityState === 'visible' && idleScreen.classList.contains('active');
+        if (idle && Date.now() - lastGuestActivity >= 12000 && !permanentTipActive &&
+            !isSuccessActive && !isMagicActive && !isPromoActive && syrupsModal.inert &&
+            document.getElementById('secret-admin-modal').classList.contains('hidden')) {
+          showOrderTip({}, true);
+        }
+        scheduleAutomaticTips(120000 + Math.random() * 120000);
+      }, delay);
+    }
+    scheduleAutomaticTips(120000);
 
     function formatTime(seconds) {
       const m = Math.floor(seconds / 60);
