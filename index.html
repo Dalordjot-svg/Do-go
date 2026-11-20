@@ -6,8 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#1b1230">
-  <title>COFFEEMAN • Vice Nights — Экран гостя</title>
+  <meta name="theme-color" content="#f5f5f7">
+  <title>COFFEEMAN • Simply Good — Экран гостя</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -1099,6 +1099,77 @@ button:not(:disabled):active{transform:scale(.97)}
 @media(max-width:720px){body>header{border-radius:14px;padding:10px!important}#idle-screen .slide-stage{border-radius:20px!important}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
+<style id="coffeeman-cupertino-v2">
+:root{--cm-bg:#f5f5f7;--cm-ink:#1d1d1f;--cm-muted:#6e6e73;--cm-blue:#0071e3;--cm-border:#e5e5e9}
+html{background:var(--cm-bg)!important}
+body{background:#f5f5f7!important;color:var(--cm-ink)!important;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif!important}
+body:before,body:after,.stage-atmosphere{display:none!important}
+body>header{background:#ffffffeb!important;color:#1d1d1f!important;border:1px solid #e7e7eb!important;border-radius:20px!important;box-shadow:0 8px 32px #0000000b!important;backdrop-filter:blur(22px)!important}
+body>header *,body>header .brand-title{color:#1d1d1f!important;text-shadow:none!important}
+body>header button{background:#0071e3!important;color:white!important;border:0!important;box-shadow:none!important}
+body>header button *{color:white!important}
+body>footer{color:#6e6e73!important;border-color:#e5e5e9!important}
+#idle-screen:before{display:none!important}
+#idle-screen #slide-container,#idle-screen .slide-stage{background:#fff!important;border:1px solid #e8e8ed!important;border-radius:34px!important;box-shadow:0 18px 65px #00000012!important}
+#idle-screen .idle-cta{background:#fff!important;border:1px solid #e5e5e9!important;color:#1d1d1f!important;box-shadow:0 5px 20px #00000009}
+#idle-screen .idle-cta *{color:#1d1d1f!important}
+#idle-screen .slide-progress-track{background:#e4e4e9!important}
+#idle-screen .slide-progress-bar{background:#0071e3!important;box-shadow:none!important}
+#idle-screen .slide-dot{background:#d1d1d6!important}
+#idle-screen .slide-dot.active{background:#0071e3!important}
+#idle-neon-banner{background:#fff!important;border:1px solid #e5e5e9!important;color:#6e6e73!important;box-shadow:0 5px 18px #00000009}
+.neon-story{background:radial-gradient(circle at 80% 12%,#e3f0ff,transparent 44%),linear-gradient(135deg,#fff,#f5f5f7)!important}
+.neon-story:before{display:none!important}
+.neon-story .neon-kicker{color:#0071e3!important;letter-spacing:.12em!important}
+.neon-story h2{color:#1d1d1f!important;text-shadow:none!important;font-weight:800!important;letter-spacing:-.065em!important}
+.neon-story h2 span{color:#0071e3!important;text-shadow:none!important}
+.neon-story p{color:#6e6e73!important}
+.neon-story button,.neon-story .neon-duel button{background:#0071e3!important;color:white!important;box-shadow:0 8px 25px #0071e32b!important}
+.neon-story .neon-duel button:nth-child(2){background:#1d1d1f!important}
+#payment-screen,#magic-tip-screen,#magic-thanks-screen,#success-screen,#special-promo-screen{filter:none!important}
+#payment-screen .glass,#magic-tip-screen .glass,.glass{background:#ffffffeb!important;border:1px solid #e5e5e9!important;box-shadow:0 14px 45px #00000012!important;color:#1d1d1f!important}
+#payment-screen .glass *,#magic-tip-screen .glass *{color:#1d1d1f!important}
+#payment-screen h2,#magic-tip-screen h2,#magic-thanks-screen h2,#success-screen h2{color:#1d1d1f!important;text-shadow:none!important}
+.gold-text{background:none!important;color:#0071e3!important;-webkit-text-fill-color:#0071e3!important}
+.btn-gold,.btn-coral{background:#0071e3!important;color:white!important;border:0!important;box-shadow:0 8px 22px #0071e32b!important}
+.btn-ghost{background:#fff!important;color:#1d1d1f!important;border:1px solid #d9d9df!important}
+#permanent-tip-display{background:radial-gradient(circle at 70% 12%,#e6f1ff,transparent 44%),#f5f5f7!important;color:#1d1d1f!important}
+#permanent-tip-display:before{display:none!important}
+#permanent-tip-display .pt-label,#permanent-tip-display h2,#permanent-tip-display .pt-desc,#permanent-tip-display .pt-meta,#permanent-tip-display .pt-recipient-hint{color:#1d1d1f!important}
+#permanent-tip-display h2 span{color:#0071e3!important}
+#permanent-tip-display .pt-amounts button,#permanent-tip-display .pt-recipient button{background:#fff!important;border:1px solid #dedee4!important;color:#1d1d1f!important;box-shadow:0 6px 22px #00000009!important}
+#permanent-tip-display .pt-amounts button.selected,#permanent-tip-display .pt-recipient button.selected{background:#0071e3!important;color:white!important;border-color:#0071e3!important}
+#permanent-tip-display .pt-custom input{background:#fff!important;border:1px solid #d2d2d7!important;color:#1d1d1f!important}
+#permanent-tip-display .pt-custom button{background:#0071e3!important;color:#fff!important}
+#permanent-tip-display .pt-fact{background:#fff!important;color:#1d1d1f!important;border:1px solid #e5e5e9!important}
+#permanent-tip-display .pt-fact b{color:#0071e3!important}
+#permanent-tip-display .pt-qr-card{background:#fff!important;border:1px solid #e5e5e9!important;box-shadow:0 22px 65px #00000013!important}
+#permanent-tip-display .pt-qr-card:before{display:none!important}
+#permanent-tip-display .pt-pill{background:#fff!important;border:1px solid #e5e5e9!important;color:#1d1d1f!important}
+#permanent-tip-display .pt-status{color:#6e6e73!important}
+#permanent-tip-display .pt-retry{background:#0071e3!important;color:#fff!important}
+button{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease,background .28s ease!important}
+button:not(:disabled):hover{transform:translateY(-2px)}
+button:not(:disabled):active{transform:scale(.97)}
+.cm-apple-hero{height:100%;min-height:320px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:clamp(24px,5vw,60px);background:radial-gradient(circle at 75% 12%,#e1efff,transparent 42%),#fff;color:#1d1d1f;overflow:hidden;position:relative}
+.cm-apple-hero .cm-kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#0071e3}
+.cm-apple-hero h2{font-size:clamp(35px,6.5vw,84px);font-weight:850;letter-spacing:-.075em;line-height:1.02;margin:15px 0;color:#1d1d1f}
+.cm-apple-hero h2 span{color:#0071e3}
+.cm-apple-hero p{max-width:670px;font-size:clamp(15px,1.7vw,21px);line-height:1.55;color:#6e6e73}
+.cm-apple-hero button{background:#0071e3;border:0;color:#fff;padding:15px 25px;border-radius:999px;font-weight:750;margin-top:22px;box-shadow:0 12px 30px #0071e32a}
+.cm-apple-hero .cm-choice{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.cm-apple-hero .cm-choice button:nth-child(2){background:#1d1d1f}
+.cm-apple-hero .cm-orb{position:absolute;right:5%;top:8%;width:clamp(75px,15vw,180px);height:clamp(75px,15vw,180px);border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff,#b3d6ff 35%,#6eabf4 75%,#3978ce);filter:drop-shadow(0 18px 28px #0071e326);animation:cmFloat 6s ease-in-out infinite;opacity:.7}
+.cm-apple-hero>*:not(.cm-orb){z-index:1}
+@keyframes cmFloat{50%{transform:translateY(-18px) rotate(10deg)}}
+@keyframes cmReveal{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.cm-apple-hero .cm-kicker{animation:cmReveal .7s both}
+.cm-apple-hero h2{animation:cmReveal .85s .12s both}
+.cm-apple-hero p{animation:cmReveal .85s .25s both}
+.cm-apple-hero button{animation:cmReveal .85s .38s both}
+@media(max-width:760px){.cm-apple-hero{min-height:310px}.cm-apple-hero .cm-orb{opacity:.25}#permanent-tip-display .pt-shell{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:reduce){.cm-apple-hero *,button{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body id="screen-body" class="text-cream selection:bg-gold/30 selection:text-ink font-sans relative">
 
@@ -1161,7 +1232,7 @@ button:not(:disabled):active{transform:scale(.97)}
     <!-- ═════════ 1. IDLE ═════════ -->
     <section id="idle-screen" class="screen-section active" onclick="handleIdleScreenClick(event)">
       <div id="idle-neon-banner" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:10px 16px;border:1px solid #ffb8d766;border-radius:16px;background:linear-gradient(100deg,#e8468d44,#21cfc733);font-size:clamp(11px,1.5vw,15px);font-weight:900;color:#ffe7ed">
-        <span>🌴 COFFEEMAN · VICE NIGHTS</span><span>☕ КТО СЕГОДНЯ ТВОЙ ГЕРОЙ?</span>
+        <span>🌴 COFFEEMAN · SIMPLY GOOD</span><span>☕ КТО СЕГОДНЯ ТВОЙ ГЕРОЙ?</span>
       </div>
       <div id="slide-container" class="slide-stage min-h-[340px] md:min-h-[400px] max-h-[calc(100dvh-280px)]"></div>
       
@@ -2765,6 +2836,9 @@ button:not(:disabled):active{transform:scale(.97)}
         type: 'neon_fact', duration: 10500,
         html: `<div class="neon-story"><div class="neon-kicker">🧠 КОФЕЙНЫЙ ФАКТ</div><h2>КОФЕ — <span>ЭТО ПЛОД?</span></h2><p>Да! То, что мы называем кофейным зерном, на самом деле семя плода кофейного дерева.</p><button onclick="event.stopPropagation(); window.triggerMagicTipScreen()">☕ Поддержать команду</button></div>`
       };
+    const appleWelcomeSlide = {type:'apple_welcome',duration:11000,html:`<div class="cm-apple-hero"><div class="cm-orb"></div><div class="cm-kicker">COFFEEMAN · ВКУС В ДЕТАЛЯХ</div><h2>Хороший день<br><span>начинается здесь.</span></h2><p>Кофе, который хочется запомнить. Открой любимые вкусы и почувствуй разницу.</p><button onclick="event.stopPropagation();window.toggleSyrupsShelf(true)">Открыть вкусы ↗</button></div>`};
+    const appleDuelSlide = {type:'apple_duel',duration:11000,html:`<div class="cm-apple-hero"><div class="cm-orb"></div><div class="cm-kicker">КОМАНДА COFFEEMAN</div><h2>Кто сделал<br><span>твой день лучше?</span></h2><p>Бариста приготовил кофе. Официант подарил заботу. Выбери, кого хочешь поблагодарить.</p><div class="cm-choice"><button onclick="event.stopPropagation();window.chooseTipRecipient('barista')">☕ Бариста</button><button onclick="event.stopPropagation();window.chooseTipRecipient('waiter')">✨ Официант</button></div></div>`};
+    const appleFactSlide = {type:'apple_fact',duration:10500,html:`<div class="cm-apple-hero"><div class="cm-orb"></div><div class="cm-kicker">МИНУТА ЛЮБОПЫТСТВА</div><h2>Кофейное зерно —<br><span>это семя.</span></h2><p>Оно прячется внутри плода кофейного дерева. Даже у привычной чашки кофе есть неожиданная история.</p><button onclick="event.stopPropagation();window.triggerMagicTipScreen()">Поблагодарить команду ↗</button></div>`};
     function rebuildSlidesPool() {
       const generatedFacts = factsList.map(f => ({ html: buildFactHtml(f), type: 'fact', duration: 8500 }));
       const tipsTeaserSlide = {
@@ -2787,9 +2861,9 @@ button:not(:disabled):active{transform:scale(.97)}
         `
       };
       dynamicSlides = [
-        neonWelcomeSlide,
-        neonDuelSlide,
-        neonFactSlide,
+        appleWelcomeSlide,
+        appleDuelSlide,
+        appleFactSlide,
         promoNineChipsSlide,
         { html: getRandomGreetingHtml(), type: 'greeting', duration: 8500 },
         signatureMenuSlide,
