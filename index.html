@@ -6,8 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#100A08">
-  <title>COFFEEMAN • Customer Display</title>
+  <meta name="theme-color" content="#1b1230">
+  <title>COFFEEMAN • Vice Nights — Экран гостя</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -1070,6 +1070,35 @@
 @media(max-width:600px){.neon-story{min-height:300px;padding:20px}.neon-story h2{font-size:clamp(30px,9vw,52px)}.neon-story .neon-duel button{padding:11px 14px}}
 @media(prefers-reduced-motion:reduce){.neon-story{scroll-behavior:auto}}
 </style>
+<style id="vice-city-design-system">
+:root{--vice-pink:#ff69b7;--vice-cyan:#63f5ed;--vice-peach:#ffbd91;--vice-purple:#6f3c9b;--vice-night:#120d23}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 12% 5%,#67245455,transparent 42%),radial-gradient(ellipse at 94% 32%,#00a8b94a,transparent 40%),linear-gradient(145deg,#160d28,#131a31 54%,#160d24)!important;color:#fff4ec}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.16;background:repeating-linear-gradient(0deg,transparent 0 54px,#ff9bc2 55px 56px),repeating-linear-gradient(90deg,transparent 0 54px,#83f9ef 55px 56px);mask-image:linear-gradient(to top,#000,transparent 55%)}
+body>header,body>main,body>footer{position:relative;z-index:1}
+body>header{background:linear-gradient(110deg,#2e1644c9,#132c3acc)!important;border:1px solid #ff9acb55;border-radius:20px;padding:12px 18px!important;box-shadow:0 12px 36px #08091777;backdrop-filter:blur(22px)}
+body>header .brand-title{font-weight:950;letter-spacing:.07em;text-shadow:0 0 20px #ff6bb888}
+h1,h2,h3{letter-spacing:-.035em}
+button,a,[role="button"]{touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--vice-cyan)!important;outline-offset:3px}
+button:not(:disabled){transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+button:not(:disabled):active{transform:scale(.97)}
+.btn-gold,.btn-coral{background:linear-gradient(125deg,#ff81b9,#ffd39e)!important;color:#29132f!important;border:1px solid #fff2cf7d!important;box-shadow:0 8px 24px #ff5e9a4d!important}
+.btn-ghost{border-color:#8bf5ef80!important;background:#3b265a55!important}
+.gold-text{background:linear-gradient(100deg,#ffbbcf,#ffdb98,#8df5ed)!important;background-clip:text!important;-webkit-background-clip:text!important;color:transparent!important}
+.glass{background:linear-gradient(145deg,#40244d99,#152d3a99)!important;border:1px solid #ffa9d358!important;box-shadow:0 16px 42px #08091750}
+.pill-badge,.stamp-badge{box-shadow:0 8px 30px #ff67b266!important}
+#idle-screen .slide-stage{border-radius:30px!important;box-shadow:0 22px 75px #f14e9c40,0 0 0 1px #84f8ef44!important}
+#payment-screen,#magic-tip-screen,#magic-thanks-screen,#success-screen,#special-promo-screen{filter:drop-shadow(0 10px 35px #0c0a1a50)}
+#payment-screen .qr-paper,#magic-tip-screen .qr-paper{box-shadow:0 20px 65px #05060f77!important;border:4px solid #ffb6d0!important}
+#permanent-tip-display{background:radial-gradient(ellipse at 12% 10%,#863c74,#25172d 48%,#102d38)!important}
+#permanent-tip-display .pt-qr-card{border:4px solid #ffa6d1;box-shadow:0 20px 80px #0009,0 0 60px #ff78ba44!important}
+#permanent-tip-display .pt-amounts button.selected{background:linear-gradient(120deg,#ff87c6,#ffe0a3)!important}
+#permanent-tip-display .pt-recipient button.selected{background:linear-gradient(120deg,#74f8e7,#d2e8ff)!important}
+#permanent-tip-display .pt-fact{border-color:#8af6ed66!important}
+@media(max-width:720px){body>header{border-radius:14px;padding:10px!important}#idle-screen .slide-stage{border-radius:20px!important}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body id="screen-body" class="text-cream selection:bg-gold/30 selection:text-ink font-sans relative">
 
@@ -1132,7 +1161,7 @@
     <!-- ═════════ 1. IDLE ═════════ -->
     <section id="idle-screen" class="screen-section active" onclick="handleIdleScreenClick(event)">
       <div id="idle-neon-banner" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:10px 16px;border:1px solid #ffb8d766;border-radius:16px;background:linear-gradient(100deg,#e8468d44,#21cfc733);font-size:clamp(11px,1.5vw,15px);font-weight:900;color:#ffe7ed">
-        <span>🌴 COFFEEMAN AFTER DARK</span><span>☕ КТО СЕГОДНЯ ТВОЙ ГЕРОЙ?</span>
+        <span>🌴 COFFEEMAN · VICE NIGHTS</span><span>☕ КТО СЕГОДНЯ ТВОЙ ГЕРОЙ?</span>
       </div>
       <div id="slide-container" class="slide-stage min-h-[340px] md:min-h-[400px] max-h-[calc(100dvh-280px)]"></div>
       
@@ -1743,7 +1772,7 @@
           if (data.date === today) return data;
         } catch (e) {}
       }
-      return { date: today, count: 47 + Math.floor(Math.random() * 20) };
+      return { date: today, count: 0 };
     }
     function recordTipStat() {
       const stats = getTipStats();
