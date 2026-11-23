@@ -252,6 +252,71 @@
     .story-content > :nth-child(n+4) { animation: settle .55s .24s both }
     .story--essay .story-content { justify-items: center; text-align: center; margin-inline: auto }
     .story--essay .description { max-width: 45ch }
+    .story--loyalty, .story--gratitude { padding-block: clamp(10px, 2.2vh, 36px) }
+    .story--loyalty .story-content, .story--gratitude .story-content {
+      width: 100%;
+      max-width: 1120px;
+      gap: clamp(10px, 2.2vh, 28px);
+      padding: clamp(16px, min(4vw, 5vh), 60px);
+      border-radius: var(--bento-radius);
+      background: var(--leaf);
+    }
+    .story--gratitude .story-content { background: var(--sand) }
+    .story--loyalty .headline, .story--gratitude .headline {
+      font-size: clamp(2.15rem, min(7vw, 9vh), 6.5rem);
+      line-height: 1.02;
+      text-wrap: balance;
+    }
+    .story--loyalty .headline span { display: block; color: var(--accent) }
+    .story--loyalty .description, .story--gratitude .description {
+      max-width: 46ch;
+      color: var(--ink);
+      font-size: clamp(1.125rem, min(2.75vw, 4.2vh), 2.3rem);
+      line-height: 1.24;
+      text-wrap: balance;
+    }
+    .story--gratitude .gratitude-signature { color: var(--accent); font-weight: 700 }
+    .loyalty-ribbon {
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      align-items: center;
+      column-gap: clamp(3px, .9vw, 14px);
+      width: min(100%, 760px);
+      padding: clamp(7px, 1.6vh, 24px) 0;
+    }
+    .loyalty-ribbon::before {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      top: 50%;
+      border-top: 2px dashed var(--accent);
+      z-index: -1;
+    }
+    .loyalty-chip {
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      background: var(--linen);
+      color: var(--ink);
+      font-size: clamp(.75rem, 2.4vw, 1.65rem);
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+      animation: loyalty-wave 4.2s ease-in-out infinite;
+      animation-delay: calc(var(--chip-index) * 140ms);
+    }
+    .loyalty-chip:last-child {
+      background: var(--accent-fill);
+      color: var(--on-accent);
+      box-shadow: 0 0 0 3px var(--linen);
+    }
+    @keyframes loyalty-wave {
+      0%, 28%, 100% { transform: translateY(0) }
+      13% { transform: translateY(-12%) }
+    }
     .story--history { padding-block: clamp(12px, 3vh, 52px) }
     .story--history .story-content { width: min(100%, 760px) }
     .story--history .headline { font-size: clamp(1.6rem, 4.6vw, 4.65rem); line-height: 1.06 }
@@ -609,7 +674,7 @@
       place-content: center;
       width: 100%;
       height: clamp(150px, 31dvh, 330px);
-      touch-action: pan-y pinch-zoom;
+      touch-action: none;
       cursor: grab;
     }
     #syrups-drum.dragging { cursor: grabbing }
@@ -772,6 +837,12 @@
       .amount { font-size: clamp(2.6rem, 9vw, 6rem) }
       .code-area canvas { width: clamp(150px, 40dvh, 220px) }
       #syrup-detail-panel { min-height: 0 }
+      #slide-container:has(> :is(.story--loyalty, .story--gratitude)) { min-height: 0 }
+      .story--loyalty .story-content, .story--gratitude .story-content { gap: 6px; padding: 10px 16px }
+      .story--loyalty .headline, .story--gratitude .headline { font-size: clamp(1.9rem, 7.5vh, 3rem) }
+      .story--loyalty .headline span { display: inline }
+      .story--loyalty .description, .story--gratitude .description { max-width: 64ch; line-height: 1.16 }
+      .loyalty-ribbon { max-width: 480px }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important }
@@ -1347,11 +1418,25 @@
 
     const loyaltySlide = {
       type: 'loyalty',
-      duration: 10000,
-      html: `<article class="story story--image story--cutout">${storyPhoto()}<div class="story-content">
-        <p class="eyebrow accent">Карта лояльности</p>
-        <h2 class="headline">Десятый кофе — в подарок.</h2>
-        <p class="description">Соберите девять отметок. Карту можно взять на кассе.</p>
+      duration: 14000,
+      html: `<article class="story story--essay story--loyalty"><div class="story-content">
+        <h2 class="headline">9 фишек <span>10-й кофе бесплатно</span></h2>
+        <div class="loyalty-ribbon" aria-hidden="true">
+          ${Array.from({length: 10}, (_, index) => `<span class="loyalty-chip" style="--chip-index:${index}">${index + 1}</span>`).join('')}
+        </div>
+        <p class="description">Сохраняйте фишки со стаканчиков. Соберите 9 и получите кофе на любой вкус в подарок.</p>
+        <p class="description"><strong>Во всех кофейнях Coffee Man</strong></p>
+      </div></article>`
+    };
+
+    const gratitudeSlide = {
+      type: 'gratitude',
+      duration: 18000,
+      html: `<article class="story story--essay story--gratitude"><div class="story-content">
+        <h2 class="headline">Спасибо, что вы с нами!</h2>
+        <p class="description">Только благодаря вам наша кофейня смогла вырасти. Мы ценим каждого гостя. Заходите чаще — ваша поддержка помогает нам развиваться дальше.</p>
+        <p class="description">Спасибо, что заходите каждый день, заказываете кофе по утрам, делитесь сторис и пишете нам тёплые слова.</p>
+        <p class="description gratitude-signature">Вся команда Coffee Man</p>
       </div></article>`
     };
 
@@ -1467,9 +1552,10 @@
     let shelfFrame;
     let drag;
     let lastWheel = 0;
-    let lastDrumSwipeAt = 0;
+    let suppressDrumClick = false;
 
     function renderSyrupsDrum() {
+      cancelDrumDrag();
       drum.replaceChildren();
       activeDrumIndex = -1;
       document.getElementById('syrup-detail-panel').hidden = !syrupsData.length;
@@ -1493,7 +1579,7 @@
         name.textContent = item.name || 'Сироп';
         card.append(bottle, name);
         card.addEventListener('click', event => {
-          if (event.detail > 0 && Date.now() - lastDrumSwipeAt < 320) return;
+          if (event.detail > 0 && suppressDrumClick) return;
           drumPosition += nearestDrumOffset(index);
           updateDrum3DEffect();
           resetShelfIdle();
@@ -1581,8 +1667,12 @@
       window.scrollSyrupDrum(Math.sign(event.deltaX || event.deltaY));
     }, { passive: false });
     drum.addEventListener('pointerdown', event => {
-      if (event.isPrimary && event.button === 0) {
-        drag = { x: event.clientX, y: event.clientY, position: drumPosition, pointer: event.pointerId, moved: false };
+      if (event.isPrimary && event.button === 0 && !drag) {
+        suppressDrumClick = false;
+        if (syrupsData.length < 2) return;
+        const target = event.target;
+        target.setPointerCapture(event.pointerId);
+        drag = { target, x: event.clientX, y: event.clientY, position: drumPosition, pointer: event.pointerId, moved: false };
       }
     });
     drum.addEventListener('pointermove', event => {
@@ -1590,54 +1680,65 @@
       const delta = drag.x - event.clientX;
       const vertical = drag.y - event.clientY;
       if (!drag.moved) {
-        if (Math.abs(delta) < 9 || Math.abs(delta) < Math.abs(vertical) * 1.2) return;
-        drum.setPointerCapture(event.pointerId);
+        if (Math.abs(delta) < 8 || Math.abs(delta) < Math.abs(vertical)) return;
         drag.moved = true;
+        drum.classList.add('dragging');
       }
       resetShelfIdle();
-      drum.classList.add('dragging');
       drumPosition = drag.position + delta / 95;
       updateDrum3DEffect();
     });
 
-    function finishDrumDrag(event, canceled = false) {
+    function cancelDrumDrag() {
+      if (!drag) return;
+      const {target, pointer, position} = drag;
+      drag = null;
+      drum.classList.remove('dragging');
+      if (target.hasPointerCapture(pointer)) target.releasePointerCapture(pointer);
+      drumPosition = position;
+      updateDrum3DEffect();
+    }
+    drum.addEventListener('pointerup', event => {
       if (drag?.pointer !== event.pointerId) return;
       const start = drag;
       drag = null;
-      if (!start.moved) return;
-      lastDrumSwipeAt = Date.now();
       drum.classList.remove('dragging');
       const delta = start.x - event.clientX;
-      const distance = Math.round(drumPosition - start.position);
-      drumPosition = start.position + (canceled ? 0 : distance || (Math.abs(delta) >= 24 ? Math.sign(delta) : 0));
+      const vertical = start.y - event.clientY;
+      const swiped = Math.abs(delta) >= 24 && (start.moved || Math.abs(delta) >= Math.abs(vertical));
+      if (!start.moved && !swiped) return;
+      suppressDrumClick = true;
+      const steps = swiped ? Math.sign(delta) * Math.max(1, Math.round(Math.abs(delta) / 95)) : 0;
+      drumPosition = start.position + steps;
       updateDrum3DEffect();
-    }
-    drum.addEventListener('pointerup', event => finishDrumDrag(event));
-    drum.addEventListener('pointercancel', event => finishDrumDrag(event, true));
+    });
+    drum.addEventListener('pointercancel', event => {
+      if (drag?.pointer === event.pointerId) cancelDrumDrag();
+    });
     drum.addEventListener('lostpointercapture', event => {
-      if (event.target === drum) finishDrumDrag(event, true);
+      if (drag?.pointer === event.pointerId) cancelDrumDrag();
     });
     window.addEventListener('resize', () => {
       if (!syrupsModal.classList.contains('hidden')) updateDrum3DEffect();
     });
 
     function updateGuestInteractivity() {
-      const blocked = permanentTipActive || !syrupsModal.inert;
-      guestMain.inert = blocked;
-      headerActions.inert = blocked;
+      const blocked = permanentTipActive || !syrupsModal.hasAttribute('inert');
+      guestMain.toggleAttribute('inert', blocked);
+      headerActions.toggleAttribute('inert', blocked);
     }
 
     window.toggleSyrupsShelf = function(show) {
       if (show && (!idleScreen.classList.contains('active') || permanentTipActive)) return;
-      if (!show && syrupsModal.inert) return;
-      if (show && !syrupsModal.inert) {
-        resetShelfIdle();
+      const isOpen = !syrupsModal.hasAttribute('inert');
+      if (show === isOpen) {
+        if (show) resetShelfIdle();
         return;
       }
       clearTimeout(shelfIdleTimer);
       clearTimeout(shelfCloseTimer);
       cancelAnimationFrame(shelfFrame);
-      syrupsModal.inert = !show;
+      syrupsModal.toggleAttribute('inert', !show);
       updateGuestInteractivity();
       if (show) {
         shelfTrigger = document.activeElement;
@@ -1650,6 +1751,7 @@
         });
         resetShelfIdle();
       } else {
+        cancelDrumDrag();
         syrupsModal.classList.remove('opacity-100');
         shelfCloseTimer = setTimeout(() => syrupsModal.classList.add('hidden'), 300);
         if (idleScreen.classList.contains('active') && !permanentTipActive &&
@@ -2395,7 +2497,7 @@
 
     function rebuildSlidesPool() {
       const activeType = dynamicSlides[currentSlide]?.type;
-      dynamicSlides = [welcomeSlide, ...coffeemanHistorySlides, ...customAdSlides, loyaltySlide, signatureMenuSlide, tipStorySlide, ...factSlides];
+      dynamicSlides = [welcomeSlide, loyaltySlide, gratitudeSlide, ...coffeemanHistorySlides, ...customAdSlides, signatureMenuSlide, tipStorySlide, ...factSlides];
       if (activeType) {
         const previousIndex = dynamicSlides.findIndex(slide => slide.type === activeType);
         currentSlide = previousIndex < 0 ? 0 : previousIndex;
@@ -2515,7 +2617,7 @@
       setTimeout(() => {
         const idle = document.visibilityState === 'visible' && idleScreen.classList.contains('active');
         if (idle && Date.now() - lastGuestActivity >= 12000 && !permanentTipActive &&
-            !isSuccessActive && !isMagicActive && !isPromoActive && syrupsModal.inert &&
+            !isSuccessActive && !isMagicActive && !isPromoActive && syrupsModal.hasAttribute('inert') &&
             document.getElementById('secret-admin-modal').classList.contains('hidden')) {
           showOrderTip({}, true);
         }
