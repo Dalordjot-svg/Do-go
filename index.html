@@ -124,7 +124,10 @@
     }
     .wordmark {
       display: inline-flex;
+      align-items: center;
       gap: 10px;
+      min-height: 44px;
+      padding: 0;
       align-items: center;
       color: var(--accent);
       font-size: clamp(.79rem, 1.35vw, 1.08rem);
@@ -854,12 +857,27 @@
     #permanent-tip-placeholder[data-loading=true] + .brew-loader { display: grid }
     #permanent-tip-amount, #magic-tip-display-val { font-weight: 700; font-size: clamp(1.5rem, 3vw, 2.4rem); letter-spacing: -.04em }
 
-    #secret-admin-modal { z-index: 14; align-items: center; justify-content: center; padding: 24px }
-    #secret-pin-box, #secret-config-box { width: min(100%, 420px); gap: 13px; flex-direction: column }
-    #secret-pin-box:not(.hidden) { display: flex }
-    #secret-pin-input { text-align: center; letter-spacing: .25em }
-    #secret-config-box label { display: grid; gap: 4px; color: var(--muted); font-size: .92rem }
-    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+    #secret-admin-modal {
+      width: min(480px, calc(100% - 24px));
+      max-height: calc(100dvh - 24px);
+      margin: auto;
+      padding: clamp(16px, 4vw, 28px);
+      border: 1px solid var(--soft-hover);
+      border-radius: var(--bento-radius);
+      background: var(--linen);
+      color: var(--ink);
+      overflow: auto;
+    }
+    #secret-admin-modal::backdrop { background: #15241dcc }
+    #secret-admin-modal .subheadline { font-size: clamp(1.55rem, 5vw, 2.5rem) }
+    #secret-admin-modal form { display: grid; gap: 12px }
+    #secret-admin-modal label { display: grid; gap: 5px; color: var(--muted); font-weight: 650 }
+    #secret-admin-modal input { width: 100%; min-width: 0 }
+    #secret-admin-modal :is(.problem, .admin-feedback):empty { display: none }
+    #secret-admin-modal .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px }
+    #secret-admin-modal .keypad button { min-height: 44px }
+    #admin-clear-pin { grid-column: span 2 }
+    #secret-admin-modal .shelf-header { margin-bottom: 12px }
     .toast {
       z-index: 20;
       position: fixed;
@@ -958,7 +976,7 @@
   <div id="nfc-glow-left" class="nfc-edge hidden" aria-hidden="true"></div>
   <div id="nfc-glow-right" class="nfc-edge hidden" aria-hidden="true"></div>
   <header class="site-header">
-    <span class="wordmark" onclick="registerSecretTap()">COFFEEMAN</span>
+    <button type="button" class="wordmark" id="admin-wordmark">COFFEEMAN</button>
     <div class="header-actions" id="header-actions">
       <button class="action secondary" id="guest-tips" type="button" onclick="triggerMagicTipScreen()">Чаевые</button>
       <button class="action primary" id="guest-flavors" type="button" onclick="toggleSyrupsShelf(true)">Сиропы <span aria-hidden="true"> →</span></button>
@@ -1169,35 +1187,60 @@
     </div>
   </section>
 
-  <div id="secret-admin-modal" class="surface-light hidden" role="dialog" aria-modal="true" aria-label="Настройки терминала">
-    <div id="secret-pin-box">
-      <h2 class="subheadline">Доступ к терминалу</h2>
-      <input type="password" id="secret-pin-input" maxlength="4" inputmode="numeric" aria-label="ПИН-код" autocomplete="off">
-      <p id="secret-pin-error" class="problem hidden" role="status">Неверный код</p>
-      <div class="keypad">
-        <button class="action" type="button" onclick="tapPin('1')">1</button>
-        <button class="action" type="button" onclick="tapPin('2')">2</button>
-        <button class="action" type="button" onclick="tapPin('3')">3</button>
-        <button class="action" type="button" onclick="tapPin('4')">4</button>
-        <button class="action" type="button" onclick="tapPin('5')">5</button>
-        <button class="action" type="button" onclick="tapPin('6')">6</button>
-        <button class="action" type="button" onclick="tapPin('7')">7</button>
-        <button class="action" type="button" onclick="tapPin('8')">8</button>
-        <button class="action" type="button" onclick="tapPin('9')">9</button>
-        <button class="text-action" type="button" onclick="clearPin()">Сброс</button>
-        <button class="action" type="button" onclick="tapPin('0')">0</button>
-        <button class="text-action" type="button" onclick="closeSecretModal()">Выход</button>
-      </div>
+  <dialog id="secret-admin-modal" aria-labelledby="secret-admin-title">
+    <div class="shelf-header">
+      <h2 id="secret-admin-title" class="subheadline" tabindex="-1">Вход в настройки</h2>
+      <button id="admin-close" class="icon-action" type="button" aria-label="Закрыть настройки">×</button>
     </div>
-    <div id="secret-config-box" class="hidden">
-      <div class="shelf-header"><h2 class="subheadline">Экран и СБП</h2><button class="icon-action" type="button" onclick="closeSecretModal()" aria-label="Закрыть настройки">×</button></div>
+    <form id="secret-pin-box">
+      <button id="admin-use-passkey" class="action primary" type="button" hidden>Войти с ключом доступа</button>
+      <p id="admin-passkey-hint" class="supporting" hidden>Face ID, отпечаток или код разблокировки устройства.</p>
+      <label for="secret-pin-input"><span id="admin-password-label">Пароль</span>
+        <input type="password" id="secret-pin-input" maxlength="128" autocomplete="current-password" required>
+      </label>
+      <div class="keypad" id="admin-pin-keypad" hidden>
+        <button class="action" type="button" data-admin-digit="1">1</button>
+        <button class="action" type="button" data-admin-digit="2">2</button>
+        <button class="action" type="button" data-admin-digit="3">3</button>
+        <button class="action" type="button" data-admin-digit="4">4</button>
+        <button class="action" type="button" data-admin-digit="5">5</button>
+        <button class="action" type="button" data-admin-digit="6">6</button>
+        <button class="action" type="button" data-admin-digit="7">7</button>
+        <button class="action" type="button" data-admin-digit="8">8</button>
+        <button class="action" type="button" data-admin-digit="9">9</button>
+        <button class="text-action" type="button" id="admin-clear-pin">Очистить</button>
+        <button class="action" type="button" data-admin-digit="0">0</button>
+      </div>
+      <p id="secret-pin-error" class="problem" role="status"></p>
+      <button class="action" type="submit">Войти по паролю</button>
+    </form>
+    <form id="admin-password-setup" hidden>
+      <label for="admin-new-password">Новый пароль
+        <input id="admin-new-password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required>
+      </label>
+      <label for="admin-confirm-password">Повторите пароль
+        <input id="admin-confirm-password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required>
+      </label>
+      <p class="supporting">Минимум 8 символов.</p>
+      <p id="admin-password-error" class="problem" role="status"></p>
+      <div class="inline-actions">
+        <button class="action primary" type="submit">Сохранить пароль</button>
+        <button class="text-action" id="admin-password-back" type="button" hidden>Назад</button>
+      </div>
+    </form>
+    <form id="secret-config-box" hidden>
       <label>Cloudflare Worker URL<input type="url" id="adm-cf-url" autocomplete="off"></label>
       <label>Shop ID<input type="text" id="adm-shop-id" autocomplete="off"></label>
       <label>Terminal ID<input type="text" id="adm-term-id" value="term_01" autocomplete="off"></label>
       <label>Secret Key<input type="password" id="adm-secret-key" autocomplete="off"></label>
-      <button class="action primary" type="button" onclick="saveSecretAdminConfig()">Сохранить</button>
-    </div>
-  </div>
+      <div class="inline-actions">
+        <button class="action primary" type="submit">Сохранить настройки</button>
+        <button class="text-action" id="admin-change-password" type="button">Сменить пароль</button>
+      </div>
+      <button class="action" id="admin-enroll-passkey" type="button" hidden>Подключить ключ доступа</button>
+      <p id="admin-passkey-status" class="supporting admin-feedback" role="status"></p>
+    </form>
+  </dialog>
 
   <section id="permanent-tip-display" class="surface-light" aria-labelledby="permanent-tip-title">
     <div class="split">
@@ -1332,91 +1375,447 @@
     /* ═══════════════════════════════════════════
        SECRET ADMIN
     ═══════════════════════════════════════════ */
-    let secretTapCount = 0;
-    let secretTapTimer = null;
-    let enteredPin = "";
+    const adminPasskey = (() => {
+      const storagePrefix = 'coffeeman.guest.admin.passkey.v1.';
+      const encode = new TextEncoder();
+      const decode = new TextDecoder();
 
-    window.registerSecretTap = function() {
-      secretTapCount++;
-      if (secretTapTimer) clearTimeout(secretTapTimer);
-      if (secretTapCount >= 5) { secretTapCount = 0; openSecretModal(); }
-      else { secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1800); }
-    };
+      function base64url(bytes) {
+        return btoa(String.fromCharCode(...new Uint8Array(bytes)))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
 
-    function openSecretModal() {
-      enteredPin = "";
-      document.getElementById('secret-pin-input').value = "";
-      document.getElementById('secret-pin-error').classList.add('hidden');
-      document.getElementById('secret-pin-box').classList.remove('hidden');
-      document.getElementById('secret-config-box').classList.add('hidden');
-      document.getElementById('secret-config-box').classList.remove('flex');
-      const modal = document.getElementById('secret-admin-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      function fromBase64url(value) {
+        return Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), char => char.charCodeAt(0));
+      }
+
+      function readEnrollment(terminal) {
+        try {
+          const enrollment = JSON.parse(localStorage.getItem(storagePrefix + terminal));
+          const encoded = /^[A-Za-z0-9_-]+$/;
+          return typeof enrollment?.id === 'string' && typeof enrollment.publicKey === 'string' &&
+            encoded.test(enrollment.id) && encoded.test(enrollment.publicKey) ? enrollment : null;
+        } catch {
+          return null;
+        }
+      }
+
+      async function isAvailable() {
+        if (!window.isSecureContext || !window.crypto?.subtle || !navigator.credentials ||
+            typeof window.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return false;
+        try {
+          return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        } catch {
+          return false;
+        }
+      }
+
+      function verifyClientData(credential, expectedType, challenge) {
+        if (credential?.type !== 'public-key' || credential.authenticatorAttachment === 'cross-platform') {
+          throw new Error('Требуется ключ доступа этого устройства');
+        }
+        const {clientDataJSON} = credential.response;
+        const clientData = JSON.parse(decode.decode(clientDataJSON));
+        if (clientData.type !== expectedType || clientData.origin !== location.origin || clientData.crossOrigin ||
+            clientData.challenge !== base64url(challenge)) throw new Error('Недействительный ответ ключа доступа');
+      }
+
+      async function verifyAuthenticatorData(authenticatorData) {
+        const bytes = new Uint8Array(authenticatorData);
+        const rpHash = new Uint8Array(await crypto.subtle.digest('SHA-256', encode.encode(location.hostname)));
+        const userPresentAndVerified = (bytes[32] & 0x05) === 0x05;
+        if (bytes.length < 37 || !rpHash.every((byte, index) => byte === bytes[index]) || !userPresentAndVerified) {
+          throw new Error('Устройство не подтвердило владельца ключа доступа');
+        }
+      }
+
+      function signatureForWebCrypto(signature) {
+        const der = new Uint8Array(signature);
+        if (der[0] !== 0x30 || der[1] !== der.length - 2 || der.length > 72) {
+          throw new Error('Недействительная подпись ключа доступа');
+        }
+        // WebAuthn ES256 signatures use DER. Web Crypto expects two padded 32-byte integers.
+        const raw = new Uint8Array(64);
+        let offset = 2;
+        for (let index = 0; index < 2; index++) {
+          const length = der[offset + 1];
+          const start = offset + 2;
+          const end = start + length;
+          if (der[offset] !== 0x02 || !length || end > der.length || (der[start] & 0x80) !== 0 ||
+              (length > 1 && der[start] === 0 && !(der[start + 1] & 0x80))) {
+            throw new Error('Недействительная подпись ключа доступа');
+          }
+          const firstByte = length > 1 && der[start] === 0 ? start + 1 : start;
+          const integer = der.subarray(firstByte, end);
+          if (integer.length > 32) throw new Error('Недействительная подпись ключа доступа');
+          raw.set(integer, (index + 1) * 32 - integer.length);
+          offset = end;
+        }
+        if (offset !== der.length) throw new Error('Недействительная подпись ключа доступа');
+        return raw;
+      }
+
+      function importPublicKey(bytes) {
+        return crypto.subtle.importKey('spki', bytes, {name: 'ECDSA', namedCurve: 'P-256'}, false, ['verify']);
+      }
+
+      async function enroll(terminal, signal) {
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const userId = crypto.getRandomValues(new Uint8Array(32));
+        const existing = readEnrollment(terminal);
+        const credential = await navigator.credentials.create({
+          signal,
+          publicKey: {
+            challenge,
+            rp: {id: location.hostname, name: 'COFFEEMAN'},
+            user: {id: userId, name: terminal, displayName: `Настройки COFFEEMAN · ${terminal}`},
+            pubKeyCredParams: [{type: 'public-key', alg: -7}],
+            authenticatorSelection: {authenticatorAttachment: 'platform', residentKey: 'preferred', userVerification: 'required'},
+            excludeCredentials: existing ? [{type: 'public-key', id: fromBase64url(existing.id)}] : [],
+            attestation: 'none',
+            timeout: 60000
+          }
+        });
+        verifyClientData(credential, 'webauthn.create', challenge);
+        const {response} = credential;
+        const key = response.getPublicKey?.();
+        const authenticatorData = response.getAuthenticatorData?.();
+        if (response.getPublicKeyAlgorithm?.() !== -7 || !key || !authenticatorData) {
+          throw new Error('Браузер не поддерживает настройку этого ключа доступа');
+        }
+        await verifyAuthenticatorData(authenticatorData);
+        await importPublicKey(key);
+        if (signal?.aborted) throw new DOMException('Запрос ключа доступа отменён', 'AbortError');
+        localStorage.setItem(storagePrefix + terminal, JSON.stringify({
+          id: base64url(credential.rawId), publicKey: base64url(key)
+        }));
+      }
+
+      async function verify(terminal, signal) {
+        const enrollment = readEnrollment(terminal);
+        if (!enrollment) return false;
+        const challenge = crypto.getRandomValues(new Uint8Array(32));
+        const credential = await navigator.credentials.get({
+          signal,
+          publicKey: {
+            challenge,
+            rpId: location.hostname,
+            allowCredentials: [{type: 'public-key', id: fromBase64url(enrollment.id), transports: ['internal']}],
+            userVerification: 'required',
+            timeout: 60000
+          }
+        });
+        verifyClientData(credential, 'webauthn.get', challenge);
+        if (base64url(credential.rawId) !== enrollment.id) return false;
+        const {authenticatorData, clientDataJSON, signature} = credential.response;
+        await verifyAuthenticatorData(authenticatorData);
+        const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', clientDataJSON));
+        const signedData = new Uint8Array(authenticatorData.byteLength + digest.length);
+        signedData.set(new Uint8Array(authenticatorData));
+        signedData.set(digest, authenticatorData.byteLength);
+        const key = await importPublicKey(fromBase64url(enrollment.publicKey));
+        const matched = await crypto.subtle.verify(
+          {name: 'ECDSA', hash: 'SHA-256'}, key, signatureForWebCrypto(signature), signedData
+        );
+        if (signal?.aborted) throw new DOMException('Запрос ключа доступа отменён', 'AbortError');
+        return matched;
+      }
+
+      return {isAvailable, hasEnrollment: terminal => Boolean(readEnrollment(terminal)), enroll, verify};
+    })();
+
+    const adminDialog = document.getElementById('secret-admin-modal');
+    const adminTitle = document.getElementById('secret-admin-title');
+    const adminLogo = document.getElementById('admin-wordmark');
+    const adminLogin = document.getElementById('secret-pin-box');
+    const adminPasswordInput = document.getElementById('secret-pin-input');
+    const adminLoginError = document.getElementById('secret-pin-error');
+    const adminPasskeyButton = document.getElementById('admin-use-passkey');
+    const adminPasskeyHint = document.getElementById('admin-passkey-hint');
+    const adminKeypad = document.getElementById('admin-pin-keypad');
+    const adminSetup = document.getElementById('admin-password-setup');
+    const adminNewPassword = document.getElementById('admin-new-password');
+    const adminConfirmPassword = document.getElementById('admin-confirm-password');
+    const adminSetupError = document.getElementById('admin-password-error');
+    const adminBack = document.getElementById('admin-password-back');
+    const adminConfig = document.getElementById('secret-config-box');
+    const adminEnrollButton = document.getElementById('admin-enroll-passkey');
+    const adminPasskeyStatus = document.getElementById('admin-passkey-status');
+    const adminSettingsKey = 'coffeeman.guest.admin.password.v1';
+    const adminEncoder = new TextEncoder();
+    let adminTapCount = 0;
+    let adminTapTimer;
+    let adminIdleTimer;
+    let adminOperation = null;
+    let adminUnlocked = false;
+    let adminBootstrapping = false;
+    let adminFailedAttempts = 0;
+    let adminBlockedUntil = 0;
+
+    function toAdminHex(bytes) {
+      return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
     }
 
-    window.closeSecretModal = function() {
-      const modal = document.getElementById('secret-admin-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    };
+    async function hashAdminPassword(password, salt) {
+      const material = await crypto.subtle.importKey('raw', adminEncoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+      const saltBytes = Uint8Array.from(salt.match(/../g), byte => Number.parseInt(byte, 16));
+      const bits = await crypto.subtle.deriveBits({
+        name: 'PBKDF2', salt: saltBytes, iterations: 310000, hash: 'SHA-256'
+      }, material, 256);
+      return toAdminHex(new Uint8Array(bits));
+    }
 
-    window.tapPin = function(digit) {
-      if (enteredPin.length < 4) {
-        enteredPin += digit;
-        document.getElementById('secret-pin-input').value = enteredPin;
-        document.getElementById('secret-pin-error').classList.add('hidden');
-        if (enteredPin.length === 4) checkSecretPin();
+    function readAdminPassword() {
+      const raw = localStorage.getItem(adminSettingsKey);
+      if (raw === null) return null;
+      const record = JSON.parse(raw);
+      if (!/^[a-f0-9]{32}$/.test(record?.salt) || !/^[a-f0-9]{64}$/.test(record?.hash)) {
+        throw new Error('Неверный формат пароля');
       }
-    };
+      return record;
+    }
 
-    window.clearPin = function() {
-      enteredPin = "";
-      document.getElementById('secret-pin-input').value = "";
-      document.getElementById('secret-pin-error').classList.add('hidden');
-    };
+    function showAdminPanel(panel, title) {
+      for (const form of [adminLogin, adminSetup, adminConfig]) form.hidden = form !== panel;
+      adminTitle.textContent = title;
+      adminTitle.focus();
+    }
 
-    document.getElementById('secret-pin-input').addEventListener('input', (e) => {
-      enteredPin = e.target.value;
-      if (enteredPin.length === 4) checkSecretPin();
+    function refreshAdminPasskey() {
+      void adminPasskey.isAvailable().then(available => {
+        if (!adminDialog.open) return;
+        const enrolled = adminPasskey.hasEnrollment(terminalId);
+        adminPasskeyButton.hidden = !available || !enrolled;
+        adminPasskeyHint.hidden = adminPasskeyButton.hidden;
+        adminEnrollButton.hidden = !available;
+        adminEnrollButton.textContent = enrolled ? 'Заменить ключ доступа' : 'Подключить ключ доступа';
+      });
+    }
+
+    function extendAdminPreview() {
+      clearTimeout(adminIdleTimer);
+      adminIdleTimer = setTimeout(closeAdminDialog, 90000);
+    }
+
+    function resetAdminDialog() {
+      clearTimeout(adminIdleTimer);
+      adminOperation?.abort();
+      adminOperation = null;
+      adminUnlocked = false;
+      adminBootstrapping = false;
+      adminLogin.reset();
+      adminSetup.reset();
+      adminConfig.reset();
+      adminDialog.querySelectorAll('form button').forEach(button => { button.disabled = false; });
+      for (const message of [adminLoginError, adminSetupError, adminPasskeyStatus]) message.textContent = '';
+    }
+
+    function closeAdminDialog() {
+      if (!adminDialog.open) return;
+      resetAdminDialog();
+      adminDialog.close();
+    }
+
+    function openAdminDialog() {
+      const hasPassword = localStorage.getItem(adminSettingsKey) !== null;
+      resetAdminDialog();
+      adminPasskeyButton.hidden = true;
+      adminPasskeyHint.hidden = true;
+      adminKeypad.hidden = hasPassword;
+      adminPasswordInput.maxLength = hasPassword ? 128 : 4;
+      adminPasswordInput.inputMode = hasPassword ? 'text' : 'numeric';
+      document.getElementById('admin-password-label').textContent = hasPassword ? 'Пароль' : 'Действующий ПИН-код';
+      adminLogin.querySelector('[type=submit]').textContent = hasPassword ? 'Войти по паролю' : 'Продолжить';
+      showAdminPanel(adminLogin, 'Вход в настройки');
+      adminDialog.showModal();
+      adminTitle.focus();
+      extendAdminPreview();
+      refreshAdminPasskey();
+    }
+
+    adminLogo.addEventListener('click', () => {
+      if (adminDialog.open || permanentTipActive || !idleScreen.classList.contains('active')) return;
+      clearTimeout(adminTapTimer);
+      adminTapCount += 1;
+      if (adminTapCount === 5) {
+        adminTapCount = 0;
+        openAdminDialog();
+      } else {
+        adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 1800);
+      }
+    });
+    document.getElementById('admin-close').addEventListener('click', closeAdminDialog);
+    adminDialog.addEventListener('cancel', event => {
+      event.preventDefault();
+      closeAdminDialog();
+    });
+    adminDialog.addEventListener('close', () => {
+      if (!adminDialog.open) resetAdminDialog();
+    });
+    for (const type of ['pointerdown', 'keydown', 'input']) {
+      adminDialog.addEventListener(type, extendAdminPreview);
+    }
+
+    async function runAdminOperation(panel, message, failure, operation) {
+      if (adminOperation || !adminDialog.open || panel.hidden) return;
+      const request = new AbortController();
+      adminOperation = request;
+      const controls = Array.from(panel.querySelectorAll('button'));
+      controls.forEach(button => { button.disabled = true; });
+      message.textContent = '';
+      try {
+        await operation(request.signal);
+      } catch {
+        if (!request.signal.aborted) message.textContent = failure;
+      } finally {
+        if (adminOperation === request) {
+          controls.forEach(button => { button.disabled = false; });
+          adminOperation = null;
+        }
+      }
+    }
+
+    function showAdminSettings() {
+      adminUnlocked = true;
+      adminBootstrapping = false;
+      adminFailedAttempts = 0;
+      adminBlockedUntil = 0;
+      adminLogin.reset();
+      document.getElementById('adm-cf-url').value = globalCfUrl;
+      document.getElementById('adm-shop-id').value = globalShopId;
+      document.getElementById('adm-secret-key').value = globalSecretKey;
+      document.getElementById('adm-term-id').value = terminalId;
+      showAdminPanel(adminConfig, 'Экран и СБП');
+      refreshAdminPasskey();
+    }
+
+    function showAdminPasswordSetup() {
+      adminSetup.reset();
+      adminSetupError.textContent = '';
+      adminBack.hidden = !adminUnlocked;
+      showAdminPanel(adminSetup, adminUnlocked ? 'Сменить пароль' : 'Задайте пароль администратора');
+      adminNewPassword.focus();
+    }
+
+    adminLogin.addEventListener('submit', event => {
+      event.preventDefault();
+      const password = adminPasswordInput.value;
+      if (Date.now() < adminBlockedUntil) {
+        adminLoginError.textContent = 'Слишком много попыток. Подождите 30 секунд.';
+        return;
+      }
+      void runAdminOperation(adminLogin, adminLoginError, 'Не удалось проверить пароль.', async signal => {
+        const record = readAdminPassword();
+        const valid = record ? await hashAdminPassword(password, record.salt) === record.hash : password === '0506';
+        if (signal.aborted) return;
+        if (!valid) {
+          adminPasswordInput.value = '';
+          adminPasswordInput.focus();
+          adminFailedAttempts += 1;
+          if (adminFailedAttempts >= 5) {
+            adminFailedAttempts = 0;
+            adminBlockedUntil = Date.now() + 30000;
+            adminLoginError.textContent = 'Слишком много попыток. Подождите 30 секунд.';
+          } else {
+            adminLoginError.textContent = record ? 'Неверный пароль.' : 'Неверный ПИН-код.';
+          }
+          return;
+        }
+        if (record) {
+          showAdminSettings();
+        } else {
+          adminBootstrapping = true;
+          adminLogin.reset();
+          showAdminPasswordSetup();
+        }
+      });
+    });
+    adminPasswordInput.addEventListener('input', () => {
+      adminLoginError.textContent = '';
+      if (!adminKeypad.hidden && /^\d{4}$/.test(adminPasswordInput.value)) adminLogin.requestSubmit();
+    });
+    adminKeypad.addEventListener('click', event => {
+      const digit = event.target.closest('[data-admin-digit]')?.dataset.adminDigit;
+      if (digit === undefined || adminPasswordInput.value.length >= 4) return;
+      adminPasswordInput.value += digit;
+      adminLoginError.textContent = '';
+      if (adminPasswordInput.value.length === 4) adminLogin.requestSubmit();
+    });
+    document.getElementById('admin-clear-pin').addEventListener('click', () => {
+      adminPasswordInput.value = '';
+      adminLoginError.textContent = '';
     });
 
-    function checkSecretPin() {
-      if (enteredPin === "0506") {
-        document.getElementById('secret-pin-box').classList.add('hidden');
-        const cfgBox = document.getElementById('secret-config-box');
-        cfgBox.classList.remove('hidden');
-        cfgBox.classList.add('flex');
-        document.getElementById('adm-cf-url').value = globalCfUrl;
-        document.getElementById('adm-shop-id').value = globalShopId;
-        document.getElementById('adm-secret-key').value = globalSecretKey;
-        document.getElementById('adm-term-id').value = terminalId;
-      } else {
-        document.getElementById('secret-pin-error').classList.remove('hidden');
-        enteredPin = "";
-        document.getElementById('secret-pin-input').value = "";
-      }
-    }
+    adminPasskeyButton.addEventListener('click', () => {
+      void runAdminOperation(adminLogin, adminLoginError, 'Не удалось подтвердить ключ доступа. Можно войти по паролю.', async signal => {
+        const verified = await adminPasskey.verify(terminalId, signal);
+        if (signal.aborted) return;
+        if (verified) showAdminSettings();
+        else adminLoginError.textContent = 'Ключ доступа не подтверждён.';
+      });
+    });
 
-    window.saveSecretAdminConfig = async function() {
-      globalCfUrl = document.getElementById('adm-cf-url').value.trim();
-      globalShopId = document.getElementById('adm-shop-id').value.trim();
-      globalSecretKey = document.getElementById('adm-secret-key').value.trim();
-      terminalId = document.getElementById('adm-term-id').value.trim() || 'term_01';
-      localStorage.setItem('cf_worker_url', globalCfUrl);
-      localStorage.setItem('yk_shop_id', globalShopId);
-      localStorage.setItem('yk_secret_key', globalSecretKey);
-      localStorage.setItem('yk_term_id', terminalId);
-      try {
-        const settingsRef = ref(db, `terminals/${terminalId}/settings`);
-        await update(settingsRef, {
-          cfWorkerUrl: globalCfUrl, shopId: globalShopId, secretKey: globalSecretKey,
-          proxyMode: globalCfUrl ? 'cloudflare' : 'corsproxy', updatedAt: Date.now()
-        });
-      } catch (e) { console.warn("Firebase sync:", e); }
-      closeSecretModal();
-      showToast('✅ Настройки сохранены');
-    };
+    document.getElementById('admin-change-password').addEventListener('click', () => {
+      if (adminUnlocked) showAdminPasswordSetup();
+    });
+    adminBack.addEventListener('click', () => {
+      if (adminUnlocked) showAdminSettings();
+    });
+    adminSetup.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!adminUnlocked && !adminBootstrapping) return;
+      const password = adminNewPassword.value;
+      if (password.length < 8 || password !== adminConfirmPassword.value) {
+        adminSetupError.textContent = password.length < 8 ? 'Введите не менее 8 символов.' : 'Пароли не совпадают.';
+        return;
+      }
+      void runAdminOperation(adminSetup, adminSetupError, 'Не удалось сохранить пароль на этом устройстве.', async signal => {
+        const salt = toAdminHex(crypto.getRandomValues(new Uint8Array(16)));
+        const hash = await hashAdminPassword(password, salt);
+        if (signal.aborted) return;
+        if (!adminUnlocked && readAdminPassword() !== null) throw new Error('Пароль уже задан в другом окне');
+        localStorage.setItem(adminSettingsKey, JSON.stringify({salt, hash}));
+        adminSetup.reset();
+        showAdminSettings();
+      });
+    });
+
+    adminEnrollButton.addEventListener('click', () => {
+      if (!adminUnlocked) return;
+      void runAdminOperation(adminConfig, adminPasskeyStatus, 'Не удалось подключить ключ доступа. Вход по паролю доступен.', async signal => {
+        await adminPasskey.enroll(terminalId, signal);
+        if (signal.aborted) return;
+        adminPasskeyStatus.textContent = 'Ключ подключён. При следующем входе можно выбрать проверку устройства.';
+        refreshAdminPasskey();
+      });
+    });
+
+    adminConfig.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!adminUnlocked) return;
+      void runAdminOperation(adminConfig, adminPasskeyStatus, 'Не удалось сохранить настройки.', async signal => {
+        globalCfUrl = document.getElementById('adm-cf-url').value.trim();
+        globalShopId = document.getElementById('adm-shop-id').value.trim();
+        globalSecretKey = document.getElementById('adm-secret-key').value.trim();
+        terminalId = document.getElementById('adm-term-id').value.trim() || 'term_01';
+        localStorage.setItem('cf_worker_url', globalCfUrl);
+        localStorage.setItem('yk_shop_id', globalShopId);
+        localStorage.setItem('yk_secret_key', globalSecretKey);
+        localStorage.setItem('yk_term_id', terminalId);
+        try {
+          const settingsRef = ref(db, 'terminals/' + terminalId + '/settings');
+          await update(settingsRef, {
+            cfWorkerUrl: globalCfUrl, shopId: globalShopId, secretKey: globalSecretKey,
+            proxyMode: globalCfUrl ? 'cloudflare' : 'corsproxy', updatedAt: Date.now()
+          });
+        } catch (error) {
+          console.warn('Firebase sync:', error);
+        }
+        if (signal.aborted) return;
+        closeAdminDialog();
+        showToast('Настройки сохранены');
+      });
+    });
 
     const factsList = [
       ['Ботаника', 'Зерно внутри ягоды', 'Кофейное зерно — семя плода, который называют кофейной вишней.'],
@@ -1970,6 +2369,7 @@
        SCREEN SWITCHING
     ═══════════════════════════════════════════ */
     function showScreen(screenId) {
+      if (screenId !== 'idle-screen') closeAdminDialog();
       if (screenId !== 'order-tip-screen') closeOrderTip();
       [document.getElementById('order-tip-screen'), idleScreen, paymentScreen, magicTipScreen, magicThanksScreen, successScreen, specialPromoScreen].forEach(s => {
         if (!s) return;
@@ -2705,6 +3105,7 @@
       permanentTipOverlay.classList.toggle('active', enabled);
       updateGuestInteractivity();
       if (enabled) {
+        closeAdminDialog();
         window.toggleSyrupsShelf(false);
         closeOrderTip();
         clearAllTimeouts();
@@ -3073,6 +3474,7 @@
     }
 
     window.resetToIdle = function(updateFirebase = false) {
+      closeAdminDialog();
       closeOrderTip();
       isSuccessActive = false;
       isMagicActive = false;
