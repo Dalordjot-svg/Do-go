@@ -252,6 +252,11 @@
     .story-content > :nth-child(n+4) { animation: settle .55s .24s both }
     .story--essay .story-content { justify-items: center; text-align: center; margin-inline: auto }
     .story--essay .description { max-width: 45ch }
+    .story--history { padding-block: clamp(12px, 3vh, 52px) }
+    .story--history .story-content { width: min(100%, 760px) }
+    .story--history .headline { font-size: clamp(1.6rem, 4.6vw, 4.65rem); line-height: 1.06 }
+    .story--history .history-copy { display: grid; gap: .65em; text-align: start }
+    .story--history .description { max-width: 62ch; font-size: clamp(.95rem, 1.6vw, 1.36rem); line-height: 1.35 }
     .story--image .story-content { max-width: min(55vw, 820px) }
     .story--image .headline { font-size: clamp(2.35rem, 5.65vw, 7rem) }
     .story--image .story-art { width: min(65vw, 1120px) }
@@ -1285,6 +1290,60 @@
         </div>
       </article>`
     };
+
+    const coffeemanHistorySlides = [
+      {
+        heading: 'COFFEEMAN — история, которая началась с любви к кофе',
+        duration: 15000,
+        paragraphs: [
+          'У каждого города есть свои особенные места. Места, где встречаются друзья, рождаются идеи, проходят первые свидания и начинаются истории, которые остаются в памяти на долгие годы.',
+          'Для Кызыла одним из таких мест стал COFFEEMAN.'
+        ]
+      },
+      {
+        heading: 'История «Кофемана» уходит как минимум в 2011 год.',
+        duration: 25000,
+        paragraphs: [
+          'Именно тогда о кофейне уже писали в местной прессе, называя её одним из особенных мест города, где жители могли познакомиться с настоящим кофе разных видов.',
+          'За созданием кофейни стояла предпринимательница Елена Ондар, начавшая свой путь в бизнесе ещё в 1996 году. В те годы кофейная культура в Кызыле только формировалась, и «Кофеман» стал одним из мест, знакомивших горожан с новыми вкусами и традициями.'
+        ]
+      },
+      {
+        heading: 'Шли годы, менялся город, менялись привычки и ритм жизни.',
+        duration: 22000,
+        paragraphs: [
+          'В 2016 году «Кофеман» на улице Кочетова, 2 уже был известен как уютное кафе с необычным интерьером, где гости могли не только выпить кофе, но и провести время за вкусной едой.',
+          'Сегодня имя COFFEEMAN продолжает жить в Кызыле. Его можно встретить на улице Кочетова и в формате Coffeeman Lounge на улице Щетинкина-Кравченко.'
+        ]
+      },
+      {
+        heading: 'Но главное в истории кофейни — не адреса и не даты.',
+        duration: 20000,
+        paragraphs: [
+          'Главное — люди.',
+          'Те, кто заходит за утренним кофе перед работой. Кто встречается с друзьями после долгого дня. Кто приходит на первое свидание, обсуждает планы на будущее или просто находит несколько минут для себя.'
+        ]
+      },
+      {
+        heading: 'Ведь кофе — это гораздо больше, чем напиток.',
+        duration: 23000,
+        paragraphs: [
+          'Это повод встретиться. Возможность остановиться среди городской суеты. Маленькая традиция, которая делает обычный день немного лучше.',
+          'COFFEEMAN — часть кофейной истории Кызыла с 2011 года.',
+          'Город меняется. Истории продолжаются. А всё начинается с чашки кофе.',
+          'COFFEEMAN. У каждой встречи свой вкус.'
+        ]
+      }
+    ].map(({heading, duration, paragraphs}, index) => ({
+      type: 'coffeeman-history-' + index,
+      duration,
+      html: `<article class="story story--essay story--history"><div class="story-content">
+        <h2 class="headline">${escapeText(heading)}</h2>
+        <div class="history-copy">
+          ${paragraphs.map(paragraph => `<p class="description">${escapeText(paragraph)}</p>`).join('')}
+        </div>
+      </div></article>`
+    }));
 
     const loyaltySlide = {
       type: 'loyalty',
@@ -2336,7 +2395,7 @@
 
     function rebuildSlidesPool() {
       const activeType = dynamicSlides[currentSlide]?.type;
-      dynamicSlides = [welcomeSlide, ...customAdSlides, loyaltySlide, signatureMenuSlide, tipStorySlide, ...factSlides];
+      dynamicSlides = [welcomeSlide, ...coffeemanHistorySlides, ...customAdSlides, loyaltySlide, signatureMenuSlide, tipStorySlide, ...factSlides];
       if (activeType) {
         const previousIndex = dynamicSlides.findIndex(slide => slide.type === activeType);
         currentSlide = previousIndex < 0 ? 0 : previousIndex;
