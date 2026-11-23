@@ -79,20 +79,32 @@
 
     const tipForm = document.getElementById('tip-offer-form');
     const tipStatus = document.getElementById('tip-offer-status');
-    document.getElementById('tip-dismiss').addEventListener('click', async event => {
+    const resetDisplayButtons = document.querySelectorAll('[data-reset-display-status]');
+    resetDisplayButtons.forEach(control => control.addEventListener('click', async event => {
       const button = event.currentTarget;
-      const status = document.getElementById('tip-screen-status');
+      if (button.disabled) return;
+      const status = document.getElementById(button.dataset.resetDisplayStatus);
+      if (permanentTipsEnabled || paymentStarting) {
+        status.dataset.tone = 'error';
+        status.textContent = permanentTipsEnabled ? 'Сначала отключите бессрочные чаевые.' : 'Подождите, пока запустится оплата.';
+        return;
+      }
       const terminal = localStorage.getItem('yk_term_id') || 'term_01';
-      button.disabled = true;
+      resetDisplayButtons.forEach(button => { button.disabled = true; });
+      status.dataset.tone = 'pending';
+      status.textContent = 'Возвращаем экран в ожидание…';
       try {
-        const result = await window.sendTipScreenCommand(ref(db, 'terminals/' + terminal + '/current_order'), {status: 'IDLE'});
+        const order = ref(db, `terminals/${terminal}/current_order`);
+        const result = await window.sendTipScreenCommand(order, {status: 'IDLE', resetDisplay: true, timestamp: Date.now()});
+        status.dataset.tone = result.committed ? 'success' : 'error';
         status.textContent = result.committed ? 'Экран возвращён в ожидание.' : 'На терминале идёт оплата.';
       } catch (error) {
+        status.dataset.tone = 'error';
         status.textContent = 'Не удалось вернуть экран в ожидание.';
       } finally {
-        button.disabled = false;
+        resetDisplayButtons.forEach(button => { button.disabled = false; });
       }
-    });
+    }));
 
     tipForm.addEventListener('submit', async event => {
       event.preventDefault();
@@ -605,6 +617,74 @@ button:not(:disabled):active { transform: scale(.96); }
 .text-action:hover { background: var(--control-hover); }
 .danger-action { color: var(--error); background: var(--clay); }
 .danger-action:hover { background: var(--clay-hover); }
+.order-tools { width: 100%; display: grid; gap: 8px; margin-top: 13px; }
+.order-tools .entry-tools > * { min-width: 0; }
+.table-number-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+.order-input {
+  min-width: 0;
+  min-height: 44px;
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--tile-edge);
+  border-radius: 11px;
+  background: var(--key);
+  color: var(--ink);
+  font: inherit;
+}
+.table-number-field .order-input { width: min(7rem, 73%); }
+#held-order-count {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-inline-start: 2px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--leaf);
+  font-variant-numeric: tabular-nums;
+}
+#order-dialog {
+  width: min(540px, calc(100% - 24px));
+  max-height: min(82dvh, 620px);
+  margin: auto;
+  padding: clamp(16px, 4vw, 26px);
+  overflow: auto;
+  border: 1px solid var(--tile-edge);
+  border-radius: 23px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+#order-dialog::backdrop { background: rgb(var(--depth-rgb) / .56); }
+.order-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.order-dialog-heading h2 { margin: 0; font-size: clamp(20px, 5vw, 27px); font-weight: 740; }
+.order-dialog-heading .text-action { min-width: 44px; font-size: 20px; }
+.order-list { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.order-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  background: var(--tile);
+}
+.held-order-details { display: grid; gap: 2px; }
+.held-order-amount { color: var(--ink); font-size: 18px; font-weight: 730; }
+.held-order-date, #held-orders-empty { color: var(--muted); font-size: 13px; }
+.order-list .text-action { padding-inline: 10px; }
+#quick-order-form { display: grid; gap: 12px; }
+#quick-order-form label { display: grid; gap: 5px; font-weight: 650; }
+#quick-order-form .entry-status { margin-block: 0; }
+@media(max-width: 430px) {
+  .order-list li { grid-template-columns: minmax(0, 1fr); }
+}
 
 .register-nav {
   position: fixed;
@@ -782,6 +862,18 @@ button:not(:disabled):active { transform: scale(.96); }
       <span aria-hidden="true">₽</span>
     </div>
     <p id="pos-status-text" class="entry-status" role="status">Введите сумму на пинпаде</p>
+    <div class="order-tools">
+      <div class="entry-tools">
+        <label class="table-number-field" for="pos-table-number">Стол
+          <input type="text" class="order-input" id="pos-table-number" inputmode="numeric" maxlength="4" placeholder="Без стола" autocomplete="off">
+        </label>
+        <button type="button" id="quick-edit-order" class="text-action">Быстрое редактирование</button>
+      </div>
+      <div class="entry-tools">
+        <button type="button" id="hold-order" class="text-action" disabled>Отложить заказ</button>
+        <button type="button" id="show-held-orders" class="text-action">Отложенные <span id="held-order-count">0</span></button>
+      </div>
+    </div>
   </div>
   <div class="entry-controls">
     <div class="amount-keypad" data-keypad="pos" role="group" aria-label="Пинпад суммы">
@@ -809,6 +901,7 @@ button:not(:disabled):active { transform: scale(.96); }
     <button id="btn-confirm-card-paid" type="button" class="action primary payment-action hidden" onclick="confirmCardPaymentSuccess()">Подтвердить оплату картой</button>
     <div class="entry-tools">
       <button type="button" class="text-action" data-clear="pos">Очистить сумму</button>
+      <button type="button" class="text-action" data-reset-display-status="pos-status-text">Сбросить экран гостя</button>
       <button type="button" class="text-action danger-action" onclick="sendCancelToFirebase()">Сбросить операцию</button>
     </div>
   </div>
@@ -849,7 +942,7 @@ button:not(:disabled):active { transform: scale(.96); }
         <!-- Поиск -->
         <div class="relative">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-cream/40 text-xs">🔍</span>
-          <input type="text" id="hist-search-input" oninput="renderHistoryList()" placeholder="Поиск по сумме или названию..." class="w-full bg-inkDeep/60 border border-peach/15 rounded-xl pl-8 pr-3 py-2 text-xs text-cream placeholder:text-cream/35 focus:outline-none focus:border-gold" />
+          <input type="text" id="hist-search-input" oninput="renderHistoryList()" placeholder="Поиск по сумме, названию или столу" class="w-full bg-inkDeep/60 border border-peach/15 rounded-xl pl-8 pr-3 py-2 text-xs text-cream placeholder:text-cream/35 focus:outline-none focus:border-gold" />
         </div>
 
         <!-- Сортировка -->
@@ -1276,7 +1369,7 @@ button:not(:disabled):active { transform: scale(.96); }
   <h2>Чаевые на экране гостя</h2>
   <div class="action-row">
     <button type="button" class="action primary" onclick="castMagicTips()">Показать экран чаевых</button>
-    <button type="button" class="action" id="tip-dismiss">Вернуть в ожидание</button>
+    <button type="button" class="action" id="tip-dismiss" data-reset-display-status="tip-screen-status">Вернуть в ожидание</button>
   </div>
   <p id="tip-screen-status" class="entry-status" role="status"></p>
 </div>
@@ -1293,6 +1386,43 @@ button:not(:disabled):active { transform: scale(.96); }
 </div>
     </section>
   </main>
+  <dialog id="order-dialog" aria-labelledby="order-dialog-title">
+    <div class="order-dialog-heading">
+      <h2 id="order-dialog-title">Отложенные заказы</h2>
+      <form method="dialog"><button type="submit" class="text-action" aria-label="Закрыть">×</button></form>
+    </div>
+    <section id="held-orders-panel">
+      <p id="held-orders-empty">Отложенных заказов пока нет.</p>
+      <p id="held-orders-status" class="entry-status" data-tone="error" role="alert"></p>
+      <ul id="held-order-list" class="order-list"></ul>
+      <template id="held-order-row">
+        <li>
+          <div class="held-order-details">
+            <strong class="held-order-amount"></strong>
+            <span class="held-order-table"></span>
+            <span class="held-order-date"></span>
+          </div>
+          <div class="entry-tools">
+            <button type="button" class="text-action" data-held-action="edit">Править</button>
+            <button type="button" class="text-action" data-held-action="resume">Вернуть</button>
+          </div>
+        </li>
+      </template>
+    </section>
+    <form id="quick-order-form" hidden>
+      <label for="quick-order-amount">Сумма, ₽
+        <input id="quick-order-amount" class="order-input" type="text" inputmode="decimal" maxlength="10" required autocomplete="off">
+      </label>
+      <label for="quick-order-table">Номер стола
+        <input id="quick-order-table" class="order-input" type="text" inputmode="numeric" maxlength="4" placeholder="Без стола" autocomplete="off">
+      </label>
+      <p id="quick-order-error" class="entry-status" data-tone="error" role="alert"></p>
+      <div class="entry-tools">
+        <button type="button" id="quick-order-back" class="text-action">Назад</button>
+        <button type="submit" class="action primary">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
 
   <!-- ================= МОДАЛКА СИРОПА ================= -->
   <div id="syrup-editor-modal" class="fixed inset-0 z-50 bg-inkDeep/85 backdrop-blur-xl hidden items-end sm:items-center justify-center p-3 sm:p-4">
@@ -1444,12 +1574,29 @@ button:not(:disabled):active { transform: scale(.96); }
     let paymentStarting = false;
     let pendingOrder = null;
     let activePollInterval = null;
+    const orderWorkspaceKey = 'coffeeman.cashier.orders.' + (localStorage.getItem('yk_term_id') || 'term_01');
+    let orderWorkspace = readOrderWorkspace();
     let selectedNfcSide = localStorage.getItem('moon_nfc_side') || 'right';
     const CLOUDINARY_PRESET = "my_shop_unsigned";
 
     let historySortMode = 'time_desc';
     let historyFilterMode = 'all';
     window.loadedHistory = [];
+
+    function normalizeTableNumber(value) {
+      if (typeof value !== 'string' && typeof value !== 'number') return '';
+      if (!/^\d+$/.test(String(value).trim())) return '';
+      const number = Number(value);
+      return number >= 1 && number <= 9999 ? String(number) : '';
+    }
+
+    function orderDraftFields({tableNumber, draftId}) {
+      const normalizedTable = normalizeTableNumber(tableNumber);
+      return {
+        ...(normalizedTable ? {tableNumber: normalizedTable} : {}),
+        ...(typeof draftId === 'string' && draftId ? {draftId} : {})
+      };
+    }
 
     // Лёгкий тактильный отклик на мобильных устройствах
     function haptic(ms = 12) {
@@ -1459,17 +1606,19 @@ button:not(:disabled):active { transform: scale(.96); }
     }
 
     // Запись операции в историю Firebase
-    async function logOperationToHistory(entry) {
+    async function logOperationToHistory(entry, paymentId) {
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       if (window.firebaseDB && window.dbRef && window.dbPush && window.dbSet) {
         try {
           const histListRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/history`);
-          const newRef = window.dbPush(histListRef);
+          const newRef = paymentId && /^[\w-]+$/.test(paymentId) ?
+            window.dbRef(window.firebaseDB, `terminals/${terminalId}/history/sbp_${paymentId}`) : window.dbPush(histListRef);
           await window.dbSet(newRef, {
             amount: Number(entry.amount) || 0,
             method: entry.method || 'sbp',
             status: entry.status || 'PAID',
             title: entry.title || 'Заказ на кассе',
+            ...orderDraftFields(entry),
             timestamp: Date.now()
           });
         } catch (err) {
@@ -1894,6 +2043,18 @@ button:not(:disabled):active { transform: scale(.96); }
       const card = state === 'WAITING_FOR_CARD';
       const paid = ['PAID', 'succeeded', 'cash_succeeded'].includes(state);
       pendingOrder = waiting ? order : null;
+      const draftId = getDraftOrderId();
+      if (waiting && draftId && order.draftId === draftId && !orderWorkspace.active.checkoutStarted) {
+        updateOrderWorkspace(workspace => workspace.active?.id === draftId ?
+          {...workspace, active: {...workspace.active, checkoutStarted: true}} : null);
+      } else if (paid && order.draftId) {
+        clearMatchingDraft(order.draftId);
+        if (order.method === 'sbp' && order.paymentId) {
+          void logPaidSbp(order.paymentId, Number(order.amount), orderDraftFields(order));
+        }
+      } else if ((paid || (state === 'IDLE' && !order.resetDisplay) || state === 'canceled') && orderWorkspace.active?.checkoutStarted) {
+        clearMatchingDraft(draftId);
+      }
       const label = document.getElementById('live-terminal-status');
       const labelText = waiting ? (card ? 'Карта' : 'СБП') : paid ? 'Оплачено' : 'Готова';
       if (label.textContent !== labelText) label.textContent = labelText;
@@ -1902,26 +2063,31 @@ button:not(:disabled):active { transform: scale(.96); }
       document.getElementById('btn-confirm-card-paid').classList.toggle('hidden', !card);
       document.getElementById('pos-payment-actions').hidden = card;
       if (waiting) {
-        currentInput = String(order.amount);
-        updateDisplay();
         setPaymentStatus(card ? 'Приложите карту и подтвердите оплату.' : 'QR-код открыт на экране гостя. Ожидаем оплату.', 'pending');
       }
+      updateDisplay();
       syncPaymentControls();
     }
 
+    function isDraftLocked() {
+      return paymentStarting || Boolean(pendingOrder) || Boolean(orderWorkspace.active?.checkoutStarted);
+    }
+
     function syncPaymentControls() {
-      const locked = paymentStarting || Boolean(pendingOrder);
-      document.querySelectorAll('[data-keypad=pos] button, [data-clear=pos], #send-bill-btn, #send-card-btn').forEach(button => {
+      const locked = isDraftLocked();
+      document.querySelectorAll('[data-keypad=pos] button, [data-clear=pos], #send-bill-btn, #send-card-btn, #pos-table-number, #quick-edit-order, [data-held-action=resume]').forEach(button => {
         button.disabled = locked;
       });
+      document.getElementById('hold-order').disabled = locked || Number(currentInput) <= 0;
     }
 
     window.triggerCardPaymentOnScreen = async function() {
       haptic(18);
-      if (paymentStarting || pendingOrder) return;
+      if (isDraftLocked()) return;
       const amount = Number(currentInput);
       if (amount < .01) { showToast('Введите сумму больше 0 ₽', 'error'); return; }
       if (!window.firebaseDB) { showToast('Терминал пока не подключён', 'error'); return; }
+      const draftFields = orderDraftFields({tableNumber: getDraftTableNumber(), draftId: getDraftOrderId()});
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       const orderRef = window.dbRef(window.firebaseDB, `terminals/${terminalId}/current_order`);
       paymentStarting = true;
@@ -1929,7 +2095,8 @@ button:not(:disabled):active { transform: scale(.96); }
       try {
         const result = await window.sendTipScreenCommand(orderRef, {
           status: 'WAITING_FOR_CARD', method: 'card', amount,
-          nfcSide: selectedNfcSide, description: `Оплата картой (${amount} ₽)`, timestamp: Date.now()
+          nfcSide: selectedNfcSide, description: `Оплата картой (${amount} ₽)`, timestamp: Date.now(),
+          ...draftFields
         });
         if (!result.committed) showToast('Сначала завершите текущую оплату', 'error');
       } catch (error) {
@@ -1946,15 +2113,16 @@ button:not(:disabled):active { transform: scale(.96); }
       const button = document.getElementById('btn-confirm-card-paid');
       const matchingOrder = pendingOrder;
       const amount = Number(matchingOrder.amount);
+      const draftFields = orderDraftFields(matchingOrder);
       button.disabled = true;
       try {
         const result = await window.updateTerminalOrder(current => {
           if (current?.status !== 'WAITING_FOR_CARD' || current.timestamp !== matchingOrder.timestamp) return;
-          return {status: 'PAID', amount, timestamp: Date.now()};
+          return {status: 'PAID', amount, timestamp: Date.now(), ...draftFields};
         });
         if (!result.committed) return;
-        await logOperationToHistory({amount, method: 'card', status: 'PAID', title: 'Оплата картой'});
-        clearAmount();
+        await logOperationToHistory({amount, method: 'card', status: 'PAID', title: 'Оплата картой', ...draftFields});
+        clearMatchingDraft(draftFields.draftId);
         setPaymentStatus('Оплата картой подтверждена', 'success');
         showToast('Оплата картой подтверждена', 'success');
       } catch (error) {
@@ -1967,10 +2135,11 @@ button:not(:disabled):active { transform: scale(.96); }
     // ============ СБП ============
     async function createDirectSbpPayment() {
       haptic(18);
-      if (paymentStarting || pendingOrder) return;
+      if (isDraftLocked()) return;
       if (!window.firebaseDB) { showToast('Терминал пока не подключён', 'error'); return; }
       const amount = Number(currentInput);
       if (!amount || amount <= 0) { showToast('Введите сумму больше 0 ₽', 'error'); return; }
+      const draftFields = orderDraftFields({tableNumber: getDraftTableNumber(), draftId: getDraftOrderId()});
       const shopId = localStorage.getItem('yk_shop_id') || '1350725';
       const secretKey = localStorage.getItem('yk_secret_key');
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
@@ -2027,13 +2196,14 @@ button:not(:disabled):active { transform: scale(.96); }
             qrUrl: sbpQrData,
             shopId, secretKey, cfWorkerUrl, proxyMode,
             description: `Заказ #${payment.id.slice(0, 5)}`,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            ...draftFields
           });
           if (!result.committed) throw new Error('Сначала завершите текущую оплату');
         }
         setPaymentStatus('QR-код открыт на экране гостя. Ожидаем оплату.', 'pending');
         showToast(`⚡ QR на ${amount} ₽ на экране`, 'info');
-        startDirectPaymentPolling(shopId, secretKey, payment.id);
+        startDirectPaymentPolling({shopId, secretKey, paymentId: payment.id, amount, draftFields});
       } catch (err) {
         showToast('Ошибка: ' + err.message, 'error');
         setPaymentStatus('Ошибка: ' + err.message, 'error');
@@ -2045,7 +2215,7 @@ button:not(:disabled):active { transform: scale(.96); }
       }
     }
 
-    function startDirectPaymentPolling(shopId, secretKey, paymentId) {
+    function startDirectPaymentPolling({shopId, secretKey, paymentId, amount, draftFields}) {
       const authHeader = 'Basic ' + btoa(`${shopId}:${secretKey}`);
       const pollUrl = buildGatewayUrl(`https://api.yookassa.ru/v3/payments/${paymentId}`);
       const watcher = setInterval(async () => {
@@ -2059,21 +2229,26 @@ button:not(:disabled):active { transform: scale(.96); }
             clearInterval(watcher);
             activePollInterval = null;
             haptic(30);
-            const paidAmount = Number(data.amount?.value ?? currentInput);
+            const paidAmount = Number(data.amount?.value ?? amount);
             await window.updateTerminalOrder(current => {
               if (current?.status !== 'WAITING_FOR_PAYMENT' || current.paymentId !== paymentId) return;
-              return {status: 'PAID', amount: paidAmount, timestamp: Date.now()};
+              return {status: 'PAID', amount: paidAmount, method: 'sbp', paymentId, timestamp: Date.now(), ...draftFields};
             });
-            await logOperationToHistory({
-              amount: paidAmount, method: 'sbp', status: 'PAID', title: `Оплата СБП #${paymentId.slice(0, 5)}`
-            });
-            if (!pendingOrder || pendingOrder.paymentId === paymentId) clearAmount();
+            await logPaidSbp(paymentId, paidAmount, draftFields);
+            clearMatchingDraft(draftFields.draftId);
             setPaymentStatus('Оплата по СБП получена', 'success');
             showToast('Оплата по СБП получена!', 'success');
           }
         } catch (e) { console.error("Polling:", e); }
       }, 1500);
       activePollInterval = watcher;
+    }
+
+    function logPaidSbp(paymentId, amount, draftFields) {
+      return logOperationToHistory({
+        amount, method: 'sbp', status: 'PAID', title: `Оплата СБП #${paymentId.slice(0, 5)}`,
+        ...draftFields
+      }, paymentId);
     }
 
     // ============ ИСТОРИЯ ОПЕРАЦИЙ И СОРТИРОВКА ============
@@ -2124,7 +2299,8 @@ button:not(:disabled):active { transform: scale(.96); }
         if (searchQuery) {
           const titleMatch = (item.title || '').toLowerCase().includes(searchQuery);
           const amountMatch = String(item.amount || '').includes(searchQuery);
-          return titleMatch || amountMatch;
+          const tableNumber = normalizeTableNumber(item.tableNumber);
+          return titleMatch || amountMatch || (tableNumber && `стол ${tableNumber}`.includes(searchQuery));
         }
         return true;
       });
@@ -2161,6 +2337,7 @@ button:not(:disabled):active { transform: scale(.96); }
         const dateObj = new Date(item.timestamp || Date.now());
         const timeStr = dateObj.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
         const dateStr = dateObj.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
+        const tableNumber = normalizeTableNumber(item.tableNumber);
 
         const icon = !isPaid ? '🛑' : (isCard ? '💳' : '⚡');
         const methodLabel = !isPaid ? 'Сброс' : (isCard ? 'Карта NFC' : 'СБП QR');
@@ -2182,8 +2359,9 @@ button:not(:disabled):active { transform: scale(.96); }
               <div class="flex items-center gap-1.5 flex-wrap">
                 <h4 class="font-display font-bold text-xs text-cream truncate max-w-[170px] sm:max-w-[260px]">${item.title || 'Операция'}</h4>
               </div>
-              <div class="flex items-center gap-2 mt-1">
+              <div class="flex flex-wrap items-center gap-2 mt-1">
                 <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border ${badgeStyle}">${methodLabel}</span>
+                ${tableNumber ? `<span class="text-[10px] text-cream/60 font-medium">Стол ${tableNumber}</span>` : ''}
                 <span class="text-[10px] text-cream/45 font-medium">${dateStr}, ${timeStr}</span>
               </div>
             </div>
@@ -2211,6 +2389,216 @@ button:not(:disabled):active { transform: scale(.96); }
     // ============ ВВОД СУММЫ ============
     const amountFormat = new Intl.NumberFormat('ru-RU', {maximumFractionDigits: 0});
     const rubleFormat = new Intl.NumberFormat('ru-RU', {style: 'currency', currency: 'RUB', maximumFractionDigits: 2, minimumFractionDigits: 0});
+    const heldDateFormat = new Intl.DateTimeFormat('ru-RU', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+    const orderDialog = document.getElementById('order-dialog');
+    const orderDialogTitle = document.getElementById('order-dialog-title');
+    const heldOrdersPanel = document.getElementById('held-orders-panel');
+    const heldOrderList = document.getElementById('held-order-list');
+    const heldOrderStatus = document.getElementById('held-orders-status');
+    const heldOrderTemplate = document.getElementById('held-order-row');
+    const quickOrderForm = document.getElementById('quick-order-form');
+    const quickOrderAmount = document.getElementById('quick-order-amount');
+    const quickOrderTable = document.getElementById('quick-order-table');
+    const quickOrderError = document.getElementById('quick-order-error');
+    const posTableField = document.getElementById('pos-table-number');
+    let editedHeldOrderId = null;
+
+    function readOrderWorkspace() {
+      try {
+        const data = JSON.parse(localStorage.getItem(orderWorkspaceKey) || '{}');
+        const validOrder = order => typeof order?.id === 'string' &&
+          typeof order.amount === 'string' && /^\d{1,7}(\.\d{0,2})?$/.test(order.amount);
+        return {
+          active: validOrder(data?.active) ? data.active : null,
+          held: Array.isArray(data?.held) ? data.held.filter(order => validOrder(order) && Number.isFinite(order.heldAt)) : []
+        };
+      } catch {
+        return {active: null, held: []};
+      }
+    }
+
+    function updateOrderWorkspace(change) {
+      try {
+        const next = change(readOrderWorkspace());
+        if (!next) return false;
+        localStorage.setItem(orderWorkspaceKey, JSON.stringify(next));
+        orderWorkspace = next;
+      } catch {
+        showToast('Не удалось сохранить заказ в браузере', 'error');
+        return false;
+      }
+      renderOrderWorkspace();
+      return true;
+    }
+
+    function renderOrderWorkspace() {
+      currentInput = orderWorkspace.active?.amount || '0';
+      updateDisplay();
+      document.getElementById('held-order-count').textContent = orderWorkspace.held.length;
+      if (orderDialog.open && !heldOrdersPanel.hidden) renderHeldOrders();
+      syncPaymentControls();
+    }
+
+    function getDraftTableNumber() {
+      return normalizeTableNumber(orderWorkspace.active?.tableNumber);
+    }
+
+    function getDraftOrderId() {
+      return orderWorkspace.active?.id || '';
+    }
+
+    function updateDraft(change) {
+      return updateOrderWorkspace(workspace => {
+        const previous = workspace.active || {id: generateUUID(), amount: '0', tableNumber: ''};
+        const draft = change(previous);
+        return {...workspace, active: draft.amount === '0' && !draft.tableNumber ? null : draft};
+      });
+    }
+
+    function clearMatchingDraft(draftId) {
+      if (!draftId) return;
+      updateOrderWorkspace(workspace => workspace.active?.id === draftId ? {...workspace, active: null} : null);
+    }
+
+    function renderHeldOrders() {
+      const rows = document.createDocumentFragment();
+      for (const order of orderWorkspace.held) {
+        const row = heldOrderTemplate.content.cloneNode(true);
+        const tableNumber = normalizeTableNumber(order.tableNumber);
+        row.querySelector('li').dataset.orderId = order.id;
+        row.querySelector('.held-order-amount').textContent = rubleFormat.format(Number(order.amount));
+        row.querySelector('.held-order-table').textContent = tableNumber ? 'Стол ' + tableNumber : 'Без стола';
+        row.querySelector('.held-order-date').textContent = heldDateFormat.format(order.heldAt);
+        rows.append(row);
+      }
+      heldOrderList.replaceChildren(rows);
+      document.getElementById('held-orders-empty').hidden = orderWorkspace.held.length > 0;
+    }
+
+    function showHeldOrders() {
+      quickOrderForm.hidden = true;
+      heldOrdersPanel.hidden = false;
+      orderDialogTitle.textContent = 'Отложенные заказы';
+      heldOrderStatus.textContent = '';
+      renderHeldOrders();
+      syncPaymentControls();
+      if (!orderDialog.open) orderDialog.showModal();
+      else orderDialog.querySelector('[aria-label="Закрыть"]').focus();
+    }
+
+    function openQuickOrder(order, heldId = null) {
+      editedHeldOrderId = heldId;
+      orderDialogTitle.textContent = heldId ? 'Правка отложенного заказа' : 'Быстрое редактирование';
+      heldOrdersPanel.hidden = true;
+      quickOrderForm.hidden = false;
+      quickOrderAmount.value = order?.amount.replace('.', ',') || '';
+      quickOrderTable.value = normalizeTableNumber(order?.tableNumber);
+      quickOrderError.textContent = '';
+      if (!orderDialog.open) orderDialog.showModal();
+      quickOrderAmount.focus();
+      quickOrderAmount.select();
+    }
+
+    document.getElementById('hold-order').addEventListener('click', () => {
+      if (isDraftLocked()) return;
+      const saved = updateOrderWorkspace(workspace => {
+        if (!workspace.active || Number(workspace.active.amount) <= 0) return null;
+        const order = {...workspace.active, heldAt: Date.now()};
+        return {active: null, held: [order, ...workspace.held]};
+      });
+      if (!saved) return;
+      showPaymentEntryHint();
+      showToast('Заказ отложен', 'success');
+    });
+
+    document.getElementById('show-held-orders').addEventListener('click', showHeldOrders);
+    document.getElementById('quick-edit-order').addEventListener('click', () => {
+      if (!isDraftLocked()) openQuickOrder(orderWorkspace.active);
+    });
+    heldOrderList.addEventListener('click', event => {
+      const button = event.target.closest('[data-held-action]');
+      if (!button) return;
+      const orderId = button.closest('li').dataset.orderId;
+      if (button.dataset.heldAction === 'edit') {
+        const order = orderWorkspace.held.find(item => item.id === orderId);
+        if (order) openQuickOrder(order, orderId);
+        return;
+      }
+      if (isDraftLocked()) return;
+      let heldCurrent = false;
+      const saved = updateOrderWorkspace(workspace => {
+        const active = workspace.held.find(order => order.id === orderId);
+        if (!active) return null;
+        const held = workspace.held.filter(order => order.id !== orderId);
+        heldCurrent = Boolean(workspace.active);
+        if (workspace.active) held.unshift({...workspace.active, heldAt: Date.now()});
+        return {active, held};
+      });
+      if (!saved) {
+        heldOrderStatus.textContent = 'Не удалось вернуть заказ.';
+        return;
+      }
+      orderDialog.close();
+      showPaymentEntryHint();
+      showToast(heldCurrent ? 'Заказ возвращён. Предыдущий отложен.' : 'Заказ возвращён к оплате', 'success');
+    });
+
+    document.getElementById('quick-order-back').addEventListener('click', () => {
+      if (editedHeldOrderId) showHeldOrders();
+      else orderDialog.close();
+    });
+    quickOrderForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const amount = quickOrderAmount.value.trim().replace(',', '.');
+      const tableNumber = normalizeTableNumber(quickOrderTable.value);
+      if (!/^\d{1,7}(\.\d{1,2})?$/.test(amount) || Number(amount) <= 0) {
+        quickOrderError.textContent = 'Введите сумму больше 0 ₽, до двух знаков после запятой.';
+        quickOrderAmount.focus();
+        return;
+      }
+      if (quickOrderTable.value.trim() && !tableNumber) {
+        quickOrderError.textContent = 'Введите номер стола от 1 до 9999 или оставьте поле пустым.';
+        quickOrderTable.focus();
+        return;
+      }
+      const changes = {amount: String(Number(amount)), tableNumber};
+      if (editedHeldOrderId) {
+        const saved = updateOrderWorkspace(workspace => {
+          const order = workspace.held.find(item => item.id === editedHeldOrderId);
+          if (!order) return null;
+          return {...workspace, held: workspace.held.map(item => item === order ? {...item, ...changes} : item)};
+        });
+        if (saved) showHeldOrders();
+        else quickOrderError.textContent = 'Не удалось сохранить отложенный заказ.';
+      } else if (isDraftLocked()) {
+        quickOrderError.textContent = 'Завершите текущую оплату перед редактированием.';
+      } else if (updateDraft(draft => ({...draft, ...changes}))) {
+        orderDialog.close();
+        showPaymentEntryHint();
+      } else {
+        quickOrderError.textContent = 'Не удалось сохранить заказ.';
+      }
+    });
+
+    posTableField.addEventListener('change', () => {
+      const tableNumber = normalizeTableNumber(posTableField.value);
+      if (posTableField.value.trim() && !tableNumber) {
+        showToast('Введите номер стола от 1 до 9999', 'error');
+        updateDisplay();
+        return;
+      }
+      if (isDraftLocked() || !updateDraft(draft => ({...draft, tableNumber}))) updateDisplay();
+    });
+    posTableField.addEventListener('keydown', event => {
+      if (event.key === 'Enter') posTableField.blur();
+    });
+    window.addEventListener('storage', event => {
+      if (event.key !== orderWorkspaceKey) return;
+      orderWorkspace = readOrderWorkspace();
+      renderOrderWorkspace();
+    });
+    renderOrderWorkspace();
+    showPaymentEntryHint();
 
     function formatEnteredAmount(input) {
       const [whole, fraction] = input.split('.');
@@ -2227,7 +2615,8 @@ button:not(:disabled):active { transform: scale(.96); }
     }
 
     function updateDisplay() {
-      renderAmount(document.getElementById('amount-display'), currentInput);
+      renderAmount(document.getElementById('amount-display'), pendingOrder ? String(pendingOrder.amount) : currentInput);
+      posTableField.value = pendingOrder ? normalizeTableNumber(pendingOrder.tableNumber) : getDraftTableNumber();
     }
 
     function setPaymentStatus(message, tone = '') {
@@ -2251,8 +2640,7 @@ button:not(:disabled):active { transform: scale(.96); }
     }
 
     function clearAmount() {
-      currentInput = '0';
-      updateDisplay();
+      updateDraft(draft => ({...draft, amount: '0'}));
     }
 
     function updateTipDisplay() {
@@ -2265,9 +2653,8 @@ button:not(:disabled):active { transform: scale(.96); }
         haptic(8);
         const key = button.dataset.key;
         if (button.closest('[data-keypad]').dataset.keypad === 'pos') {
-          currentInput = updateAmountInput(currentInput, key);
-          updateDisplay();
-          showPaymentEntryHint();
+          if (!isDraftLocked() &&
+              updateDraft(draft => ({...draft, amount: updateAmountInput(draft.amount, key)}))) showPaymentEntryHint();
         } else {
           tipCheckInput = updateAmountInput(tipCheckInput, key);
           updateTipDisplay();
@@ -2289,7 +2676,8 @@ button:not(:disabled):active { transform: scale(.96); }
       if (paymentStarting) return;
       if (activePollInterval) clearInterval(activePollInterval);
       activePollInterval = null;
-      const canceledAmount = Number(currentInput) || 0;
+      const canceledAmount = Number(pendingOrder?.amount ?? currentInput) || 0;
+      const draftFields = orderDraftFields(pendingOrder || {tableNumber: getDraftTableNumber(), draftId: getDraftOrderId()});
       const canceledTitle = 'Сброс операции';
       const terminalId = localStorage.getItem('yk_term_id') || 'term_01';
       if (window.firebaseDB && window.dbRef && window.dbSet) {
@@ -2305,13 +2693,14 @@ button:not(:disabled):active { transform: scale(.96); }
             amount: canceledAmount,
             method: 'canceled',
             status: 'CANCELED',
-            title: canceledTitle
+            title: canceledTitle,
+            ...draftFields
           });
         }
       }
       document.getElementById('pos-status-text').innerText = 'Экран покупателя свободен';
       showToast('Экран покупателя сброшен', 'info');
-      clearAmount();
+      clearMatchingDraft(draftFields.draftId);
     }
 
     // ============ АКЦИИ (СТАРАЯ И НОВАЯ ЦЕНА) ============

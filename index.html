@@ -1239,7 +1239,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, update, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB8CBeK8m25rox6BYO8ep6JeBJ7ipmYViQ",
@@ -2456,6 +2456,7 @@
     let initialOrderQrUrl = '';
     let initialOrderPaymentId = '';
     let isCurrentOrderCard = false;
+    let checkoutOrder;
     const orderQrKeys = new Map();
 
     function triggerPayment(orderData) {
@@ -2470,6 +2471,7 @@
       if (orderData.cfWorkerUrl) { globalCfUrl = orderData.cfWorkerUrl; localStorage.setItem('cf_worker_url', orderData.cfWorkerUrl); }
 
       baseAmount = Number(orderData.amount) || 0;
+      checkoutOrder = orderData;
       selectedTip = 0;
       orderQrKeys.clear();
       initialOrderQrUrl = orderData.qrUrl || '';
@@ -2513,7 +2515,7 @@
           renderQRCodeToCanvas(initialOrderQrUrl, 'qr-canvas');
           if (initialOrderPaymentId) {
             startPaymentWatcher(initialOrderPaymentId, (paidData) => {
-              markOrderPaidInFirebase(paidData.amount ? paidData.amount.value : baseAmount);
+              markOrderPaidInFirebase(paidData.amount ? paidData.amount.value : baseAmount, initialOrderPaymentId);
             });
           }
         } else {
@@ -2546,7 +2548,7 @@
           document.getElementById('qr-wrapper').classList.remove('hidden');
           renderQRCodeToCanvas(initialOrderQrUrl, 'qr-canvas');
           if (initialOrderPaymentId) {
-            startPaymentWatcher(initialOrderPaymentId, () => markOrderPaidInFirebase(baseAmount));
+            startPaymentWatcher(initialOrderPaymentId, () => markOrderPaidInFirebase(baseAmount, initialOrderPaymentId));
           }
         } else {
           await regenerateOrderQrWithTip(tip);
@@ -2574,7 +2576,7 @@
         loader.classList.add('hidden');
         loader.classList.remove('flex');
         qrWrap.classList.remove('hidden');
-        startPaymentWatcher(paymentId, () => { markOrderPaidInFirebase(total); });
+        startPaymentWatcher(paymentId, () => { markOrderPaidInFirebase(total, paymentId); });
       } catch (e) {
         if (version !== paymentRenderVersion || !paymentScreen.classList.contains('active')) return;
         loader.classList.add('hidden');
@@ -2718,11 +2720,25 @@
     });
 
 
-    function markOrderPaidInFirebase(paidTotal) {
-      
-    const orderRef = ref(db, `terminals/${terminalId}/current_order`);
-      set(orderRef, { status: 'PAID', amount: paidTotal, timestamp: Date.now() });
-      triggerSuccess();
+    async function markOrderPaidInFirebase(paidTotal, paymentId) {
+      const checkout = checkoutOrder;
+      if (!checkout) return;
+      const orderRef = ref(db, `terminals/${terminalId}/current_order`);
+      try {
+        const result = await runTransaction(orderRef, current => {
+          if (current?.status !== 'WAITING_FOR_PAYMENT' || current.timestamp !== checkout.timestamp ||
+              current.paymentId !== checkout.paymentId || current.amount !== checkout.amount) return;
+          const {draftId, tableNumber} = current;
+          return {
+            status: 'PAID', amount: Number(paidTotal), method: 'sbp', paymentId, timestamp: Date.now(),
+            ...(draftId ? {draftId} : {}),
+            ...(tableNumber ? {tableNumber} : {})
+          };
+        }, {applyLocally: false});
+        if (result.committed && checkoutOrder === checkout) triggerSuccess();
+      } catch (error) {
+        console.error('Не удалось сохранить результат оплаты', error);
+      }
     }
 
     /* ═══════════════════════════════════════════
@@ -3110,6 +3126,13 @@
     onValue(orderRef, (snapshot) => {
       const data = snapshot.val();
       if (permanentTipActive) return;
+      if (data?.status === 'IDLE' && data.resetDisplay === true) {
+        if (!paymentScreen.classList.contains('active')) {
+          window.toggleSyrupsShelf(false);
+          resetToIdle(false);
+        }
+        return;
+      }
       if (activeTip && (data?.status === 'IDLE' || data?.status === 'canceled' || !data)) {
         resetToIdle(false);
         return;
