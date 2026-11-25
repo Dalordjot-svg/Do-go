@@ -177,8 +177,9 @@ export function runWork(branch: string, actor: string) {
 
 export function watchRoom(branch: string, chat: string, changed: (messages: Message[]) => void) {
   const key = roomKey(branch, chat)
+  const initial = remote.remoteEnabled ? [] : sampleMessages(chat)
   const subscription = liveQuery(() => local.messages.where('room').equals(key).toArray()).subscribe({
-    next: rows => changed([...(!remote.remoteEnabled ? sampleMessages(chat) : []), ...rows].sort((a, b) => a.at - b.at)),
+    next: rows => changed([...initial, ...rows].sort((a, b) => a.at - b.at)),
     error: report
   })
   const stop = remote.remoteEnabled ? remote.observeChat(branch, chat, message => { void cacheMessage(branch, chat, message).catch(report) }, report) : undefined

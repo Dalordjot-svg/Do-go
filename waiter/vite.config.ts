@@ -14,5 +14,5 @@ export default defineConfig({
       cleanupOutdatedCaches: true
     }
   })],
-  build: { rollupOptions: { output: { manualChunks: { firebase: ['firebase/app', 'firebase/database'] } } } }
+  build: { rollupOptions: { output: { manualChunks: { firebase: ['firebase/app', 'firebase/database'], motion: ['motion/react'], storage: ['dexie'] } } } }
 })
