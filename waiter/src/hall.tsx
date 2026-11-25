@@ -3,6 +3,7 @@ import { ArrowDownLeft, ArrowRight, Bell, CircleAlert, Clock3, Coffee, Grid2X2, 
 import { guestCount, issue, linesOf, minutes, tableState, type Table, type Workspace } from './domain'
 import { useDirectory } from './directory'
 import { Chip, Empty } from './ui'
+import { TableGroups } from './table-picker'
 
 const statusIcon = { free: Users, mine: Users, other: Users, ready: Bell, late: CircleAlert }
 const seatForms = new Intl.PluralRules('ru')
@@ -100,13 +101,7 @@ export function Hall({ data, branch, actor, open, now, mode, setMode, orders }: 
       <section className="floor-panel">
         <h2 className="sr-only">План зала</h2>
         {mode === 'map' ? <Plan tables={tables} data={data} actor={actor} now={now} open={open}/> :
-          <div className="table-list">{tables.map(table => {
-            const order = data.active[data.occupied[table.id]]
-            const [tone, title] = tableState(order, actor, now)
-            return <button className="line-row" key={table.id} data-coach={table.id === 't1' ? 'table' : undefined} onClick={() => open(table.id)}>
-              <div><strong>Стол {table.number}</strong><small>{order ? `${directory.person(order.owner)?.name ?? 'Коллега'} · ${guestCount(order)} гост. · ${minutes(order.opened, now)} мин` : table.zone}</small></div><Chip tone={tone}>{title}</Chip>
-            </button>
-          })}</div>}
+          <TableGroups tables={tables} data={data} actor={actor} now={now} open={open}/>}
       </section>
       <aside className="activity">
         <header className="row spread"><h2>Требуют внимания</h2><span className="counter">{tasks.length}</span></header>

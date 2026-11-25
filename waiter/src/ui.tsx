@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { ArrowUpRight, Coffee, X } from 'lucide-react'
 import { motion } from 'motion/react'
 import { person } from './fixtures'
@@ -55,12 +55,14 @@ export function Chip({ children, tone }: { children: ReactNode; tone?: string })
 export function ScreenTitle({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   return <div className="screen-title"><div><h1>{title}</h1><p>{children}</p></div>{action}</div>
 }
-export function Dialog({ title, close, children }: { title: string; close: () => void; children: ReactNode }) {
+export function Dialog({ title, close, children, sheet }: { title: string; close: () => void; children: ReactNode; sheet?: boolean }) {
   const element = useRef<HTMLDialogElement>(null)
+  const label = useId()
   useEffect(() => { element.current?.showModal() }, [])
-  return <dialog ref={element} onCancel={event => { event.preventDefault(); close() }} onClick={event => { if (event.target === event.currentTarget) close() }}>
-    <motion.div className="dialog-inner" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <header className="row spread"><h2>{title}</h2><button className="icon" aria-label="Закрыть" onClick={close}><X size={20}/></button></header>
+  return <dialog ref={element} className={sheet ? 'mobile-sheet' : undefined} aria-labelledby={label}
+    onCancel={event => { event.preventDefault(); close() }} onClick={event => { if (event.target === event.currentTarget) close() }}>
+    <motion.div className="dialog-inner" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .19 }}>
+      <header className="row spread"><h2 id={label}>{title}</h2><button className="icon" aria-label="Закрыть" onClick={close}><X size={20}/></button></header>
       {children}
     </motion.div>
   </dialog>

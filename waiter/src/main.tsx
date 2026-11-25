@@ -9,6 +9,7 @@ import { Directory, getDirectory } from './directory'
 import type { Workspace } from './domain'
 import './styles.css'
 import './ios.css'
+import './workflows.css'
 
 const Work = lazy(() => import('./workspace'))
 type Theme = 'light' | 'dark' | 'system'

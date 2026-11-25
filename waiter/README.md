@@ -30,6 +30,8 @@ npm run dev -- --port 5173
 
 [Десять скриншотов редизайна](docs/screenshots/README.md). Проверены 390 × 844, 430 × 932, 768 × 1024, 1024 × 768, 1366 × 768 и уменьшенная высота при вводе сообщения.
 
+На телефоне можно начать заказ прямо из вкладки «Заказы», выбрать стол по зоне и добавить блюдо нужному гостю через нижнюю панель. [Мобильные экраны iPhone и Android](docs/mobile/README.md).
+
 ## Настоящая синхронизация через Firebase Emulator
 
 1. Запустите `npm run emulator` в отдельном терминале. Используется проект `demo-coffeeman` и изолированные правила Emulator.
@@ -60,8 +62,9 @@ GitHub Pages раздаёт корень ветки `feature/coffeeman-waiter`. 
 ```sh
 npm test
 npm run build
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run test:e2e
+npm run test:mobile
 npm run test:emulator
 npm run test:emulator:e2e
 ```

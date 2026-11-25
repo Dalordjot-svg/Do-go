@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test'
 export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.pw.ts',
-  testIgnore: '**/multi.pw.ts',
+  testIgnore: ['**/multi.pw.ts', '**/mobile.pw.ts'],
   workers: 2,
   timeout: 60000,
   use: { browserName: 'chromium', baseURL: 'http://127.0.0.1:5173' },

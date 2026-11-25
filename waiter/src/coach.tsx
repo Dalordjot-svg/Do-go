@@ -16,7 +16,7 @@ export function Coach({ prompt, step, exam, errors, verify, reset, restart }: {
     const draw = () => {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
-        const target = prompt.target.split('|').flatMap(key => Array.from(document.querySelectorAll(`[data-coach="${key}"]`))).find(node => node.getClientRects().length)
+        const target = prompt.target.split('|').flatMap(key => Array.from(document.querySelectorAll(`[data-coach="${key}"]`))).find(node => node.getClientRects().length && !node.closest('[inert]') && getComputedStyle(node).visibility === 'visible')
         if (target !== highlighted) { highlighted?.removeAttribute('data-coach-focused'); target?.setAttribute('data-coach-focused', ''); highlighted = target }
         const box = target?.getBoundingClientRect()
         if (!box || box.height === 0 || box.bottom <= 0 || box.top >= innerHeight) { setRect(undefined); return }
@@ -29,11 +29,12 @@ export function Coach({ prompt, step, exam, errors, verify, reset, restart }: {
     const observer = new ResizeObserver(draw)
     if (app) observer.observe(app)
     const changes = new MutationObserver(draw)
-    if (app) changes.observe(app, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] })
+    if (app) changes.observe(app, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'inert', 'aria-hidden'] })
     addEventListener('resize', draw)
     addEventListener('scroll', draw, true)
+    app?.addEventListener('transitionend', draw)
     draw()
-    return () => { highlighted?.removeAttribute('data-coach-focused'); observer.disconnect(); changes.disconnect(); removeEventListener('resize', draw); removeEventListener('scroll', draw, true); cancelAnimationFrame(frame) }
+    return () => { highlighted?.removeAttribute('data-coach-focused'); observer.disconnect(); changes.disconnect(); removeEventListener('resize', draw); removeEventListener('scroll', draw, true); app?.removeEventListener('transitionend', draw); cancelAnimationFrame(frame) }
   }, [prompt.target, exam])
   return <>
     {!exam && rect && <div aria-hidden="true" className="coach-spotlight" style={rect}/>}

@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Bell, CircleAlert, Coffee, LayoutGrid, ListChecks, MapPin, MessageCircle, Shield, UserRound, Wifi, WifiOff } from 'lucide-react'
-import { apply, guestCount, id, linesOf, money, paid, shared, type Command, type ConfigChange, type Link, type Message, type Order, type Workspace } from './domain'
+import { apply, id, linesOf, money, shared, type Command, type ConfigChange, type Link, type Message, type Order, type Workspace } from './domain'
 import { person, sampleMessages } from './fixtures'
 import { Directory, getDirectory, getRegistry } from './directory'
 import { backend } from './remote'
 import { enqueue, enqueueCertificate, local, registryBranch, runWork, save, setting, useWork, watchRoom } from './storage'
-import { Avatar, Button, Chip, Dialog, Empty, ScreenTitle, asset, useClock, useKeyboardViewport } from './ui'
+import { Avatar, Button, Chip, Dialog, Empty, asset, useClock, useKeyboardViewport } from './ui'
 import { Hall } from './hall'
+import { TablePicker } from './table-picker'
+import { ProfileOverview } from './profile-overview'
 import { Inventory } from './inventory'
 import { OpenTable, OrderEditor, Orders, type Dispatch } from './orders'
 import { getAlerts } from './alerts'
@@ -60,6 +62,8 @@ export default function Work({ account, registry, change, theme, themeChange, si
   const [visited, setVisited] = useState<Page[]>([page])
   const [map, setMap] = useState<'map' | 'list'>('map')
   const [selected, select] = useState<Link | undefined>(() => sandbox && account.practiceOrder ? { kind: 'order', key: account.practiceOrder } : undefined)
+  const [picker, setPicker] = useState<'Свободные' | 'Все'>()
+  const [fromPicker, setFromPicker] = useState(false)
   const [notice, setNotice] = useState(false)
   const [help, setHelp] = useState(false)
   const [read, setRead] = useState<Record<string, boolean>>({})
@@ -79,7 +83,7 @@ export default function Work({ account, registry, change, theme, themeChange, si
     if (!sandbox && account.certificate) void enqueueCertificate(actor, account.certificate).catch(error => setUiError(String(error)))
   }, [actor, account.certificate, sandbox])
   function navigate(next: Page) {
-    select(undefined); setAdmin(false); setPage(next)
+    select(undefined); setPicker(undefined); setFromPicker(false); setAdmin(false); setPage(next)
     setVisited(items => items.includes(next) ? items : [...items, next])
     go(next)
     if (sandbox && !exam && account.step === 0 && next === 'orders') change({ ...account, step: 1 })
@@ -163,9 +167,21 @@ export default function Work({ account, registry, change, theme, themeChange, si
     if (!sandbox) void save(`favorites:${actor}`, next)
   }
   const openTable = (key: string) => select({ kind: 'table', key })
+  function chooseTable(key: string) {
+    setPicker(undefined)
+    setFromPicker(!data.occupied[key])
+    openTable(key)
+  }
+  function closeOrder() {
+    select(undefined)
+    if (fromPicker && !orderKey) setPicker('Свободные')
+    setFromPicker(false)
+  }
   const openOrder = (order: Order) => select({ kind: 'order', key: order.id })
   const orderKey = selected?.kind === 'table' ? data.occupied[selected.key] : selected?.kind === 'order' ? selected.key : ''
   const current = data.active[orderKey] ?? data.archived[orderKey]
+  const guestSheet = selected?.kind === 'table' && !current
+  const selectedTable = selected?.kind === 'table' ? directory.layout.find(table => table.id === selected.key) : undefined
   useEffect(() => {
     if (selected?.kind === 'table' && orderKey) select({ kind: 'order', key: orderKey })
   }, [selected?.kind, orderKey])
@@ -179,8 +195,6 @@ export default function Work({ account, registry, change, theme, themeChange, si
   const stockAlerts = alerts.filter(item => item.link?.kind === 'dish' && !read[item.id]).length
   const mine = Object.values(data.active).filter(order => order.owner === actor)
   const archive = Object.values(data.archived).filter(order => order.state === 'closed' && order.owner === actor)
-  const income = archive.reduce((sum, order) => sum + paid(order), 0)
-  const guests = archive.reduce((sum, order) => sum + guestCount(order), 0)
   const source = backend === 'emulator' ? 'Firebase Emulator' : 'Данные на устройстве'
   const status = !online ? 'Нет соединения' : busy ? 'Синхронизация' : rejected.length ? 'Конфликт данных' : syncError ? 'Ошибка' : pending.length ? 'Ожидает отправки' : backend === 'emulator' ? 'Синхронизировано' : 'Локальный режим'
   const step = Math.min(account.step, lessonNames.length - 1)
@@ -239,16 +253,15 @@ export default function Work({ account, registry, change, theme, themeChange, si
       </div>}
       <div className={`nav-pages ${directory.preferences?.compactOrders ? 'compact-orders' : ''}`}>
         {admin && canManage && <section className="page" hidden={!!selected}><Suspense fallback={<Empty>Открываем управление…</Empty>}><Admin data={data} registry={registry} actor={actor} branch={branch} now={now} order={openOrder} dispatch={dispatch} save={configure} close={() => setAdmin(false)}/></Suspense></section>}
-        {visited.map(tab => <section className="page" key={tab} hidden={tab !== page || !!selected || admin}><div className="page-body">
+        {visited.map(tab => <section className="page" key={tab} hidden={tab !== page || !!selected && !guestSheet || admin}><div className="page-body">
           {tab === 'hall' && <Hall data={data} branch={branch} actor={actor} now={now} open={openTable} mode={map} setMode={setMap} orders={() => navigate('orders')}/>}
-          {tab === 'orders' && <Orders data={data} actor={actor} now={now} open={openOrder}/>}
+          {tab === 'orders' && <Orders data={data} actor={actor} now={now} open={openOrder} start={() => setPicker('Свободные')}/>}
           {tab === 'stop-list' && <Inventory data={data} dispatch={dispatch}/>}
           {tab === 'chats' && <Suspense fallback={<Empty>Загрузка чатов…</Empty>}><Chats actor={actor} branch={branch} data={data} chat={chat} select={setChat} loaded={loaded} read={chatRead} dispatch={dispatch} open={select} sandbox={sandbox}/></Suspense>}
           {tab === 'profile' && <div className="stack">
-            <ScreenTitle title="Профиль">Данные смены, настройки и Академия.</ScreenTitle>
-            <div className="panel pad row spread wrap"><div className="row"><Avatar actor={actor}/><div><h2>{user.name}</h2><p className="muted">{user.role} · {directory.branches.find(value => value.id === branch)?.name}</p></div></div><Chip tone={online ? 'mine' : 'free'}>{status}</Chip></div>
+            <ProfileOverview user={user} branch={directory.branches.find(value => value.id === branch)?.name} status={sandbox ? 'Песочница' : status}
+              online={online} archive={archive} active={mine.length} now={now} signOut={sandbox ? undefined : signOut}/>
             {canManage && <button className="line-row admin-launch" onClick={() => setAdmin(true)}><span className="row"><Shield size={20}/> Панель администратора</span><span aria-hidden="true">›</span></button>}
-            <div className="profile-grid">{[['Активные столы', mine.length], ['Обслуженные гости', guests], ['Завершённые заказы', archive.length], ['Тестовые продажи', money(income)], ['Средний чек', money(archive.length ? Math.round(income / archive.length) : 0)]].map(([label, value]) => <div className="panel card" key={label}><small>{label}</small><strong>{value}</strong></div>)}</div>
             {!sandbox && <><section className="panel pad stack">
               <h2>Настройки</h2>
               <div className="form-grid"><label>Тема<select value={theme} onChange={event => themeChange(event.target.value as Theme)}><option value="system">Системная</option><option value="light">Светлая</option><option value="dark">Тёмная</option></select></label>
@@ -258,25 +271,34 @@ export default function Work({ account, registry, change, theme, themeChange, si
             </section>
             <section className="panel pad stack"><h2>Пересменка</h2><label>Передать все мои столы<select value={successor} onChange={event => setSuccessor(event.target.value)}><option value="">Выберите коллегу</option>{directory.staff.filter(item => item.id !== actor && !item.disabled).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><Button disabled={!successor || !mine.length} onClick={() => { void dispatch({ type: 'transfer', orders: Object.fromEntries(mine.map(order => [order.id, actor])), owner: successor }) }}>Передать · {mine.length}</Button></section>
             {account.certificate && <Certificate actor={actor} certificate={account.certificate}/>}
-            <div className="row wrap"><Button onClick={() => setHelp(true)}>Помощь Саши</Button><Button onClick={training}>Повторить обучение</Button><Button onClick={signOut}>Выйти из профиля</Button></div>
+            <div className="row wrap"><Button onClick={() => setHelp(true)}>Помощь Саши</Button><Button onClick={training}>Повторить обучение</Button></div>
             {Developer && <Suspense><Developer data={data} branch={branch} actor={actor} dispatch={dispatch} training={training} delay={() => setSimulateDelay(value => !value)}/></Suspense>}</>}
           </div>}
         </div></section>)}
-        {selected && <section className="order-screen" role="dialog" aria-modal="false" aria-labelledby="order-title">
-          <header className="order-header row"><button className="icon" aria-label="Закрыть" onClick={() => select(undefined)}><ArrowLeft size={22}/></button>
-            <div><small>{current || selected.kind === 'table' ? 'Обслуживание' : 'Справочник'}</small><h1 id="order-title">{current ? `Стол ${directory.table(current.table)}` : selected.kind === 'table' ? `Стол ${directory.table(selected.key)}` : currentDish?.name ?? 'Заказ'}</h1></div>
+        {guestSheet && selected && <section className="guest-overlay" role="dialog" aria-modal="false" aria-labelledby="selected-table-title">
+          <div className="guest-backdrop" aria-hidden="true" onClick={closeOrder}/>
+          <div className="open-table-sheet stack">
+            <header className="row spread"><div><small>{selectedTable?.zone}</small><h2 id="selected-table-title">Стол {directory.table(selected.key)}</h2></div>
+              <button className="icon" aria-label="Закрыть" onClick={closeOrder}><ArrowLeft size={21}/></button></header>
+            <OpenTable key={selected.key} table={selected.key} dispatch={dispatch} pending={pending.some(row => row.command.type === 'open' && row.command.table === selected.key)} done={() => {}}/>
+            {(uiError || rejected[0]?.rejected) && <p className="callout danger" role="alert">{uiError || rejected[0].rejected}</p>}
+          </div>
+        </section>}
+        {selected && !guestSheet && <section className={`order-screen ${current ? 'editing-order' : ''}`} role="dialog" aria-modal="false" aria-labelledby="order-title">
+          <header className="order-header row"><button className="icon" aria-label="Закрыть" onClick={closeOrder}><ArrowLeft size={22}/></button>
+            <div><small>{current ? 'Обслуживание' : 'Справочник'}</small><h1 id="order-title">{current ? `Стол ${directory.table(current.table)}` : currentDish?.name ?? 'Заказ'}</h1></div>
           </header>
           <div className="order-scroll">
             {current ? <OrderEditor key={current.id} order={current} data={data} actor={actor} now={now} dispatch={dispatch} favorites={favorites} toggle={toggle}
               observeDish={key => { if (exam && data.stock[key]?.count === 0) change({ ...academyRef.current, blocked: true }) }}
               pending={pending.flatMap(({ command }) => 'order' in command && command.order === current.id && ['send', 'status', 'pay', 'close'].includes(command.type) ? [command] : [])}/> :
-              selected.kind === 'table' ? <div className="open-table-sheet"><OpenTable key={selected.key} table={selected.key} dispatch={dispatch} pending={pending.some(row => row.command.type === 'open' && row.command.table === selected.key)} done={() => {}}/></div> :
               currentDish ? <div className="stack"><p>{currentDish.description}</p><p>{money(currentDish.price)} · {currentDish.prep} мин · {data.stock[currentDish.id]?.count === 0 ? 'Стоп-лист' : 'В наличии'}</p><p className="muted">{currentDish.allergens}</p><Button onClick={() => navigate('stop-list')}>К стоп-листу</Button></div> : <Empty>Заказ недоступен. Проверьте выбранную точку.</Empty>}
             {(uiError || rejected[0]?.rejected) && <p className="callout danger" role="alert">{uiError || rejected[0].rejected}</p>}
           </div>
         </section>}
       </div>
     </main>
+    {picker && <TablePicker data={data} actor={actor} now={now} initialFilter={picker} choose={chooseTable} close={() => setPicker(undefined)}/>}
     {sandbox && <Coach prompt={prompt} step={step} exam={exam} errors={feedback} verify={verify} reset={() => resetPractice('exam')} restart={() => resetPractice('lesson')}/>}
     {notice && <Dialog title="Уведомления" close={() => setNotice(false)}>
       <Button disabled={!unread} onClick={() => mark(alerts.map(item => item.id))}>Отметить все прочитанными</Button>
