@@ -3,7 +3,7 @@ import { MotionConfig } from 'motion/react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Academy, initialAcademy, type AcademyState } from './academy'
 import { Installation, useInstallation } from './installation'
-import { save, setting } from './storage'
+import { local, save, setting } from './storage'
 import { Brand } from './ui'
 import './styles.css'
 
@@ -26,9 +26,16 @@ function Entry() {
     preferred.addEventListener('change', change)
     return () => preferred.removeEventListener('change', change)
   }, [theme])
-  function change(next: AcademyState) {
+  function persist(next: AcademyState) {
     setState(next)
-    void save('academy', next).catch(() => setError('Не удалось сохранить прогресс на устройстве.'))
+    const rows = [{ key: 'academy', value: next }]
+    if (next.actor) rows.push({ key: 'academy:' + next.actor, value: next })
+    void local.settings.bulkPut(rows).catch(() => setError('Не удалось сохранить прогресс на устройстве.'))
+  }
+  function change(next: AcademyState) {
+    if (state?.stage === 'profile' && next.stage === 'branch') {
+      void setting('academy:' + next.actor, next).then(persist).catch(() => setError('Не удалось открыть профиль.'))
+    } else persist(next)
   }
   if (error || !state) return <main className="onboarding stack"><Brand/><p role="status">{error || 'Подготовка рабочего места…'}</p></main>
   if (state.stage !== 'work' || !state.certificate) return <Academy state={state.stage === 'work' ? initialAcademy : state} change={change}/>

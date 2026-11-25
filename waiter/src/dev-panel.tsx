@@ -7,7 +7,7 @@ import { listenerCount, remoteEnabled, simulateNetwork } from './remote'
 import { enqueue, local, resetLocal, useWork } from './storage'
 import { Button } from './ui'
 
-export default function DevPanel({ data, branch, actor, dispatch, training }: { data: Workspace; branch: string; actor: string; dispatch: Dispatch; training: () => void }) {
+export default function DevPanel({ data, branch, actor, dispatch, training, delay }: { data: Workspace; branch: string; actor: string; dispatch: Dispatch; training: () => void; delay: () => void }) {
   const [report, setReport] = useState('')
   const [confirm, setConfirm] = useState(false)
   const sync = useWork()
@@ -21,6 +21,7 @@ export default function DevPanel({ data, branch, actor, dispatch, training }: { 
       }}>{sync.online ? 'Отключить сеть' : 'Восстановить сеть'}</Button>
       <Button onClick={() => useWork.setState({ slow: !sync.slow })}>{sync.slow ? 'Вернуть обычную скорость' : 'Медленное соединение'}</Button>
       <Button onClick={training}>Сбросить обучение</Button>
+      <Button onClick={delay}>Переключить симуляцию задержки</Button>
       <Button disabled={!first} onClick={() => { void enqueue(branch, actor === 'lena' ? 'artem' : 'lena', { type: 'note', order: first.id, previous: first.note, note: `Тест коллеги ${id().slice(0, 4)}` }) }}>Действие коллеги</Button>
       <Button disabled={!first} onClick={() => {
         const line = linesOf(first).find(item => item.status === 'accepted')

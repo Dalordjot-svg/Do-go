@@ -48,9 +48,9 @@ export async function transactWorkspace(operation: Operation, seed = seedWorkspa
     const current = raw ? normalize(raw as Workspace) : seed
     if (current.receipts[operation.id]) return current
     const next = apply(current, operation, operation.at)
-    const event = next.state.audit[operation.id]
-    const updates = { ...next.state, receipts: { ...next.state.receipts, [operation.id]: { result: next.error, at: serverTimestamp() } } }
-    return event ? { ...updates, audit: { ...updates.audit, [operation.id]: { ...event, at: serverTimestamp() } } } : updates
+    const audit = Object.fromEntries(Object.entries(next.state.audit).map(([key, event]) =>
+      [key, event.operation === operation.id ? { ...event, at: serverTimestamp() } : event]))
+    return { ...next.state, audit, receipts: { ...next.state.receipts, [operation.id]: { result: next.error, at: serverTimestamp() } } }
   }, { applyLocally: false })
   if (!result.committed) throw new Error('Транзакция не подтверждена')
   return normalize(result.snapshot.val() as Workspace)

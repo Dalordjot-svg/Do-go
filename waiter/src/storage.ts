@@ -133,6 +133,7 @@ export function runWork(branch: string, actor: string) {
               else await local.outbox.delete(row.id)
             })
           }
+          if (active) useWork.setState({ error: '' })
         } catch (error) {
           safeReport(error)
           await local.outbox.update(row.id, { attempts: row.attempts + 1, retryAt: Date.now() + Math.min(30000, 500 * 2 ** row.attempts) })

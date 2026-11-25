@@ -111,6 +111,7 @@ export function apply(input: Workspace, operation: Operation, at: number, optimi
   let before: unknown = ''
   let after: unknown = ''
   let item: string | undefined
+  const stockChanges: { item: string; before: Stock; after: Stock }[] = []
   const orderId = 'order' in c ? c.order : undefined
   const requireOrder = (key: string) => {
     const order = state.active[key]
@@ -182,7 +183,11 @@ export function apply(input: Workspace, operation: Operation, at: number, optimi
         for (const [key, quantity] of used) {
           const stock = inventory(key)
           check(stock.count < 0 || stock.count >= quantity, 'Недостаточно порций: ' + lines.find(line => line.item === key)?.name)
-          if (stock.count >= 0) state.stock[key] = { ...stock, count: stock.count - quantity, version: stock.version + 1 }
+          if (stock.count >= 0) {
+            const updated = { ...stock, count: stock.count - quantity, version: stock.version + 1 }
+            state.stock[key] = updated
+            stockChanges.push({ item: key, before: stock, after: updated })
+          }
         }
         for (const line of lines) {
           const status = c.type === 'send' ? 'accepted' : c.status
@@ -202,7 +207,9 @@ export function apply(input: Workspace, operation: Operation, at: number, optimi
         const stock = inventory(line.item)
         if (c.restock) {
           check(line.status === 'accepted' && stock.count >= 0 && line.reserved === stock.generation, 'Возврат остатка недоступен')
-          state.stock[line.item] = { ...stock, count: stock.count + line.quantity, version: stock.version + 1 }
+          const updated = { ...stock, count: stock.count + line.quantity, version: stock.version + 1 }
+          state.stock[line.item] = updated
+          stockChanges.push({ item: line.item, before: stock, after: updated })
         }
         before = line
         item = line.item
@@ -324,6 +331,11 @@ export function apply(input: Workspace, operation: Operation, at: number, optimi
       id: operation.id, operation: operation.id, actor, kind: c.type, at,
       before: JSON.stringify(before), after: JSON.stringify(after),
       ...(orderId ? { order: orderId } : {}), ...(item ? { item } : {})
+    }
+    if (!error) for (const change of stockChanges) {
+      const eventId = operation.id + '-' + change.item
+      next.audit[eventId] = { id: eventId, operation: operation.id, actor, kind: 'stock', at, item: change.item,
+        before: JSON.stringify(change.before), after: JSON.stringify(change.after) }
     }
   }
   return { state: next, error }

@@ -59,7 +59,7 @@ export function Orders({ data, actor, now, open }: { data: Workspace; actor: str
   const archived = Object.values(data.archived)
   const archivedFilter = ['Завершённые', 'Отменённые', 'Архив'].includes(filter)
   const rows = (archivedFilter ? archived : active).filter(order => (!own || order.owner === actor) &&
-    `${tableNumber(order.table)} ${staff.find(person => person.id === order.owner)?.name ?? ''} ${order.id}`.toLowerCase().includes(search.trim().toLowerCase()))
+    `Стол ${tableNumber(order.table)} ${staff.find(person => person.id === order.owner)?.name ?? ''} ${order.id}`.toLowerCase().includes(search.trim().toLowerCase()))
     .filter(order => ({
       'Завершённые': order.state === 'closed', 'Отменённые': order.state === 'cancelled',
       'Готовятся': linesOf(order).some(line => ['accepted', 'cooking'].includes(line.status)),
@@ -90,6 +90,7 @@ export function Orders({ data, actor, now, open }: { data: Workspace; actor: str
 }
 
 function LineEdit({ line, order, dispatch, close }: { line: Line; order: Order; dispatch: Dispatch; close: () => void }) {
+  const [baseVersion] = useState(line.version)
   const [quantity, setQuantity] = useState(line.quantity)
   const [guest, setGuest] = useState(line.guest)
   const [selection, setSelection] = useState(line.modifiers.split(', ').filter(Boolean))
@@ -97,7 +98,7 @@ function LineEdit({ line, order, dispatch, close }: { line: Line; order: Order; 
   const [course, setCourse] = useState(line.course)
   return <form className="stack panel pad" aria-label="Редактирование позиции" onSubmit={async event => {
     event.preventDefault()
-    if (await dispatch({ type: 'edit', order: order.id, line: line.id, version: line.version, patch: { ...(line.status === 'draft' ? { quantity } : {}), guest, modifiers: selection.join(', '), note, course } })) close()
+    if (await dispatch({ type: 'edit', order: order.id, line: line.id, version: baseVersion, patch: { ...(line.status === 'draft' ? { quantity } : {}), guest, modifiers: selection.join(', '), note, course } })) close()
   }}>
     <h3>{line.name}</h3>
     <div className="form-grid">
@@ -137,6 +138,7 @@ export function OrderEditor({ order, data, actor, branch, now, dispatch, favorit
   const [view, setView] = useState('Позиции')
   const [editing, setEditing] = useState('')
   const [voiding, setVoiding] = useState('')
+  const [voidVersion, setVoidVersion] = useState(0)
   const [reason, setReason] = useState('')
   const [restock, setRestock] = useState(false)
   const [owner, setOwner] = useState('')
@@ -188,12 +190,12 @@ export function OrderEditor({ order, data, actor, branch, now, dispatch, favorit
               {['accepted', 'cooking'].includes(line.status) && <Button onClick={() => status(line, 'ready')}>Отметить готовым</Button>}
               {line.status === 'ready' && <Button primary onClick={() => status(line, 'served')}><Check size={16}/> Выдано гостю</Button>}
               {line.status === 'served' && !order.paidLines?.[line.id] && <Button onClick={() => status(line, 'ready')}>Исправить выдачу</Button>}
-              {['accepted', 'cooking', 'ready'].includes(line.status) && <Button onClick={() => { setVoiding(line.id); setEditing(''); setReason(''); setRestock(false) }}>Отменить позицию</Button>}
+              {['accepted', 'cooking', 'ready'].includes(line.status) && <Button onClick={() => { setVoiding(line.id); setVoidVersion(line.version); setEditing(''); setReason(''); setRestock(false) }}>Отменить позицию</Button>}
             </div>}
             {editing === line.id && <LineEdit line={line} order={order} dispatch={dispatch} close={() => setEditing('')}/>}
             {voiding === line.id && <form className="stack" onSubmit={async event => {
               event.preventDefault()
-              if (await dispatch({ type: 'void', order: order.id, line: line.id, version: line.version, reason, restock })) setVoiding('')
+              if (await dispatch({ type: 'void', order: order.id, line: line.id, version: voidVersion, reason, restock })) setVoiding('')
             }}>
               <label>Причина отмены<input value={reason} onChange={event => setReason(event.target.value)} required maxLength={200}/></label>
               {line.status === 'accepted' && line.reserved && <label className="row"><input type="checkbox" checked={restock} onChange={event => setRestock(event.target.checked)}/> Вернуть доступную порцию</label>}

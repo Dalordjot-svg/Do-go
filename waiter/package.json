@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:emulator": "firebase emulators:exec --config firebase.json --only database --project demo-coffeeman 'vitest run tests/firebase.test.ts'",
-    "emulator": "firebase emulators:start --config firebase.json --only database --project demo-coffeeman"
+    "emulator": "firebase emulators:start --config firebase.json --only database --project demo-coffeeman",
+    "test:emulator:e2e": "firebase emulators:exec --config firebase.json --only database --project demo-coffeeman 'playwright test --config playwright.emulator.config.ts'"
   },
   "dependencies": {
     "dexie": "^4.0.11",
@@ -28,7 +29,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "fake-indexeddb": "^6.0.0",
     "firebase-tools": "^14.0.0",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.8.0",

@@ -30,7 +30,9 @@ export default function Work({ account, change, theme, themeChange, signOut, tra
   account: AcademyState; change: (value: AcademyState) => void; theme: Theme; themeChange: (theme: Theme) => void; signOut: () => void; training: () => void
 }) {
   const { actor, branch } = account
-  const now = useClock()
+  const clock = useClock()
+  const [simulateDelay, setSimulateDelay] = useState(false)
+  const now = clock + (simulateDelay ? 25 * 60000 : 0)
   const data = useWork(state => state.workspace)
   const queue = useWork(state => state.queue)
   const online = useWork(state => state.online)
@@ -153,7 +155,7 @@ export default function Work({ account, change, theme, themeChange, signOut, tra
             <section className="panel pad stack"><h2>Пересменка</h2><label>Передать все мои столы<select value={successor} onChange={event => setSuccessor(event.target.value)}><option value="">Выберите коллегу</option>{staff.filter(item => item.id !== actor).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><Button disabled={!successor || !mine.length} onClick={() => { void dispatch({ type: 'transfer', orders: Object.fromEntries(mine.map(order => [order.id, actor])), owner: successor }) }}>Передать · {mine.length}</Button></section>
             {account.certificate && <Certificate actor={actor} certificate={account.certificate}/>}
             <div className="row wrap"><Button onClick={() => setHelp(true)}>Помощь Саши</Button><Button onClick={training}>Повторить обучение</Button><Button onClick={signOut}>Выйти из профиля</Button></div>
-            {Developer && <Suspense><Developer data={data} branch={branch} actor={actor} dispatch={dispatch} training={training}/></Suspense>}
+            {Developer && <Suspense><Developer data={data} branch={branch} actor={actor} dispatch={dispatch} training={training} delay={() => setSimulateDelay(value => !value)}/></Suspense>}
           </div>}
         </div></section>)}
       </div>
