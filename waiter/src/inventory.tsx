@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Search } from 'lucide-react'
 import type { Workspace } from './domain'
-import { menu } from './fixtures'
+import { useDirectory } from './directory'
 import type { Dispatch } from './orders'
 import { Button, Chip, Empty, ScreenTitle } from './ui'
 
@@ -13,14 +13,15 @@ export function Inventory({ data, dispatch }: { data: Workspace; dispatch: Dispa
   const [count, setCount] = useState(1)
   const [reason, setReason] = useState('')
   const [version, setVersion] = useState(0)
-  const rows = menu.filter(item => item.name.toLowerCase().includes(search.trim().toLowerCase()) &&
+  const { catalog } = useDirectory()
+  const rows = catalog.filter(item => item.name.toLowerCase().includes(search.trim().toLowerCase()) &&
     (filter === 'Все блюда' || (data.stock[item.id]?.count ?? -1) >= 0))
   return <div className="stack">
     <ScreenTitle title="Стоп-лист">Проверяйте доступность блюд и обновляйте остатки.</ScreenTitle>
     <div className="row wrap"><div className="segmented">{['Ограничено', 'Все блюда'].map(key => <button key={key} onClick={() => setFilter(key)} aria-pressed={key === filter}>{key}</button>)}</div>
       <label className="search"><Search size={17}/><input placeholder="Найти блюдо" aria-label="Поиск блюд" value={search} onChange={event => setSearch(event.target.value)}/></label></div>
     {!rows.length && <Empty>Блюда не найдены.</Empty>}
-    <div className="panel pad">{rows.map(item => {
+    <div className="inventory-list" data-coach="stock">{rows.map(item => {
       const current = data.stock[item.id]
       const available = current?.count ?? -1
       return <div key={item.id}>

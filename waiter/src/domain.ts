@@ -10,7 +10,7 @@ export const minutes = (at: number, now: number) => Math.max(0, Math.floor((now 
 export interface Dish { id: string; name: string; category: string; price: number; description: string; allergens: string; prep: number; wait: number; modifiers: string[]; popular: boolean }
 export interface Seat { id: string; name: string }
 export interface Table { id: string; number: number; seats: number; x: number; y: number; w: number; h: number; round?: boolean; zone: string }
-export interface Staff { id: string; name: string; initials: string; role: string; color: string }
+export interface Staff { id: string; name: string; initials: string; role: string; color: string; disabled?: boolean; admin?: boolean }
 export interface Line {
   id: string; item: string; name: string; price: number; quantity: number; guest: string; modifiers: string
   note: string; course: typeof courses[number]; status: Status; createdAt: number; changedAt: number
@@ -23,7 +23,22 @@ export interface Order {
 }
 export interface Stock { count: number; reason: string; version: number; generation: string }
 export interface Event { id: string; operation: string; actor: string; kind: Command['type']; order?: string; item?: string; at: number; before: string; after: string }
+export interface Branch { id: string; name: string; disabled?: boolean }
+export interface TrainingPolicy { title: string; note: string; revision: string; instructions?: Record<string, string> }
+export interface Credential { actor: string; token: string; at: number; score: number; version: string }
+export type ConfigChange =
+  | { kind: 'dish'; entry: Dish }
+  | { kind: 'table'; entry: Table }
+  | { kind: 'staff'; entry: Staff }
+  | { kind: 'branch'; entry: Branch }
+  | { kind: 'category'; entry: { id: string; name: string } }
+  | { kind: 'training'; entry: TrainingPolicy & { id: 'policy' } }
+  | { kind: 'certificate'; entry: Credential & { id: string } }
+  | { kind: 'preferences'; entry: { id: 'app'; name: string; compactOrders: boolean } }
+
+export type Config = Partial<{ [K in ConfigChange['kind']]: Record<string, Extract<ConfigChange, { kind: K }>['entry'] & { configVersion: number }> }>
 export interface Workspace {
+  config?: Config
   revision: number; active: Record<string, Order>; archived: Record<string, Order>; occupied: Record<string, string>
   stock: Record<string, Stock>; audit: Record<string, Event>; receipts: Record<string, { result: string; at: number }>
 }
@@ -31,6 +46,7 @@ export type Link = { kind: 'table' | 'order' | 'dish'; key: string }
 export interface Message { id: string; actor: string; text: string; at: number; link?: Link; reply?: string }
 type Patch = Partial<Pick<Line, 'quantity' | 'guest' | 'modifiers' | 'note' | 'course'>>
 export type Command =
+  | { type: 'configure'; change: ConfigChange; version: number }
   | { type: 'open'; order: string; table: string; guests: Record<string, Seat> }
   | { type: 'add'; order: string; line: Line }
   | { type: 'edit'; order: string; line: string; version: number; patch: Patch }
@@ -51,7 +67,7 @@ export type Command =
 
 export interface Operation { id: string; actor: string; branch: string; at: number; command: Command }
 export const eventNames: Record<Command['type'], string> = {
-  open: 'Открытие стола', add: 'Добавление блюда', edit: 'Изменение позиции', remove: 'Удаление черновика',
+  configure: 'Обновление справочника', open: 'Открытие стола', add: 'Добавление блюда', edit: 'Изменение позиции', remove: 'Удаление черновика',
   send: 'Подтверждение заказа', status: 'Статус приготовления и выдачи', void: 'Отмена позиции', guest: 'Изменение гостей',
   note: 'Комментарий к заказу', stock: 'Изменение наличия', transfer: 'Передача стола', move: 'Перенос стола',
   merge: 'Объединение заказов', bill: 'Запрошен расчёт', pay: 'Тестовая оплата', close: 'Закрытие заказа', message: 'Сообщение'
@@ -128,6 +144,30 @@ export function apply(input: Workspace, operation: Operation, at: number, optimi
   let error = ''
   try {
     switch (c.type) {
+      case 'configure': {
+        const { kind, entry } = c.change
+        const config = state.config ?? {}
+        const entries = config[kind] ?? {}
+        check((entries[entry.id]?.configVersion ?? 0) === c.version, 'Запись уже изменена коллегой. Откройте её заново.')
+        if (kind === 'table') {
+          check(Number.isInteger(entry.number) && entry.number > 0 && validCount(entry.seats), 'Проверьте номер стола и число мест')
+          check([entry.x, entry.y, entry.w, entry.h].every(Number.isFinite) &&
+            entry.w >= 6 && entry.w <= 45 && entry.h >= 6 && entry.h <= 36 &&
+            entry.x >= entry.w / 2 && entry.x <= 100 - entry.w / 2 &&
+            entry.y >= entry.h / 2 && entry.y <= 100 - entry.h / 2, 'Стол должен находиться в пределах плана')
+          check(!Object.values(config.table ?? {}).some(table => table.id !== entry.id && table.number === entry.number),
+            'Номер уже используется')
+        } else if (kind === 'dish') {
+          check(entry.name.trim() && entry.category.trim() && Number.isSafeInteger(entry.price) && entry.price >= 0 &&
+            Number.isInteger(entry.prep) && entry.prep > 0 && Number.isInteger(entry.wait) && entry.wait > 0, 'Проверьте название, цену и нормативы')
+        } else if ('name' in entry) {
+          check(entry.name.trim(), 'Введите название')
+        }
+        before = entries[entry.id] ?? ''
+        after = entry
+        state.config = { ...config, [kind]: { ...entries, [entry.id]: { ...entry, configVersion: c.version + 1 } } }
+        break
+      }
       case 'open':
         check(!state.occupied[c.table], 'Стол уже занят')
         check(validCount(Object.keys(c.guests).length), 'Укажите количество гостей')

@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
- <circle cx="120" cy="120" r="116" fill="#e1eccf"/>
- <path d="M36 220q15-62 84-62t84 62" fill="#395843"/>
- <path d="M84 180q37 26 72 0l6 42H77z" fill="#c9a986"/>
+ <circle cx="120" cy="120" r="116" fill="#c1ddff"/>
+ <path d="M36 220q15-62 84-62t84 62" fill="#193b67"/>
+ <path d="M84 180q37 26 72 0l6 42H77z" fill="#8bb6ed"/>
  <path d="M87 147v28q34 26 66 0v-28" fill="#bf775c"/>
  <path d="M64 114q-17-5-12 15 3 13 17 11m106-25q17-7 13 13-3 14-15 12" fill="#d79774"/>
  <path d="M62 102q0-55 58-57 59 2 59 60l-5 35q-6 36-54 37-48-1-53-37z" fill="#eeb48d"/>
  <path d="M59 113q-12-36 3-58 14-22 46-22 52-17 76 29 10 20-6 52l-8-31q-36 1-61-21-19 25-44 32z" fill="#382b26"/>
  <circle cx="94" cy="116" r="4" fill="#382b26"/><circle cx="146" cy="116" r="4" fill="#382b26"/>
  <path d="M107 143q13 13 26 0" fill="none" stroke="#73483c" stroke-width="4" stroke-linecap="round"/>
- <path d="M190 58v-17m-8 9h17M42 141v-14m-7 7h14" stroke="#fafcf3" stroke-width="4" stroke-linecap="round"/>
+ <path d="M190 58v-17m-8 9h17M42 141v-14m-7 7h14" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
 </svg>

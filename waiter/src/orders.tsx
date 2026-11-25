@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, ChefHat, Clock3, Plus, Search, Star, Users } from 'lucide-react'
 import { courses, eventNames, guestCount, id, issue, labels, linesOf, minutes, money, paid, shared, splitBill, tableState, total, type Command, type Line, type Order, type Workspace } from './domain'
-import { categories, dish, firstName, makeGuests, makeLine, menu, staff, tableNumber, tablesFor } from './fixtures'
+import { makeGuests, makeLine } from './fixtures'
+import { useDirectory } from './directory'
 import { Button, Chip, Empty, ScreenTitle } from './ui'
 
 export type Dispatch = (command: Command) => Promise<string | undefined>
@@ -13,8 +14,8 @@ export function OpenTable({ table, dispatch, pending, done }: { table: string; d
     event.preventDefault()
     if (await dispatch({ type: 'open', order: id(), table, guests: makeGuests(guests) })) done()
   }}>
-    <label>Количество гостей<input type="number" min="1" max="99" value={guests} onChange={event => setGuests(event.target.valueAsNumber)} required/></label>
-    <Button primary type="submit" disabled={pending}><Users size={17}/>{pending ? 'Ожидает подтверждения' : 'Открыть стол'}</Button>
+    <label data-coach="guest-count">Количество гостей<input type="number" min="1" max="99" value={guests} onChange={event => setGuests(event.target.valueAsNumber)} required/></label>
+    <div data-coach="open-submit"><Button primary type="submit" disabled={pending}><Users size={17}/>{pending ? 'Ожидает подтверждения' : 'Открыть стол'}</Button></div>
   </form>
 }
 
@@ -22,10 +23,11 @@ export function Catalog({ stock, favorites, toggle, add, recent = [] }: {
   stock: Workspace['stock']; favorites: string[]; toggle: (key: string) => void; add: (key: string) => void; recent?: string[]
 }) {
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('Все')
+  const [category, setCategory] = useState('Популярное')
   const [message, setMessage] = useState('')
-  const filtered = menu.filter(item => item.name.toLocaleLowerCase('ru').includes(search.trim().toLocaleLowerCase('ru')) &&
-    (category === 'Все' || category === item.category || (category === 'Популярное' && item.popular) ||
+  const { catalog, categories } = useDirectory()
+  const filtered = catalog.filter(item => item.name.toLocaleLowerCase('ru').includes(search.trim().toLocaleLowerCase('ru')) &&
+    (search.trim() || category === 'Все' || category === item.category || (category === 'Популярное' && item.popular) ||
     (category === 'Избранное' && favorites.includes(item.id)) || (category === 'Недавнее' && recent.includes(item.id))))
   return <div className="stack">
     <label className="search"><Search size={17}/><input aria-label="Поиск по меню" placeholder="Найти блюдо" value={search} onChange={event => setSearch(event.target.value)}/></label>
@@ -34,16 +36,17 @@ export function Catalog({ stock, favorites, toggle, add, recent = [] }: {
     {message && <div className="callout danger" role="status">{message}</div>}
     <div className="catalog-grid">{filtered.map(item => {
       const count = stock[item.id]?.count ?? -1
-      return <article className="panel card stack" key={item.id}>
-        <div className="row spread"><strong>{item.name}</strong><button className="icon" aria-label={favorites.includes(item.id) ? 'Убрать из избранного' : 'В избранное'} aria-pressed={favorites.includes(item.id)} onClick={() => toggle(item.id)}><Star size={17} fill={favorites.includes(item.id) ? 'currentColor' : 'none'}/></button></div>
-        <p className="muted">{item.description} · {item.prep} мин</p>
-        {item.allergens && <small>Аллергены: {item.allergens}</small>}
-        <div className="row spread wrap"><strong>{money(item.price)}</strong>
+      return <article className="catalog-item" key={item.id} data-coach={item.id === 'd0-2' ? 'popular' : undefined}>
+        <div className="catalog-info"><strong>{item.name}</strong><p className="muted">{item.category} · {item.prep} мин</p>
           {count >= 0 && <Chip tone={count ? 'other' : 'late'}>{count ? `${count} шт.` : 'Стоп-лист'}</Chip>}
-          <Button onClick={() => {
+          {item.allergens && <details><summary>Состав</summary><small>{item.description}. Аллергены: {item.allergens}.</small></details>}
+        </div>
+        <div className="row catalog-actions">
+          <button className="icon star-button" aria-label={favorites.includes(item.id) ? 'Убрать из избранного' : 'В избранное'} aria-pressed={favorites.includes(item.id)} onClick={() => toggle(item.id)}><Star size={17} fill={favorites.includes(item.id) ? 'currentColor' : 'none'}/></button>
+          <button className="price-add" aria-label="Добавить" aria-description={item.name} onClick={() => {
             if (!count) { setMessage(`${item.name}: блюдо недоступно. Выберите другую позицию.`); add(item.id); return }
             setMessage(''); add(item.id)
-          }}><Plus size={16}/> Добавить</Button>
+          }}><span>{money(item.price)}</span><Plus size={18}/></button>
         </div>
       </article>
     })}</div>
@@ -52,6 +55,7 @@ export function Catalog({ stock, favorites, toggle, add, recent = [] }: {
 }
 
 export function Orders({ data, actor, now, open }: { data: Workspace; actor: string; now: number; open: (order: Order) => void }) {
+  const directory = useDirectory()
   const [search, setSearch] = useState('')
   const [own, setOwn] = useState(true)
   const [filter, setFilter] = useState('Активные')
@@ -59,7 +63,7 @@ export function Orders({ data, actor, now, open }: { data: Workspace; actor: str
   const archived = Object.values(data.archived)
   const archivedFilter = ['Завершённые', 'Отменённые', 'Архив'].includes(filter)
   const rows = (archivedFilter ? archived : active).filter(order => (!own || order.owner === actor) &&
-    `Стол ${tableNumber(order.table)} ${staff.find(person => person.id === order.owner)?.name ?? ''} ${order.id}`.toLowerCase().includes(search.trim().toLowerCase()))
+    `Стол ${directory.table(order.table)} ${directory.person(order.owner)?.name ?? ''} ${order.id}`.toLowerCase().includes(search.trim().toLowerCase()))
     .filter(order => ({
       'Завершённые': order.state === 'closed', 'Отменённые': order.state === 'cancelled',
       'Готовятся': linesOf(order).some(line => ['accepted', 'cooking'].includes(line.status)),
@@ -75,13 +79,13 @@ export function Orders({ data, actor, now, open }: { data: Workspace; actor: str
       <label className="search"><Search size={17}/><input aria-label="Поиск заказов" placeholder="Стол, сотрудник, заказ" value={search} onChange={event => setSearch(event.target.value)}/></label>
     </div>
     <div className="filters segmented">{['Активные', 'Готовятся', 'К выдаче', 'Задержка', 'К расчёту', 'Завершённые', 'Отменённые', 'Архив'].map(key => <button key={key} aria-pressed={filter === key} onClick={() => setFilter(key)}>{key}</button>)}</div>
-    <div className="order-grid">{rows.map(order => {
+    <div className="order-grid" data-coach="order-list">{rows.map(order => {
       const [tone, title] = archivedFilter ? ['free', order.state === 'closed' ? 'Завершён' : order.state === 'merged' ? 'Объединён' : 'Отменён'] : tableState(order, actor, now)
       const lines = linesOf(order)
       const served = lines.filter(line => line.status === 'served').length
       return <button className={`panel card card-action order-card ${tone}`} key={order.id} onClick={() => open(order)}>
-        <div className="row spread"><strong>Стол {tableNumber(order.table)}</strong><Chip tone={tone}>{title}</Chip></div>
-        <span className="muted">{firstName(order.owner)} · {guestCount(order)} гост. · {minutes(order.opened, order.ended ?? now)} мин</span>
+        <div className="row spread"><strong>Стол {directory.table(order.table)}</strong><Chip tone={tone}>{title}</Chip></div>
+        <span className="muted">{(directory.person(order.owner)?.name ?? 'Коллега')} · {guestCount(order)} гост. · {minutes(order.opened, order.ended ?? now)} мин</span>
         <div className="row spread"><span className="muted">Выдано {served} из {lines.length}</span><strong>{money(total(order))}</strong></div>
       </button>
     })}</div>
@@ -90,6 +94,7 @@ export function Orders({ data, actor, now, open }: { data: Workspace; actor: str
 }
 
 function LineEdit({ line, order, dispatch, close }: { line: Line; order: Order; dispatch: Dispatch; close: () => void }) {
+  const directory = useDirectory()
   const [baseVersion] = useState(line.version)
   const [quantity, setQuantity] = useState(line.quantity)
   const [guest, setGuest] = useState(line.guest)
@@ -106,7 +111,7 @@ function LineEdit({ line, order, dispatch, close }: { line: Line; order: Order; 
       <label>Гость<select value={guest} onChange={event => setGuest(event.target.value)}><option value={shared}>На общий стол</option>{Object.values(order.guests).map(seat => <option key={seat.id} value={seat.id}>{seat.name}</option>)}</select></label>
       <label>Подача<select value={course} onChange={event => setCourse(event.target.value as Line['course'])}>{courses.map(value => <option key={value}>{value}</option>)}</select></label>
     </div>
-    <fieldset><legend>Модификаторы</legend><div className="row wrap">{dish(line.item)?.modifiers.map(value => <label className="row" key={value}><input type="checkbox" checked={selection.includes(value)} onChange={event => setSelection(list => event.target.checked ? [...list, value] : list.filter(option => option !== value))}/>{value}</label>)}</div></fieldset>
+    <fieldset><legend>Модификаторы</legend><div className="row wrap">{directory.catalog.find(item => item.id === line.item)?.modifiers.map(value => <label className="row" key={value}><input type="checkbox" checked={selection.includes(value)} onChange={event => setSelection(list => event.target.checked ? [...list, value] : list.filter(option => option !== value))}/>{value}</label>)}</div></fieldset>
     <label>Комментарий к блюду<input value={note} maxLength={300} onChange={event => setNote(event.target.value)} placeholder="Пожелания гостя"/></label>
     <div className="row"><Button primary type="submit">Сохранить позицию</Button><Button onClick={close}>Назад</Button></div>
   </form>
@@ -130,12 +135,13 @@ function Billing({ order, dispatch }: { order: Order; dispatch: Dispatch }) {
   </div>
 }
 
-export function OrderEditor({ order, data, actor, branch, now, dispatch, favorites, toggle, pending = [], observeDish }: {
-  order: Order; data: Workspace; actor: string; branch: string; now: number; dispatch: Dispatch; favorites: string[]; toggle: (key: string) => void; pending?: Command[]
+export function OrderEditor({ order, data, actor, now, dispatch, favorites, toggle, pending = [], observeDish }: {
+  order: Order; data: Workspace; actor: string; now: number; dispatch: Dispatch; favorites: string[]; toggle: (key: string) => void; pending?: Command[]
   observeDish?: (key: string) => void
 }) {
+  const directory = useDirectory()
   const [guest, setGuest] = useState(shared)
-  const [view, setView] = useState('Позиции')
+  const [tab, setView] = useState('Позиции')
   const [editing, setEditing] = useState('')
   const [voiding, setVoiding] = useState('')
   const [voidVersion, setVoidVersion] = useState(0)
@@ -153,38 +159,43 @@ export function OrderEditor({ order, data, actor, branch, now, dispatch, favorit
   const draft = lines.filter(line => line.status === 'draft')
   const served = lines.filter(line => line.status === 'served')
   const archived = !data.active[order.id]
+  const view = archived && tab !== 'История' ? 'Позиции' : tab
   const selectedGuest = order.guests[guest] ? guest : shared
   const recent = [...Object.values(data.active), ...Object.values(data.archived)].flatMap(linesOf).filter(line => line.actor === actor).sort((a, b) => b.createdAt - a.createdAt).slice(0, 20).map(line => line.item)
   const status = (line: Line, next: 'cooking' | 'ready' | 'served') => { void dispatch({ type: 'status', order: order.id, lines: versions([line]), status: next }) }
-  async function add(key: string) {
+  async function add(key: string, forGuest = selectedGuest) {
     observeDish?.(key)
-    const item = dish(key)
-    if (item && (data.stock[key]?.count ?? -1) !== 0) await dispatch({ type: 'add', order: order.id, line: makeLine(item, actor, selectedGuest) })
+    const item = directory.catalog.find(item => item.id === key)
+    if (item && (data.stock[key]?.count ?? -1) !== 0) await dispatch({ type: 'add', order: order.id, line: makeLine(item, actor, forGuest) })
   }
-  return <div className="stack">
-    <div className="row spread wrap"><span className="muted">№ {order.id.slice(0, 8)} · {firstName(order.owner)} · {guestCount(order)} гост. · {minutes(order.opened, order.ended ?? now)} мин</span><strong>{money(total(order))}</strong></div>
-    <div className="segmented">{(archived ? ['Позиции', 'История'] : ['Позиции', 'Меню', 'Гости', 'Управление', 'История', 'Расчёт']).map(key => <button key={key} onClick={() => setView(key)} aria-pressed={view === key}>{key}</button>)}</div>
-    {view === 'Меню' && !archived && <>
-      <label>Добавить для<select value={selectedGuest} onChange={event => setGuest(event.target.value)}><option value={shared}>На общий стол</option>{Object.values(order.guests).map(seat => <option value={seat.id} key={seat.id}>{seat.name}</option>)}</select></label>
+  return <div className="stack order-editor">
+    <div className="row spread wrap order-meta"><span className="muted">№ {order.id.slice(0, 8)} · {(directory.person(order.owner)?.name ?? 'Коллега')} · {guestCount(order)} гост. · {minutes(order.opened, order.ended ?? now)} мин</span><strong>{money(total(order))}</strong></div>
+    <div className="segmented order-tabs">{(archived ? ['Позиции', 'История'] : ['Позиции', 'Меню', 'Гости', 'Управление', 'История', 'Расчёт']).map(key => <button key={key} onClick={() => setView(key)} aria-pressed={view === key}>{key}</button>)}</div>
+    <div className="order-catalog stack" hidden={view !== 'Меню' || archived}>
+      <div className="guest-switch" aria-label="Гости заказа"><button aria-pressed={selectedGuest === shared} onClick={() => setGuest(shared)}>На общий стол</button>{Object.values(order.guests).map(seat => <button key={seat.id} aria-pressed={selectedGuest === seat.id} onClick={() => setGuest(seat.id)}>{seat.name}</button>)}</div>
+      <label className="sr-only">Добавить для<select value={selectedGuest} onChange={event => setGuest(event.target.value)}><option value={shared}>На общий стол</option>{Object.values(order.guests).map(seat => <option value={seat.id} key={seat.id}>{seat.name}</option>)}</select></label>
       <Catalog stock={data.stock} favorites={favorites} toggle={toggle} add={key => { void add(key) }} recent={recent}/>
       <Button onClick={() => setView('Позиции')}><ArrowLeft size={16}/> К заказу</Button>
-    </>}
+    </div>
     {view === 'Позиции' && <>
-      <div className="row spread wrap"><span>Выдано {served.length} из {lines.length} позиций</span>{!archived && <Button primary onClick={() => setView('Меню')}><Plus size={17}/> Добавить блюда</Button>}</div>
+      <div className="row spread wrap" data-coach="add-menu"><span>Выдано {served.length} из {lines.length} позиций</span>{!archived && <Button primary onClick={() => setView('Меню')}><Plus size={17}/> Добавить блюда</Button>}</div>
+      {!archived && (!lines.length || draft.length > 0) && <div className="quick-menu">
+        <small>Быстро на общий стол</small><div className="row wrap">{directory.catalog.filter(item => item.popular && (data.stock[item.id]?.count ?? -1) !== 0).slice(0, 5).map(item => <button className="price-add" key={item.id} onClick={() => { void add(item.id, shared) }}><Plus size={16}/>{item.name}</button>)}</div>
+      </div>}
       {lines.length > 0 && <progress aria-label="Прогресс выдачи" value={served.length} max={lines.length}/>}
       {pending.length > 0 && <p className="callout" role="status">Ожидает подтверждения · {pending.length} опер.</p>}
       {!lines.length && <Empty>Добавьте первое блюдо из меню.</Empty>}
       {[{ id: shared, name: 'На общий стол' }, ...Object.values(order.guests)].map(seat => {
         const seatLines = Object.values(order.lines).filter(line => line.guest === seat.id)
         if (!seatLines.length) return null
-        return <section key={seat.id} className="panel pad stack">
+        return <section key={seat.id} className="order-seat stack">
           <h3>{seat.name}</h3>
           {seatLines.map(line => <div key={line.id} className="stack separator">
             <div className="row spread"><strong>{line.quantity} × {line.name}</strong><Chip tone={issue(line, now) ? 'late' : line.status === 'ready' ? 'ready' : 'free'}>{issue(line, now) || labels[line.status]}</Chip></div>
             <p className="muted">{[money(line.quantity * line.price), line.course, line.modifiers, line.note, line.cancellation].filter(Boolean).join(' · ')}</p>
-            {!archived && line.status !== 'cancelled' && <div className="row wrap">
+            {!archived && line.status !== 'cancelled' && <div className="row wrap" data-coach="line-actions">
               {!['served'].includes(line.status) && !order.paidLines?.[line.id] && <Button onClick={() => { setEditing(line.id); setVoiding('') }}>Изменить</Button>}
-              <Button onClick={() => { void dispatch({ type: 'add', order: order.id, line: { ...makeLine(dish(line.item)!, actor, line.guest), quantity: line.quantity, modifiers: line.modifiers, note: line.note, course: line.course } }) }}>Дублировать</Button>
+              <Button onClick={() => { void dispatch({ type: 'add', order: order.id, line: { ...makeLine(directory.catalog.find(item => item.id === line.item)!, actor, line.guest), quantity: line.quantity, modifiers: line.modifiers, note: line.note, course: line.course } }) }}>Дублировать</Button>
               {line.status === 'draft' && <Button onClick={() => { void dispatch({ type: 'remove', order: order.id, line: line.id, version: line.version }) }}>Удалить черновик</Button>}
               {line.status === 'accepted' && <Button onClick={() => status(line, 'cooking')}><ChefHat size={16}/> Начать готовить</Button>}
               {['accepted', 'cooking'].includes(line.status) && <Button onClick={() => status(line, 'ready')}>Отметить готовым</Button>}
@@ -204,8 +215,7 @@ export function OrderEditor({ order, data, actor, branch, now, dispatch, favorit
           </div>)}
         </section>
       })}
-      {!archived && <div className="row wrap">
-        {draft.length > 0 && <Button primary disabled={pending.some(command => command.type === 'send')} onClick={() => { void dispatch({ type: 'send', order: order.id, lines: versions(draft) }) }}>Подтвердить · {draft.length}</Button>}
+      {!archived && <div className="row wrap" data-coach="fulfillment">
         {ready.length > 0 && <Button primary onClick={() => { void dispatch({ type: 'status', order: order.id, lines: versions(ready), status: 'served' }) }}>Выдать все готовые · {ready.length}</Button>}
       </div>}
     </>}
@@ -222,11 +232,11 @@ export function OrderEditor({ order, data, actor, branch, now, dispatch, favorit
         <label>Комментарий к заказу<textarea value={note ?? order.note} maxLength={500} onChange={event => { if (previousNote === undefined) setPreviousNote(order.note); setNote(event.target.value) }}/></label>
         <Button type="submit" disabled={note === undefined}>Сохранить комментарий</Button>
       </form>
-      <label>Передать стол<select value={owner} onChange={event => setOwner(event.target.value)}><option value="">Выбрать коллегу</option>{staff.filter(person => person.id !== order.owner).map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
+      <label>Передать стол<select value={owner} onChange={event => setOwner(event.target.value)}><option value="">Выбрать коллегу</option>{directory.staff.filter(person => person.id !== order.owner && !person.disabled).map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
       <Button disabled={!owner || owner === order.owner} onClick={() => { void dispatch({ type: 'transfer', orders: { [order.id]: order.owner }, owner }) }}>Передать стол</Button>
-      <label>Перенести заказ<select value={destination} onChange={event => setDestination(event.target.value)}><option value="">Свободный стол</option>{tablesFor(branch).filter(table => !data.occupied[table.id]).map(table => <option key={table.id} value={table.id}>Стол {table.number}</option>)}</select></label>
+      <label>Перенести заказ<select value={destination} onChange={event => setDestination(event.target.value)}><option value="">Свободный стол</option>{directory.layout.filter(table => !data.occupied[table.id]).map(table => <option key={table.id} value={table.id}>Стол {table.number}</option>)}</select></label>
       <Button disabled={!destination || Boolean(data.occupied[destination])} onClick={() => { void dispatch({ type: 'move', order: order.id, from: order.table, table: destination }) }}>Перенести заказ</Button>
-      <label>Объединить заказ<select value={merge} onChange={event => { setMerge(event.target.value); setConfirmMerge(false) }}><option value="">Активный стол</option>{Object.values(data.active).filter(other => other.id !== order.id).map(other => <option key={other.id} value={other.id}>Стол {tableNumber(other.table)}</option>)}</select></label>
+      <label>Объединить заказ<select value={merge} onChange={event => { setMerge(event.target.value); setConfirmMerge(false) }}><option value="">Активный стол</option>{Object.values(data.active).filter(other => other.id !== order.id).map(other => <option key={other.id} value={other.id}>Стол {directory.table(other.table)}</option>)}</select></label>
       <Button disabled={!merge} onClick={() => { if (confirmMerge) void dispatch({ type: 'merge', order: order.id, into: merge }); else setConfirmMerge(true) }}>{confirmMerge ? 'Подтвердить объединение' : 'Объединить'}</Button>
       <Button disabled={lines.some(line => line.status !== 'draft')} onClick={() => {
         if (confirmCancel) void dispatch({ type: 'close', order: order.id, cancel: true })
@@ -238,9 +248,15 @@ export function OrderEditor({ order, data, actor, branch, now, dispatch, favorit
       (event.kind === 'merge' && (JSON.parse(event.after) as { order?: string })?.order === order.id) ||
       (event.item && Object.values(order.lines).some(line => line.item === event.item) && event.kind === 'stock')
     ).sort((a, b) => b.at - a.at).map(event => <details className="panel pad" key={event.id}>
-      <summary>{eventNames[event.kind]} · {firstName(event.actor)} · {new Date(event.at).toLocaleString('ru-RU')}</summary>
+      <summary>{eventNames[event.kind]} · {(directory.person(event.actor)?.name ?? 'Коллега')} · {new Date(event.at).toLocaleString('ru-RU')}</summary>
       <p className="muted history-values">{event.before} <ArrowRight size={14}/> {event.after}</p>
     </details>)}</div>}
+    {!archived && <footer className="order-checkout" data-coach="send">
+      <div><small>{lines.length} поз. в заказе</small><strong>{money(total(order))}</strong></div>
+      <Button primary disabled={!draft.length || pending.some(command => command.type === 'send')} onClick={() => { void dispatch({ type: 'send', order: order.id, lines: versions(draft) }); setView('Позиции') }}>
+        {draft.length ? `Подтвердить · ${draft.length}` : 'Отправить заказ'}
+      </Button>
+    </footer>}
     {view === 'Расчёт' && !archived && <>
       {order.state !== 'bill' && <Button onClick={() => { void dispatch({ type: 'bill', order: order.id }) }}><Clock3 size={17}/> Отметить ожидание расчёта</Button>}
       <Billing order={order} dispatch={dispatch}/>

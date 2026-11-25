@@ -56,8 +56,7 @@ export async function transactWorkspace(operation: Operation, seed = seedWorkspa
   return normalize(result.snapshot.val() as Workspace)
 }
 
-export async function initializeWorkspace(branch: string) {
-  const seed = seedWorkspace()
+export async function initializeWorkspace(branch: string, seed = seedWorkspace()) {
   const result = await runTransaction(workspaceRef(branch), value => value ?? seed, { applyLocally: false })
   return normalize(result.snapshot.val() as Workspace)
 }

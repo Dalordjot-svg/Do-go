@@ -1,4 +1,4 @@
-import type { Dish, Line, Message, Order, Seat, Staff, Table, Workspace } from './domain'
+import type { Branch, Dish, Line, Message, Order, Seat, Staff, Table, Workspace } from './domain'
 import { courses, id, shared } from './domain'
 
 export const staff: Staff[] = [
@@ -8,9 +8,8 @@ export const staff: Staff[] = [
   { id: 'tim', name: 'Тим Березин', initials: 'ТБ', role: 'Бариста', color: 'sage' },
   { id: 'ira', name: 'Ира Ветрова', initials: 'ИВ', role: 'Администратор', color: 'sand' }
 ]
-export const branches = [{ id: 'center', name: 'Кофейня «Центр»' }, { id: 'park', name: 'Кофейня «Парк»' }]
+export const branches: Branch[] = [{ id: 'center', name: 'Кофейня «Центр»' }, { id: 'park', name: 'Кофейня «Парк»' }]
 export const person = (key: string) => staff.find(value => value.id === key) ?? { id: key, name: 'Сотрудник', initials: 'С', role: 'Официант', color: 'sage' }
-export const firstName = (key: string) => person(key).name.split(' ')[0]
 export const categories = ['Кофе', 'Авторские напитки', 'Чай', 'Холодные напитки', 'Завтраки', 'Основные блюда', 'Салаты', 'Десерты', 'Дополнительно']
 const menuGroups: [string[], string, string, number, number][] = [
   [['Эспрессо', 'Американо', 'Капучино', 'Латте', 'Флэт уайт', 'Фильтр-кофе'], 'Кофейное зерно средней обжарки', 'Молоко в напитках с молоком', 170, 4],
@@ -41,7 +40,6 @@ export const tablesFor = (branch: string): Table[] => central.map(([x, y, w, h, 
   id: `t${index + 1}`, number: index + 1, x: branch === 'park' ? 92 - x : x,
   y: branch === 'park' && index < 8 ? y + 3 : y, w, h, seats, round: branch === 'park' ? !round : round, zone
 }))
-export const tableNumber = (key: string) => key.replace(/^t/, '')
 export const makeGuests = (count: number, prefix: string = id()) => Object.fromEntries(Array.from({ length: count }, (_, i) => {
   const seat: Seat = { id: `${prefix}-${i + 1}`, name: `Гость ${i + 1}` }
   return [seat.id, seat]

@@ -1,6 +1,6 @@
 import Dexie, { liveQuery, type Table } from 'dexie'
 import { create } from 'zustand'
-import { apply, id, isCritical, type Command, type Message, type Operation, type Workspace } from './domain'
+import { apply, id, isCritical, type Command, type Credential, type Message, type Operation, type Workspace } from './domain'
 import { branches, menu, sampleMessages, seedWorkspace, staff, tablesFor } from './fixtures'
 import * as remote from './remote'
 
@@ -19,6 +19,7 @@ export class WaiterDB extends Dexie {
   }
 }
 export const local = new WaiterDB()
+export const registryBranch = 'registry'
 const scope = (branch: string) => `${remote.backend}:${branch}`
 export const roomKey = (branch: string, chat: string) => `${scope(branch)}:${chat}`
 export async function setting<T>(key: string, fallback: T) {
@@ -51,6 +52,20 @@ export async function enqueue(branch: string, actor: string, command: Command) {
   return operation.id
 }
 
+export async function enqueueCertificate(actor: string, certificate: Omit<Credential, 'actor'>) {
+  const entry = { ...certificate, actor, id: `${actor}-${certificate.token}` }
+  const key = scope(registryBranch)
+  const operationId = 'certificate-' + entry.id
+  await local.transaction('rw', local.snapshots, local.outbox, async () => {
+    if ((await local.snapshots.get(key))?.data.config?.certificate?.[entry.id] || await local.outbox.get(operationId)) return
+    const at = Date.now()
+    sequence = Math.max(sequence + 1, at * 1000)
+    await local.outbox.add({ id: operationId, actor, branch: key, at, stamp: sequence, attempts: 0, retryAt: 0,
+      command: { type: 'configure', change: { kind: 'certificate', entry }, version: 0 } })
+  })
+  kicked?.()
+}
+
 async function cacheSnapshot(key: string, state: Workspace) {
   await local.transaction('rw', local.snapshots, async () => {
     const old = await local.snapshots.get(key)
@@ -65,6 +80,8 @@ export async function resetLocal() {
 
 export function runWork(branch: string, actor: string) {
   const key = scope(branch)
+  const registryKey = scope(registryBranch)
+  const example = branches.some(item => item.id === branch)
   let active = true
   let busy = false
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -74,18 +91,18 @@ export function runWork(branch: string, actor: string) {
   const storeRemote = (data: Workspace) => { if (active) void cacheSnapshot(key, data).catch(safeReport) }
   const disposables: (() => void)[] = []
   void local.transaction('rw', local.snapshots, local.settings, async () => {
-    if (!await local.snapshots.get(key)) await local.snapshots.put({ key, data: seedWorkspace(Date.now(), !remote.remoteEnabled) })
+    if (!await local.snapshots.get(key)) await local.snapshots.put({ key, data: seedWorkspace(Date.now(), !remote.remoteEnabled && example) })
     await local.settings.bulkPut([{ key: 'catalog', value: menu }, { key: 'staff', value: staff }, { key: 'branches', value: branches }, { key: `layout:${branch}`, value: tablesFor(branch) }])
   }).then(() => schedule()).catch(safeReport)
   const subscription = liveQuery(async () => ({
     snapshot: await local.snapshots.get(key),
-    queue: (await local.outbox.where('branch').equals(key).toArray()).sort((a, b) => a.stamp - b.stamp)
+    queue: (await local.outbox.where('branch').anyOf(key, registryKey).toArray()).sort((a, b) => a.stamp - b.stamp)
   })).subscribe({
     next({ snapshot, queue }) {
       if (!active || !snapshot) return
       let workspace = snapshot.data
       for (const command of queue) {
-        if (!command.rejected && !isCritical(command.command)) workspace = apply(workspace, command, command.at, true).state
+        if (command.branch === key && !command.rejected && !isCritical(command.command)) workspace = apply(workspace, command, command.at, true).state
       }
       useWork.setState({ workspace, queue })
     },
@@ -97,38 +114,42 @@ export function runWork(branch: string, actor: string) {
     busy = true
     try {
       if (!seeded) {
-        const data = await remote.initializeWorkspace(branch)
+        const data = await remote.initializeWorkspace(branch, seedWorkspace(Date.now(), example))
         if (!active) return
         await cacheSnapshot(key, data)
         seeded = true
       }
-      const rows = (await local.outbox.where('branch').equals(key).filter(row => !row.rejected).toArray()).sort((a, b) => a.stamp - b.stamp)
+      const rows = (await local.outbox.where('branch').anyOf(key, registryKey).filter(row => !row.rejected).toArray()).sort((a, b) => a.stamp - b.stamp)
+      const deferred = new Set<string>()
       for (const row of rows) {
         if (!active || !useWork.getState().online) break
-        if (row.retryAt > Date.now()) break
+        if (row.retryAt > Date.now()) deferred.add(row.branch)
+        if (deferred.has(row.branch)) continue
         useWork.setState({ busy: true })
         try {
           if (useWork.getState().slow) await new Promise(resolve => setTimeout(resolve, 850))
           if (!active) break
-          const operation = { ...row, branch, at: Date.now() }
+          const scopeKey = row.branch
+          const target = scopeKey === registryKey ? registryBranch : branch
+          const operation = { ...row, branch: target, at: Date.now() }
           if (row.command.type === 'message') {
             const message = remote.remoteEnabled ? await remote.deliverMessage(operation) : row.command.message
             await cacheMessage(branch, row.command.chat, message)
             await local.outbox.delete(row.id)
           } else if (remote.remoteEnabled) {
-            const state = await remote.transactWorkspace(operation)
+            const state = await remote.transactWorkspace(operation, seedWorkspace(Date.now(), target !== registryBranch && example))
             await local.transaction('rw', local.snapshots, local.outbox, async () => {
-              const cached = await local.snapshots.get(key)
-              if (!cached || cached.data.revision <= state.revision) await local.snapshots.put({ key, data: state })
+              const cached = await local.snapshots.get(scopeKey)
+              if (!cached || cached.data.revision <= state.revision) await local.snapshots.put({ key: scopeKey, data: state })
               const rejected = state.receipts[row.id].result
               if (rejected) await local.outbox.update(row.id, { rejected })
               else await local.outbox.delete(row.id)
             })
           } else {
             await local.transaction('rw', local.snapshots, local.outbox, async () => {
-              const snapshot = await local.snapshots.get(key)
-              const result = apply(snapshot?.data ?? seedWorkspace(), operation, operation.at)
-              await local.snapshots.put({ key, data: result.state })
+              const snapshot = await local.snapshots.get(scopeKey)
+              const result = apply(snapshot?.data ?? seedWorkspace(Date.now(), target !== registryBranch && example), operation, operation.at)
+              await local.snapshots.put({ key: scopeKey, data: result.state })
               if (result.error) await local.outbox.update(row.id, { rejected: result.error })
               else await local.outbox.delete(row.id)
             })
@@ -137,7 +158,7 @@ export function runWork(branch: string, actor: string) {
         } catch (error) {
           safeReport(error)
           await local.outbox.update(row.id, { attempts: row.attempts + 1, retryAt: Date.now() + Math.min(30000, 500 * 2 ** row.attempts) })
-          break
+          deferred.add(row.branch)
         }
       }
     } catch (error) { safeReport(error) }
@@ -184,5 +205,16 @@ export function watchRoom(branch: string, chat: string, changed: (messages: Mess
     error: report
   })
   const stop = remote.remoteEnabled ? remote.observeChat(branch, chat, message => { void cacheMessage(branch, chat, message).catch(report) }, report) : undefined
+  return () => { subscription.unsubscribe(); stop?.() }
+}
+
+export function watchRegistry(changed: (state: Workspace | undefined) => void) {
+  const key = scope(registryBranch)
+  const subscription = liveQuery(() => local.snapshots.get(key)).subscribe({
+    next: value => changed(value?.data), error: report
+  })
+  const stop = remote.remoteEnabled ? remote.observeWorkspace(registryBranch, state => {
+    void cacheSnapshot(key, state).catch(report)
+  }, report) : undefined
   return () => { subscription.unsubscribe(); stop?.() }
 }

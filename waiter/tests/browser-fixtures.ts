@@ -24,5 +24,5 @@ export async function certified(page: Page, path = '/#hall', actor = 'mila') {
   await page.goto(path)
   await page.reload()
 }
-export const nav = (page: Page, name: string) => page.getByRole('navigation').getByRole('button', { name, exact: true })
+export const nav = (page: Page, name: string) => page.getByRole('navigation', { name: 'Основные разделы' }).getByRole('button', { name, exact: true })
 export const click = (page: Page, name: string | RegExp) => page.getByRole('button', { name, exact: typeof name === 'string' }).click()
