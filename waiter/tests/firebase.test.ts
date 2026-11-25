@@ -15,28 +15,41 @@ const create = (name: string) => {
   connectDatabaseEmulator(db, hostname, Number(port))
   return { app, db }
 }
+async function connected(db: Database) {
+  let stop: (() => void) | undefined
+  try {
+    await new Promise<void>((resolve, reject) => {
+      stop = onValue(ref(db, '.info/connected'), snapshot => {
+        if (snapshot.val() === true) resolve()
+      }, reject)
+    })
+  } finally {
+    stop?.()
+  }
+}
 const at = Date.now()
 const seed = seedWorkspace(at, false)
 const op = (branch: string, command: Command, actor = 'mila'): Operation => ({ id: id(), actor, branch, at, command })
 const open = (branch: string, table: string, order: string, actor = 'mila') => op(branch, { type: 'open', table, order, guests: makeGuests(2, order) }, actor)
 
-describe.skipIf(!host)('Два клиента Firebase Emulator', () => {
+describe.skipIf(!host)('Два клиента Firebase Emulator', { timeout: 15000 }, () => {
   const clients: ReturnType<typeof create>[] = []
-  function dbs() {
+  async function dbs() {
     const a = create(id()), b = create(id())
     clients.push(a, b)
+    await Promise.all([connected(a.db), connected(b.db)])
     return [a.db, b.db] as const
   }
   const use = (operation: Operation, db: Database) => transactWorkspace(operation, seed, db)
   afterAll(async () => { await Promise.all(clients.map(client => deleteApp(client.app))) })
   it('принимает только одно открытие стола', async () => {
-    const [a, b] = dbs(), branch = id()
+    const [a, b] = await dbs(), branch = id()
     const x = open(branch, 't1', 'aa'), y = open(branch, 't1', 'bb', 'artem')
     const results = await Promise.all([use(x, a), use(y, b)])
     expect(results.map((data, index) => data.receipts[[x.id, y.id][index]].result).filter(Boolean)).toEqual(['Стол уже занят'])
   })
   it('списывает последнюю порцию один раз', async () => {
-    const [a, b] = dbs(), branch = id()
+    const [a, b] = await dbs(), branch = id()
     await use(open(branch, 't1', 'aa'), a)
     await use(open(branch, 't2', 'bb', 'artem'), b)
     const item = dish('d7-0')!
@@ -53,7 +66,7 @@ describe.skipIf(!host)('Два клиента Firebase Emulator', () => {
     expect(typeof repeated.audit[ops[winning].id].at).toBe('number')
   })
   it('разрешает независимые изменения и отклоняет конфликт одной позиции', async () => {
-    const [a, b] = dbs(), branch = id()
+    const [a, b] = await dbs(), branch = id()
     await use(open(branch, 't1', 'o'), a)
     const lines = ['mila', 'artem'].map(actor => makeLine(dish('d0-2')!, actor))
     await Promise.all(lines.map((line, index) => use(op(branch, { type: 'add', order: 'o', line }, line.actor), [a, b][index])))
@@ -65,7 +78,7 @@ describe.skipIf(!host)('Два клиента Firebase Emulator', () => {
     expect(results.map((data, index) => data.receipts[[one.id, two.id][index]].result).filter(Boolean)).toHaveLength(1)
   })
   it('доставляет одно сообщение второму клиенту при повторе', async () => {
-    const [a, b] = dbs(), branch = id()
+    const [a, b] = await dbs(), branch = id()
     const message = { id: id(), actor: 'mila', text: 'На кухню', at }
     const send = op(branch, { type: 'message', chat: 'general', message })
     let dispose = () => {}
