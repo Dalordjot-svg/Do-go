@@ -5,3 +5,9 @@
 - Do-go, основная ветка main. В корне статические index.html, cashier.html, kiosk.html и hog.html. Сценариев сборки, правил RTDB и firebase.json в main нет.
 - В cashier.html, index.html и kiosk.html указан проект moon-60c5a. Доступ к Authentication и правилам не подтверждён. Для реализации выбран отдельный локальный Firebase Emulator.
 - Действующий Pages отвечает по адресу https://dalordjot-svg.github.io/Do-go/. Сборка приложения использует относительную базу для /Do-go/waiter/.
+
+## 2. PWA и визуальная система
+
+- Экран установки, platform detection, standalone gate, режим разработки, темы и safe-area.
+- Manifest, пакет иконок и precache внутри директории приложения. Аппаратное тестирование установки ещё предстоит.
+- Базовые компоненты интерфейса и адаптивная карта зала подготовлены.
