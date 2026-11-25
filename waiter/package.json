@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "test:emulator": "firebase emulators:exec --config firebase.json --only database --project demo-coffeeman 'vitest run tests/firebase.test.ts'",
     "emulator": "firebase emulators:start --config firebase.json --only database --project demo-coffeeman",
-    "test:emulator:e2e": "firebase emulators:exec --config firebase.json --only database --project demo-coffeeman 'playwright test --config playwright.emulator.config.ts'"
+    "test:emulator:e2e": "firebase emulators:exec --config firebase.json --only database --project demo-coffeeman 'playwright test --config playwright.emulator.config.ts'",
+    "build:pages": "npm run build && node scripts/stage-pages.mjs"
   },
   "dependencies": {
     "dexie": "^4.0.11",
