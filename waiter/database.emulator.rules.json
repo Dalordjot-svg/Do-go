@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "coffeemanWaiter": {
+      "workspaces": { "$branch": { ".read": true, ".write": true } },
+      "messages": { "$branch": { "$chat": { ".read": true, ".indexOn": ["at"], "$message": { ".write": "!data.exists() && newData.exists()", ".validate": "newData.hasChildren(['id','actor','text','at']) && newData.child('id').val() === $message" } } } },
+      "presence": { "$branch": { ".read": true, "$user": { "$connection": { ".write": true } } } }
+    }
+  }
+}

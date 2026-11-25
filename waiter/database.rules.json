@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "coffeemanWaiter": {
+      "workspaces": { "$branch": { ".read": false, ".write": false, ".indexOn": ["revision"] } },
+      "messages": { "$branch": { "$chat": { ".read": false, ".write": false, ".indexOn": ["at"] } } },
+      "presence": { "$branch": { ".read": false, ".write": false } }
+    }
+  }
+}
